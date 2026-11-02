@@ -61,7 +61,7 @@ the finished app and reads the code-flow walkthrough; he doesn't write code.
 
 ## Status
 - [x] Planning + design (2026-11-02)
-- [ ] M1 Foundation + Today (V0–V3)
+- [x] M1 Foundation + Today (V0–V3)
 - [ ] M2 Trackers + Money (V4–V5)
 - [ ] M3 Renewals + Settings (V6–V7)
 - [ ] M4 Agents + final (V8–V10)

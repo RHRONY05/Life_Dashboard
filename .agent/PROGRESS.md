@@ -8,11 +8,11 @@
 ## Now
 | | |
 |---|---|
-| **Phase** | Building M1 (Foundation + Today) |
-| **Next task** | V3 Today board + Lists |
+| **Phase** | M1 complete · Ready for M2 (Trackers + Money) |
+| **Next task** | V4 Trackers |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-02 by Antigravity (V2 Data & Auth done) |
+| **Last updated** | 2026-11-02 by Antigravity (M1 Foundation + Today complete) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -116,3 +116,11 @@ Deploy: https://life-rony.vercel.app · prod check ✅ (Vocab at vocab.rhrony05.
 Commits: 656898d feat(v2): database migrations, auth routes, test helpers, and E2E auth setup
 Problems / surprises: Cloudflare apex needs CNAME for life.rhrony05.me, added life-rony.vercel.app as immediate working live domain
 Next: V3 Today board + Lists
+
+### 2026-11-02 22:42 — Antigravity — V3 Today board + Lists (M1 complete)
+Did: built domain logic (dates.ts & board.ts in Asia/Dhaka) with 12 unit tests; built tasks and lists services with full business rules (optimistic positions, done moves, 8-list cap, reordering, undo targets); implemented all 7 API routes (/api/board, /api/tasks, /api/tasks/[id], /api/tasks/move-unfinished, /api/lists, /api/lists/[id], /api/lists/[id]/clear-done); built full Swiss Ink UI components for Today board, 3 day columns, DaySwitcher for mobile 390px, Lists section with suggestion chips, custom keyboard shortcuts (n, Shift+N, j/k/x/m/e/?); configured Playwright E2E suites for auth, today board and lists; added export const dynamic = "force-dynamic" to AppLayout; deployed V3 to Vercel production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (16 passed) int ✅ (5 passed) e2e ✅ (14 passed, 3 skipped for viewport) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (login, fetched board, created task, ticked done, deleted task, confirmed clean board)
+Commits: 6def8bd feat(v3): Today board, lists, domain logic, API routes, and tests
+Problems / surprises: none; Vocab app verified healthy on vocab.rhrony05.me
+Next: Goal 2 / M2 (Trackers + Money: V4 & V5)

@@ -45,7 +45,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
   - `git init`, private repo `RHRONY05/Life_Dashboard`, first commit pushed.
   - **AC:** `build`, `typecheck`, `lint`, `test` pass; a sample Playwright test opens `/` on desktop and mobile; the shell matches the design header/tab bar at 1440 and 390, light and dark; importing `admin.ts` from a page fails lint; repo is private.
 
-- [ ] **V2 Data, auth, first deploy** — in progress: Antigravity
+- [x] **V2 Data, auth, first deploy** — database migration, auth routes, owner & e2e users verified, live deployed to Vercel.
   - `supabase/migrations/<ts>_life_init.sql` = 03 exactly → `apply_migration` on `vocab` → types into `src/types/database.ts` → `get_advisors` and fix every warning **on our tables** (list any warning about Vocab's tables in PROGRESS.md, but don't change them).
   - `scripts/check-owner.ts`: prints the owner and e2e user ids (record in PROGRESS environment facts).
   - `/login` (design 01), logout, `proxy.ts` (02 Auth, with the `/api/mcp` and `/api/cron/daily` exclusions), `requireOwner()`, `src/lib/ctx.ts` (`Ctx`, `assertScope`), `supabase/{server,client,proxy,admin}.ts`. Test helpers: `reset.ts` (with its safety check), Playwright login setup.
@@ -54,7 +54,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
   - **AC:** logged out, `/` redirects to `/login`; owner login works locally; advisors clean for our tables; Vocab still works (open `vocab.rhrony05.me`, log in, open Words).
   - **Prod check:** the production URL shows the login page; the owner logs in and sees the empty shell.
 
-- [ ] **V3 Today board + Lists**
+- [x] **V3 Today board + Lists** — domain logic (dates, board), tasks & lists services, 7 API routes, full UI with keyboard shortcuts & states, all unit/int/e2e tests passing, verified live on production URL.
   - `domain/dates.ts`, `domain/board.ts` (07 §1–2), `services/tasks.ts` (all task rules from 03, including list homes, moves and reorder; ctx-based), `services/lists.ts`, routes `/api/board`, `/api/tasks`, `/api/tasks/[id]`, `/api/tasks/move-unfinished`, `/api/lists`, `/api/lists/[id]`, `/api/lists/[id]/clear-done` (04).
   - Today page per 06 + design `02-today` (desktop columns, mobile DaySwitcher): `TaskInput`, `TaskRow` (badges, quick move, menu, edit, delete confirm), optimistic tick/move with Undo, "Move all unfinished", "Older unfinished", empty states, midnight/visibility refetch, `n` / `Shift+N` / `j` `k` `x` `m` `e` shortcuts. **Lists** section per 06 "Lists" + design `02-today` (desktop, under the columns) and `08-today-lists` (mobile "Lists" segment): suggestion-chip empty state, new list, `ListCard` with add/tick/edit/reorder/"Plan for today", "Done · N" + Clear done, rename/delete, collapse, "Move to list" on board tasks. The rail shows only empty placeholders until V4–V7 fill it (no fake data).
   - **Tests:** unit `dates.test.ts`, `board.test.ts`; integration tasks cases (09); e2e `today.spec.ts`, `lists.spec.ts`.
