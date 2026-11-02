@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>S01 · Components and states</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="mock.js"></script>
+<style>
+  .sheet h2.sh { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); margin: 28px 0 12px; }
+  .sheet h2.sh:first-child { margin-top: 0; }
+  .rowx { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; align-items: start; }
+  .lab { font-size: 11px; color: var(--ink-3); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+  .dialog { width: auto; }
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 8px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <h2 class="sh">Buttons and async states</h2>
+  <div class="rowx">
+    <button class="btn btn-primary"><i data-lucide="plus"></i>Add entry</button>
+    <button class="btn btn-secondary">Settle</button>
+    <button class="btn btn-ghost">Cancel</button>
+    <button class="btn btn-danger">Delete</button>
+    <button class="btn btn-primary busy"><i data-lucide="loader-2" class="spin"></i>Saving…</button>
+    <button class="btn btn-secondary busy"><i data-lucide="loader-2" class="spin"></i>Moving 3 tasks…</button>
+    <button class="btn btn-success"><i data-lucide="check"></i>Sent</button>
+    <button class="btn btn-secondary btn-sm"><i data-lucide="check"></i>Renewed</button>
+    <button class="iconbtn" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+    <kbd>N</kbd><kbd>?</kbd><kbd>Esc</kbd>
+  </div>
+
+  <h2 class="sh">Badges, chips, segmented, switch, checkbox, progress</h2>
+  <div class="rowx">
+    <span class="badge b-moved"><i data-lucide="history"></i>moved 2×</span>
+    <span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span>
+    <span class="badge b-tracker"><i data-lucide="list-checks"></i>NeetCode 150</span>
+    <span class="badge b-tracker"><i data-lucide="calendar-check"></i>On board · Today</span>
+    <span class="badge b-danger">3 days overdue</span>
+    <span class="badge b-warn">Tomorrow</span>
+    <span class="badge b-warn">Today</span>
+    <span class="badge b-neutral">In 10 days</span>
+    <span class="badge b-neutral">skipped</span>
+    <span class="res ok">ok</span><span class="res denied">denied</span><span class="res error">error</span><span class="res rl">rate limited</span>
+    <span class="scope w">tasks rw</span><span class="scope">money r</span>
+    <span class="nbadge">1</span><span class="nbadge danger">2</span>
+  </div>
+  <div class="rowx" style="margin-top:12px">
+    <div class="seg"><button>Yesterday <span class="c">3</span></button><button class="on">Today <span class="c">4</span></button><button>Tomorrow <span class="c">2</span></button></div>
+    <div class="seg"><button class="on">I lent</button><button>I borrowed</button><button>They paid me</button><button>I paid them</button></div>
+    <span class="switch on"></span><span class="switch"></span>
+    <span class="check"></span><span class="check on"><i data-lucide="check"></i></span><span class="check skip"><i data-lucide="minus"></i></span>
+    <div style="width:200px"><div class="bar"><i style="width:35%"></i></div></div>
+  </div>
+
+  <h2 class="sh">Banners and toasts</h2>
+  <div class="grid2">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="banner banner-danger"><i data-lucide="alert-triangle"></i><span class="grow">2 overdue: mark them renewed or ended.</span></div>
+      <div class="banner banner-danger"><i data-lucide="wifi-off"></i><span class="grow">Couldn't load the board.</span><button class="btn btn-secondary">Retry</button></div>
+      <div class="banner banner-warn"><i data-lucide="key-round"></i><span class="grow">Copy this key now. You won't see it again.</span></div>
+      <div class="banner banner-info"><i data-lucide="check-circle-2"></i><span class="grow">Sent. Check your inbox.</span></div>
+      <div class="banner banner-danger"><i data-lucide="mail-x"></i><span class="grow">Couldn't send. Check GMAIL_APP_PASSWORD.</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+      <div class="toast"><i data-lucide="arrow-right"></i>Moved to Tomorrow<button class="btn">Undo</button></div>
+      <div class="toast"><i data-lucide="check"></i>Saved: Rahim owes you <span class="taka">৳</span>300 now</div>
+      <div class="toast"><i data-lucide="refresh-cw"></i>Next: Sat 12 Dec<button class="btn">Undo</button></div>
+      <div class="toast"><i data-lucide="alert-circle"></i>Couldn't save. Try again.<button class="btn">Retry</button></div>
+    </div>
+  </div>
+
+  <h2 class="sh">Task rows: states</h2>
+  <div class="grid3">
+    <div class="box">
+      <div class="lab" style="padding:4px 8px 0">Focused (j/k) + menu open</div>
+      <div class="task focus" style="position:relative">
+        <span class="check"></span>
+        <div class="task-main"><div class="task-title">Send 3 Upwork proposals</div><div class="task-meta"><span class="badge b-moved"><i data-lucide="history"></i>moved 2×</span></div></div>
+        <div class="task-actions"><button class="iconbtn sm" aria-label="Move to today"><i data-lucide="arrow-right"></i></button><button class="iconbtn sm" aria-label="More" style="background:var(--surface-2)"><i data-lucide="more-horizontal"></i></button></div>
+        <div class="menu" style="right:0;top:40px">
+          <div class="mi on"><i data-lucide="arrow-right"></i>Move to today<kbd>M</kbd></div>
+          <div class="mi"><i data-lucide="calendar-plus"></i>Move to tomorrow</div>
+          <div class="mi"><i data-lucide="pencil"></i>Edit<kbd>E</kbd></div>
+          <hr>
+          <div class="mi danger"><i data-lucide="trash-2"></i>Delete</div>
+        </div>
+      </div>
+      <div style="height:170px"></div>
+    </div>
+    <div class="box">
+      <div class="lab" style="padding:4px 8px 0">Editing</div>
+      <div style="padding:8px">
+        <div class="input focus" style="margin-bottom:6px">Draft thesis topic shortlist (3 ideas)</div>
+        <div class="input" style="height:64px;align-items:flex-start;padding-top:9px;font-size:var(--text-sm);color:var(--ink-2)">Agentic workflows, small-model fine-tuning, workflow automation.</div>
+        <div style="font-size:var(--text-xs);color:var(--ink-3);margin-top:6px"><kbd>Enter</kbd> save · <kbd>Esc</kbd> cancel</div>
+      </div>
+      <div class="lab" style="padding:12px 8px 0">Done task menu (Move disabled)</div>
+      <div class="menu" style="position:static;margin:6px 8px 8px">
+        <div class="mi disabled"><i data-lucide="arrow-right"></i>Move</div>
+        <div class="mi"><i data-lucide="rotate-ccw"></i>Mark not done<kbd>X</kbd></div>
+        <div class="mi danger"><i data-lucide="trash-2"></i>Delete</div>
+      </div>
+    </div>
+    <div class="box">
+      <div class="lab" style="padding:4px 8px 0">Loading column (skeleton)</div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:10px"><div class="sk" style="width:18px;height:18px"></div><div class="sk" style="height:14px;flex:1"></div></div>
+        <div style="display:flex;gap:10px"><div class="sk" style="width:18px;height:18px"></div><div class="sk" style="height:14px;width:70%"></div></div>
+        <div style="display:flex;gap:10px"><div class="sk" style="width:18px;height:18px"></div><div class="sk" style="height:14px;width:82%"></div></div>
+      </div>
+      <div class="lab" style="padding:12px 8px 0">Empty columns</div>
+      <div class="col-empty" style="margin:12px"><i data-lucide="sunrise"></i><div>Nothing planned yet. Add the first task above.</div></div>
+      <div class="col-empty" style="margin:12px"><i data-lucide="moon"></i><div>Nothing was planned for yesterday.</div></div>
+    </div>
+  </div>
+
+  <h2 class="sh">Renewal: overdue row</h2>
+  <div class="card" style="max-width:1100px">
+    <div class="rrow">
+      <span class="ic over"><i data-lucide="gift"></i></span>
+      <div class="t"><b>Railway trial credit <span class="badge b-neutral">LeadPilot</span></b><span>Ended Fri 30 Oct · free</span></div>
+      <div class="cost num">$5 credit<small>one-time</small></div>
+      <div><span class="badge b-danger">3 days overdue</span></div>
+      <div class="acts"><button class="btn btn-secondary btn-sm"><i data-lucide="flag"></i>Mark ended</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+    </div>
+  </div>
+
+  <h2 class="sh">Dialogs</h2>
+  <div class="grid3">
+    <div class="dialog">
+      <h2>New key</h2>
+      <p class="lead">Give each agent its own key. You can revoke it any time.</p>
+      <div class="field"><label>Agent name</label><div class="input focus">Muse</div>
+        <div class="rowx" style="gap:6px"><span class="chip on">Muse</span><span class="chip">Antigravity</span><span class="chip">Claude Code</span></div></div>
+      <div class="lbl" style="margin-bottom:6px">What can it do?</div>
+      <div class="scope-grid">
+        <div>Area</div><div class="c">Read</div><div class="c">Write</div>
+        <div>Tasks</div><div class="c"><span class="check on"><i data-lucide="check"></i></span></div><div class="c"><span class="check on"><i data-lucide="check"></i></span></div>
+        <div>Trackers</div><div class="c"><span class="check on"><i data-lucide="check"></i></span></div><div class="c"><span class="check on"><i data-lucide="check"></i></span></div>
+        <div>Money</div><div class="c"><span class="check on"><i data-lucide="check"></i></span></div><div class="c"><span class="check"></span></div>
+        <div>Renewals</div><div class="c"><span class="check on"><i data-lucide="check"></i></span></div><div class="c"><span class="check"></span></div>
+        <div>Quick links</div><div class="c"><span class="check on"><i data-lucide="check"></i></span></div><div class="c muted">—</div>
+      </div>
+      <p style="font-size:var(--text-xs);color:var(--ink-3);margin:8px 0 0">Agents can never delete anything.</p>
+      <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-primary"><i data-lucide="key-round"></i>Create key</button></div>
+    </div>
+
+    <div class="dialog">
+      <h2>Key for Muse</h2>
+      <div class="banner banner-warn" style="margin:10px 0 12px"><i data-lucide="key-round"></i><span class="grow">Copy this key now. You won't see it again.</span></div>
+      <div class="secret"><code>ld_q8Ft2xKwVb3nH7sQe1LmZr0pYc5uJd9TaGk4WfXo6Ni</code><button class="btn btn-secondary btn-sm"><i data-lucide="copy"></i>Copy</button></div>
+      <div class="tabs-line" style="margin-top:16px"><button>Antigravity</button><button>Claude Code</button><button class="on">Other</button></div>
+      <div class="snippet">URL        https://life.rhrony05.me/api/mcp
+Transport  Streamable HTTP
+Header     Authorization: Bearer ld_q8Ft2xKwVb3nH7sQe1LmZr0pYc5uJd9TaGk4WfXo6Ni</div>
+      <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn btn-ghost btn-sm"><i data-lucide="copy"></i>Copy</button></div>
+      <div class="dialog-foot"><button class="btn btn-primary">Done</button></div>
+    </div>
+
+    <div class="dialog">
+      <h2>Add entry</h2>
+      <p class="lead">Who and how much. It takes five seconds.</p>
+      <div class="field"><label>Person</label><div class="input focus">Rah<span style="color:var(--ink-4)">im</span></div>
+        <div class="menu" style="position:static;width:100%;box-shadow:var(--shadow-md)"><div class="mi on"><i data-lucide="user"></i>Rahim<span class="muted" style="margin-left:auto;font-size:var(--text-xs)">owes you <span class="taka">৳</span>450</span></div><div class="mi"><i data-lucide="user-plus"></i>Add “Rah” as a new person</div></div></div>
+      <div class="field"><label>What happened</label><div class="seg block"><button class="on">I lent</button><button>I borrowed</button><button>They paid me</button><button>I paid them</button></div></div>
+      <div class="row2">
+        <div class="field"><label>Amount</label><div class="input"><span class="pre taka">৳</span><span class="num">300</span></div></div>
+        <div class="field"><label>Date</label><div class="input">Mon 2 Nov</div></div>
+      </div>
+      <div class="field" style="margin-bottom:0"><label>Note (optional)</label><div class="input ph">e.g. lunch, bus tickets</div></div>
+      <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-primary">Save</button></div>
+    </div>
+
+    <div class="dialog">
+      <h2>Add renewal</h2>
+      <div class="field" style="margin-top:12px"><label>Name</label><div class="input focus">ChatGPT Plus</div></div>
+      <div class="field"><label>Type</label><div class="seg block"><button class="on">Subscription</button><button>Hosting</button><button>Domain</button><button>Credit</button></div></div>
+      <div class="row2">
+        <div class="field"><label>Cost</label><div style="display:flex;gap:6px"><div class="input" style="flex:1"><span class="num">20.00</span></div><div class="seg"><button>৳</button><button class="on">$</button></div></div><span class="hint">Leave empty if unknown, 0 if free.</span></div>
+        <div class="field"><label>Project (optional)</label><div class="input ph">e.g. CineReserve</div></div>
+      </div>
+      <div class="field"><label>Cycle</label><div class="seg block"><button class="on">Monthly</button><button>Yearly</button><button>One-time</button><button>Free</button></div></div>
+      <div class="row2">
+        <div class="field"><label>Renews / ends on</label><div class="input">Thu 12 Nov 2026</div></div>
+        <div class="field"><label>Remind me</label><div class="input">7 days before<i data-lucide="chevron-down" class="sm" style="margin-left:auto"></i></div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:var(--text-sm);font-weight:500"><span class="switch on"></span>It charges me automatically</div>
+      <div class="field" style="margin:14px 0 0"><label>Manage URL (optional)</label><div class="input ph">https://</div></div>
+      <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-primary">Save</button></div>
+    </div>
+
+    <div class="dialog">
+      <h2>New tracker</h2>
+      <div class="field" style="margin-top:12px"><label>Name</label><div class="input">Thesis reading list</div></div>
+      <div class="field"><label>Description (optional)</label><div class="input">Papers on agentic workflows and small language models</div></div>
+      <div class="field" style="margin-bottom:0"><label>Items (optional)</label>
+        <div class="textarea">## Agents
+ReAct: Synergizing Reasoning and Acting | https://arxiv.org/abs/2210.03629
+Toolformer | https://arxiv.org/abs/2302.04761
+## Small models
+- Phi-3 technical report</div>
+        <span class="hint">One per line. <span class="mono">## Group</span> starts a group. Add <span class="mono"> | url</span> for a link. <b>3 items</b></span></div>
+      <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-primary">Create tracker</button></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="dialog">
+        <h2>Delete “Submit CN lab report”?</h2>
+        <p class="lead" style="margin-bottom:0">This can't be undone.</p>
+        <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-danger">Delete</button></div>
+      </div>
+      <div class="dialog">
+        <h2>Revoke Muse's key?</h2>
+        <p class="lead" style="margin-bottom:0">Muse loses access immediately. Its activity log stays.</p>
+        <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-danger">Revoke</button></div>
+      </div>
+      <div class="dialog">
+        <h2>Mark Rahim as settled?</h2>
+        <p class="lead" style="margin-bottom:0">This records “Rahim paid you <span class="taka">৳</span>450”.</p>
+        <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-primary">Settle</button></div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sh">Shortcuts dialog and page empty states</h2>
+  <div class="grid3">
+    <div class="dialog">
+      <h2>Keyboard shortcuts</h2>
+      <table class="tbl" style="margin-top:8px">
+        <tr><td><kbd>N</kbd></td><td>New task today</td></tr>
+        <tr><td><kbd>⇧</kbd> <kbd>N</kbd></td><td>New task tomorrow</td></tr>
+        <tr><td><kbd>J</kbd> <kbd>K</kbd></td><td>Next / previous row</td></tr>
+        <tr><td><kbd>X</kbd></td><td>Done / not done</td></tr>
+        <tr><td><kbd>M</kbd></td><td>Move task</td></tr>
+        <tr><td><kbd>E</kbd></td><td>Edit</td></tr>
+        <tr><td><kbd>A</kbd></td><td>Add entry / renewal</td></tr>
+        <tr><td><kbd>G</kbd> then <kbd>T</kbd> <kbd>R</kbd> <kbd>M</kbd> <kbd>W</kbd> <kbd>S</kbd></td><td>Go to a page</td></tr>
+        <tr><td><kbd>?</kbd></td><td>This list</td></tr>
+      </table>
+    </div>
+    <div class="card empty">
+      <svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#spend-empty"/></svg>
+      <h3>Nothing spent yet</h3>
+      <p>Track where your money goes. One line per spend.</p>
+      <button class="btn btn-primary"><i data-lucide="plus"></i>Add a spend</button>
+    </div>
+    <div class="card empty">
+      <svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#trackers-empty"/></svg>
+      <h3>No trackers yet</h3>
+      <p>Make a list you want to work through: a problem set, a reading list, a course.</p>
+      <button class="btn btn-primary"><i data-lucide="plus"></i>New tracker</button>
+    </div>
+  </div>
+
+
+  <h2 class="sh">Lists (Today)</h2>
+  <div class="grid2">
+    <div class="card lists-empty">
+      <svg class="illus" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#lists-empty"/></svg>
+      <div>
+        <p>Keep things that don't belong to a day here.</p>
+        <div class="sugg"><span class="chip"><i data-lucide="plus"></i>To do later</span><span class="chip"><i data-lucide="plus"></i>This week's targets</span><span class="chip"><i data-lucide="plus"></i>This month's targets</span><button class="btn btn-secondary btn-sm"><i data-lucide="list-plus"></i>New list</button></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;align-items:flex-start">
+      <section class="lcard" style="flex:1">
+        <div class="col-head"><span class="col-title">NEW LIST</span></div>
+        <div style="padding:0 12px 12px"><div class="input focus">Thesis prep<span class="muted" style="margin-left:auto;font-size:var(--text-xs)">Enter to create</span></div>
+        <span class="hint" style="display:block;margin-top:6px;font-size:var(--text-xs);color:var(--danger-text)">You already have a list called This week</span></div>
+      </section>
+      <div class="menu" style="position:static;width:220px">
+        <div class="mi"><i data-lucide="pencil"></i>Rename</div>
+        <div class="mi"><i data-lucide="arrow-left"></i>Move left<kbd>Alt ←</kbd></div>
+        <div class="mi"><i data-lucide="arrow-right"></i>Move right<kbd>Alt →</kbd></div>
+        <div class="mi"><i data-lucide="eraser"></i>Clear done</div>
+        <hr>
+        <div class="mi danger"><i data-lucide="trash-2"></i>Delete list</div>
+      </div>
+    </div>
+    <section class="lcard">
+      <div class="col-head"><span class="col-title">THIS WEEK'S TARGETS</span><span class="lcount">0</span></div>
+      <div class="col-empty" style="margin:8px 16px 16px">All done in this list. <a href="#">Clear done</a></div>
+    </section>
+    <div class="toast" style="align-self:center"><i data-lucide="calendar-check"></i>Planned for today<button class="btn">Undo</button></div>
+  </div>
+
+  <h2 class="sh">Empty states (Nothing) — every page</h2>
+  <div class="grid3">
+    <div class="card empty"><svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#ious-empty"/></svg><h3>No IOUs yet</h3><p>Write down who owes whom. It takes five seconds.</p><button class="btn btn-primary"><i data-lucide="plus"></i>Add entry</button></div>
+    <div class="card empty"><svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#renewals-empty"/></svg><h3>No renewals yet</h3><p>Add the things that end or charge you: subscriptions, hosting, domains, student credits.</p><button class="btn btn-primary"><i data-lucide="plus"></i>Add renewal</button></div>
+    <div class="card empty"><svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#agents-empty"/></svg><h3>No agents yet</h3><p>Make a key to connect Muse, Antigravity or Claude Code.</p><button class="btn btn-primary"><i data-lucide="key-round"></i>New key</button></div>
+    <div class="card" style="padding:8px">
+      <div class="lab" style="padding:4px 8px 0">Today column, nothing planned</div>
+      <div class="col-empty"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#today-empty"/></svg><div>Nothing planned yet. Add the first task above.</div></div>
+    </div>
+    <div class="card" style="padding:8px">
+      <div class="lab" style="padding:4px 8px 0">None (filter shows nothing)</div>
+      <div class="col-empty">No items left to do in this filter.<br><a href="#">Show all 150</a></div>
+    </div>
+    <div class="card" style="padding:8px">
+      <div class="lab" style="padding:4px 8px 0">Too many (older unfinished &gt; 50)</div>
+      <div class="older" style="margin:8px"><div class="older-head"><i data-lucide="chevron-down"></i><span class="grow">Older unfinished · 63</span></div>
+        <div style="padding:0 10px 10px;font-size:var(--text-sm);color:var(--danger-text)">…and 13 more. <a href="#" style="color:inherit;text-decoration:underline">Move them all to today</a></div></div>
+    </div>
+  </div>
+
+  <h2 class="sh">Done states</h2>
+  <div class="grid3">
+    <div class="card" style="padding:8px">
+      <div class="lab" style="padding:4px 8px 0">Today, everything ticked</div>
+      <div class="done-strip"><svg class="illus" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#all-done"/></svg><span>All 6 done. Tomorrow has 2 waiting.</span></div>
+    </div>
+    <div class="card" style="padding:16px 20px;display:flex;gap:16px;align-items:center">
+      <svg class="illus sm" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#tracker-done"/></svg>
+      <div><div class="lab">Tracker finished</div><b style="font-family:var(--font-display);font-size:var(--text-lg)">NeetCode 150 · 150 / 150</b><div class="muted" style="font-size:var(--text-sm)">Finished on Thu 14 Jan</div></div>
+    </div>
+    <div class="card" style="padding:16px 20px">
+      <div class="lab">IOUs, everyone settled</div>
+      <div style="font-weight:600">All settled. Nobody owes anybody.</div>
+    </div>
+  </div>
+
+  <h2 class="sh">Budget levels (07 §3b)</h2>
+  <div class="grid3">
+    <div class="tile"><div class="tile-k">November · ok</div><div class="tile-v num"><span class="taka">৳</span>730</div><div class="budget"><div class="bar"><i style="width:9%"></i></div><small><span>of <span class="taka">৳</span>8,000</span><span><span class="taka">৳</span>7,270 left</span></small></div></div>
+    <div class="tile"><div class="tile-k">November · warn (≥ 80 %)</div><div class="tile-v num"><span class="taka">৳</span>6,720</div><div class="budget warn"><div class="bar"><i style="width:84%"></i></div><small><span>of <span class="taka">৳</span>8,000</span><span><span class="taka">৳</span>1,280 left</span></small></div></div>
+    <div class="tile"><div class="tile-k">November · over</div><div class="tile-v num neg"><span class="taka">৳</span>8,450</div><div class="budget over"><div class="bar"><i style="width:100%"></i></div><small><span>of <span class="taka">৳</span>8,000</span><span class="neg"><span class="taka">৳</span>450 over budget</span></small></div></div>
+  </div>
+
+  <h2 class="sh">System states (10-STATES §2)</h2>
+  <div class="grid2">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card" style="overflow:hidden">
+        <div class="offline-bar"><i data-lucide="wifi-off" class="sm"></i>You're offline. Changes will fail until you're back.</div>
+        <div style="padding:10px 16px;font-size:var(--text-xs);color:var(--ink-3)">Offline bar (under the header, sticky)</div>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <div class="offline-bar back"><i data-lucide="wifi" class="sm"></i>Back online</div>
+        <div style="padding:10px 16px;font-size:var(--text-xs);color:var(--ink-3)">Shown for 2 s, then the page refreshes</div>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <div class="progress-line"></div>
+        <div style="padding:10px 16px;font-size:var(--text-xs);color:var(--ink-3)">Refetch progress line (2 px, under the header)</div>
+      </div>
+      <div class="banner banner-info"><i data-lucide="log-in"></i><span class="grow">You were signed out. Sign in again to continue.</span></div>
+      <div class="rowx">
+        <button class="btn btn-primary busy"><i data-lucide="loader-2" class="spin"></i>Still working…</button>
+        <div class="toast"><i data-lucide="timer-off"></i>That took too long. Try again.<button class="btn">Retry</button></div>
+      </div>
+      <div class="field" style="max-width:320px"><label>Amount</label><div class="input" style="border-color:var(--danger)"><span class="pre taka">৳</span></div><span class="hint" style="color:var(--danger-text)">Enter an amount</span></div>
+    </div>
+    <div class="grid2" style="gap:12px">
+      <div class="card empty" style="padding:28px 16px"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#error"/></svg><h3>Couldn't load this page</h3><p>Something went wrong on our side.</p><button class="btn btn-secondary"><i data-lucide="rotate-cw"></i>Reload</button></div>
+      <div class="card empty" style="padding:28px 16px"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#lost"/></svg><h3>This page doesn't exist</h3><p>The link may be old.</p><button class="btn btn-primary">Go to Today</button></div>
+      <div class="card empty" style="padding:28px 16px"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#offline"/></svg><h3>You're offline</h3><p>Connect to load this page.</p><button class="btn btn-secondary">Try again</button></div>
+      <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;justify-content:center">
+        <div class="lab">Day glyphs (column headers)</div>
+        <div class="rowx"><svg class="day-glyph" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#day-yesterday"/></svg>Yesterday</div>
+        <div class="rowx"><svg class="day-glyph" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#day-today"/></svg>Today</div>
+        <div class="rowx"><svg class="day-glyph" aria-hidden="true"><use href="illustrations/sprite.svg?v=3#day-tomorrow"/></svg>Tomorrow</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

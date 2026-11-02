@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D06 · Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-d tall">
+  <header class="topbar">
+    <div class="brand"><span class="logo"><i data-lucide="layout-dashboard"></i></span>Life Dashboard</div>
+    <nav class="nav">
+      <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+      <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+      <a href="#"><i data-lucide="wallet"></i>Money</a>
+      <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="nbadge">1</span></a>
+      <a class="on" href="#"><i data-lucide="settings"></i>Settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="today-chip">Mon 2 Nov</span>
+      <button class="iconbtn" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button>
+      <button class="avatar" aria-label="Account">R</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-head"><h1>Settings</h1></div>
+    <div class="settings">
+      <nav class="snav">
+        <a class="on" href="#agents"><i data-lucide="bot"></i>Agents</a>
+        <a href="#activity"><i data-lucide="activity"></i>Activity</a>
+        <a href="#links"><i data-lucide="link"></i>Quick links</a>
+        <a href="#email"><i data-lucide="mail"></i>Email reminders</a>
+      </nav>
+
+      <div>
+        <!-- AGENTS -->
+        <section class="section" id="agents">
+          <div class="section-head">
+            <div>
+              <h2>Agents</h2>
+              <p>Agents connect to your MCP server with their own key. They can't delete anything.</p>
+            </div>
+            <span class="spacer"></span>
+            <span class="endpoint mono">https://life.rhrony05.me/api/mcp <button class="iconbtn sm" aria-label="Copy URL"><i data-lucide="copy"></i></button></span>
+            <button class="btn btn-primary"><i data-lucide="key-round"></i>New key</button>
+          </div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl">
+              <thead><tr><th>Agent</th><th>Key</th><th>Can do</th><th>Last used</th><th>Created</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><b>Muse</b></td>
+                  <td class="mono">ld_q8Ft2xKw…</td>
+                  <td><span class="scope w">tasks rw</span><span class="scope w">trackers rw</span><span class="scope">money r</span><span class="scope">renewals r</span><span class="scope">links r</span></td>
+                  <td>4 min ago</td>
+                  <td>Mon 2 Nov</td>
+                  <td style="text-align:right"><button class="btn btn-ghost btn-sm" style="color:var(--danger-text)">Revoke</button></td>
+                </tr>
+                <tr>
+                  <td><b>Antigravity</b></td>
+                  <td class="mono">ld_Zr7mPa03…</td>
+                  <td><span class="scope w">tasks rw</span><span class="scope w">trackers rw</span><span class="scope w">renewals rw</span><span class="scope">money r</span><span class="scope">links r</span></td>
+                  <td>Yesterday 22:14</td>
+                  <td>Sun 1 Nov</td>
+                  <td style="text-align:right"><button class="btn btn-ghost btn-sm" style="color:var(--danger-text)">Revoke</button></td>
+                </tr>
+                <tr>
+                  <td><b>Claude Code</b></td>
+                  <td class="mono">ld_8bYc1LqE…</td>
+                  <td><span class="scope w">tasks rw</span><span class="scope w">trackers rw</span><span class="scope w">renewals rw</span><span class="scope">money r</span><span class="scope">links r</span></td>
+                  <td>never</td>
+                  <td>Sun 1 Nov</td>
+                  <td style="text-align:right"><button class="btn btn-ghost btn-sm" style="color:var(--danger-text)">Revoke</button></td>
+                </tr>
+                <tr class="revoked">
+                  <td>Test agent</td>
+                  <td class="mono">ld_k2Wd9sHv…</td>
+                  <td><span class="scope">tasks r</span></td>
+                  <td>Sat 31 Oct</td>
+                  <td>Sat 31 Oct</td>
+                  <td style="text-align:right">revoked 1 Nov</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ACTIVITY -->
+        <section class="section" id="activity">
+          <div class="section-head">
+            <div><h2>Activity</h2><p>Every call an agent made, newest first.</p></div>
+            <span class="spacer"></span>
+            <div class="input" style="height:34px;width:180px;font-size:var(--text-sm)"><i data-lucide="filter" class="sm"></i>All agents<i data-lucide="chevron-down" class="sm" style="margin-left:auto"></i></div>
+          </div>
+          <div class="card" style="overflow:hidden">
+            <table class="tbl">
+              <thead><tr><th>Time</th><th>Agent</th><th>What</th><th>Result</th><th style="text-align:right">ms</th></tr></thead>
+              <tbody>
+                <tr><td class="num">10:42</td><td>Muse</td><td><span class="mono">schedule_item</span> "Valid Anagram" → 2026-11-02</td><td><span class="res ok">ok</span></td><td class="n" style="text-align:right">212</td></tr>
+                <tr><td class="num">10:42</td><td>Muse</td><td><span class="mono">schedule_item</span> "Contains Duplicate" → 2026-11-02</td><td><span class="res ok">ok</span></td><td class="n" style="text-align:right">198</td></tr>
+                <tr><td class="num">10:41</td><td>Muse</td><td><span class="mono">get_tracker</span> "NeetCode 150"</td><td><span class="res ok">ok</span></td><td class="n" style="text-align:right">143</td></tr>
+                <tr><td class="num">10:40</td><td>Muse</td><td><span class="mono">add_renewal</span> "Spotify Premium"</td><td><span class="res denied">denied</span></td><td class="n" style="text-align:right">9</td></tr>
+                <tr><td class="num">Sun 1 Nov 22:14</td><td>Antigravity</td><td><span class="mono">create_tracker</span> "NeetCode 150" (150 items)</td><td><span class="res ok">ok</span></td><td class="n" style="text-align:right">1,204</td></tr>
+                <tr><td class="num">Sun 1 Nov 22:13</td><td>Antigravity</td><td><span class="mono">move_task</span> "2 NeetCode problems"</td><td><span class="res error">error</span></td><td class="n" style="text-align:right">87</td></tr>
+                <tr><td class="num">Sun 1 Nov 22:02</td><td>Muse</td><td><span class="mono">set_item_status</span> "Two Sum" → done</td><td><span class="res ok">ok</span></td><td class="n" style="text-align:right">176</td></tr>
+                <tr><td class="num">Sun 1 Nov 21:58</td><td>Muse</td><td><span class="mono">get_board</span></td><td><span class="res rl">rate limited</span></td><td class="n" style="text-align:right">4</td></tr>
+              </tbody>
+            </table>
+            <div style="padding:10px 16px;border-top:1px solid var(--line)"><button class="btn btn-ghost btn-sm">Load more</button></div>
+          </div>
+        </section>
+
+        <!-- LINKS -->
+        <section class="section" id="links">
+          <div class="section-head">
+            <div><h2>Quick links</h2><p>Shown on Today. Up to 12.</p></div>
+            <span class="spacer"></span>
+            <button class="btn btn-secondary"><i data-lucide="plus"></i>Add link</button>
+          </div>
+          <div class="card">
+            <div class="lrow"><span class="ic"><i data-lucide="book-open"></i></span><div class="t"><b>Vocab</b><span>https://vocab.rhrony05.me</span></div><button class="iconbtn sm" aria-label="Edit"><i data-lucide="pencil"></i></button><button class="iconbtn sm" aria-label="Delete"><i data-lucide="trash-2"></i></button></div>
+            <div class="lrow"><span class="ic"><i data-lucide="globe"></i></span><div class="t"><b>Portfolio</b><span>https://rhrony05.me</span></div><button class="iconbtn sm" aria-label="Edit"><i data-lucide="pencil"></i></button><button class="iconbtn sm" aria-label="Delete"><i data-lucide="trash-2"></i></button></div>
+            <div class="lrow"><span class="ic"><i data-lucide="briefcase"></i></span><div class="t"><b>Upwork</b><span>https://www.upwork.com/freelancers/~01f208b507aeaa4a11</span></div><button class="iconbtn sm" aria-label="Edit"><i data-lucide="pencil"></i></button><button class="iconbtn sm" aria-label="Delete"><i data-lucide="trash-2"></i></button></div>
+            <div class="lrow"><span class="ic"><i data-lucide="github"></i></span><div class="t"><b>GitHub</b><span>https://github.com/RHRONY05</span></div><button class="iconbtn sm" aria-label="Edit"><i data-lucide="pencil"></i></button><button class="iconbtn sm" aria-label="Delete"><i data-lucide="trash-2"></i></button></div>
+          </div>
+        </section>
+
+        <!-- EMAIL -->
+        <section class="section" id="email">
+          <div class="section-head">
+            <div><h2>Email reminders</h2><p>Every morning around 08:00, when something renews or ends, a short email goes to <b>muhammadrony147@gmail.com</b>.</p></div>
+          </div>
+          <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px">
+            <button class="btn btn-secondary"><i data-lucide="send"></i>Send test email</button>
+            <span class="banner banner-info" style="padding:6px 12px"><i data-lucide="check-circle-2"></i>Sent. Check your inbox.</span>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

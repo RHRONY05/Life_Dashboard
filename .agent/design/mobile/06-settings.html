@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>M06 · Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-m tall">
+  <header class="m-header"><h1>Settings</h1></header>
+  <div class="m-body">
+    <div class="section">
+      <div class="section-head"><div><h2>Agents</h2><p>Each agent gets its own key.</p></div><span class="spacer"></span><button class="btn btn-primary btn-sm" style="height:44px"><i data-lucide="key-round"></i>New key</button></div>
+      <div class="endpoint mono" style="display:flex;margin-bottom:10px;font-size:12px;height:44px"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">life.rhrony05.me/api/mcp</span><button class="iconbtn" aria-label="Copy URL"><i data-lucide="copy"></i></button></div>
+      <div class="m-card">
+        <div class="lrow"><div class="t"><b>Muse</b><span class="mono">ld_q8Ft2xKw… · used 4 min ago</span><div style="margin-top:6px"><span class="scope w">tasks rw</span><span class="scope w">trackers rw</span><span class="scope">money r</span><span class="scope">renewals r</span><span class="scope">links r</span></div></div><button class="iconbtn" aria-label="Key menu"><i data-lucide="more-horizontal"></i></button></div>
+        <div class="lrow"><div class="t"><b>Antigravity</b><span class="mono">ld_Zr7mPa03… · yesterday</span><div style="margin-top:6px"><span class="scope w">tasks rw</span><span class="scope w">trackers rw</span><span class="scope w">renewals rw</span><span class="scope">money r</span><span class="scope">links r</span></div></div><button class="iconbtn" aria-label="Key menu"><i data-lucide="more-horizontal"></i></button></div>
+        <div class="lrow"><div class="t"><b class="muted">Test agent</b><span>revoked 1 Nov</span></div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-head"><div><h2>Activity</h2></div></div>
+      <div class="m-card">
+        <div class="lrow"><div class="t"><b class="mono">schedule_item</b><span>Muse · 10:42 · "Valid Anagram" → today</span></div><span class="res ok">ok</span></div>
+        <div class="lrow"><div class="t"><b class="mono">add_renewal</b><span>Muse · 10:40 · missing scope renewals:write</span></div><span class="res denied">denied</span></div>
+        <div class="lrow"><div class="t"><b class="mono">create_tracker</b><span>Antigravity · Sun 22:14 · "NeetCode 150" (150 items)</span></div><span class="res ok">ok</span></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-head"><div><h2>Quick links</h2></div><span class="spacer"></span><button class="btn btn-secondary btn-sm" style="height:44px"><i data-lucide="plus"></i>Add</button></div>
+      <div class="m-card">
+        <div class="lrow"><span class="ic"><i data-lucide="book-open"></i></span><div class="t"><b>Vocab</b><span>vocab.rhrony05.me</span></div><button class="iconbtn" aria-label="Edit link"><i data-lucide="pencil"></i></button></div>
+        <div class="lrow"><span class="ic"><i data-lucide="globe"></i></span><div class="t"><b>Portfolio</b><span>rhrony05.me</span></div><button class="iconbtn" aria-label="Edit link"><i data-lucide="pencil"></i></button></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-head"><div><h2>Email reminders</h2><p>Around 08:00 to muhammadrony147@gmail.com when something renews or ends.</p></div></div>
+      <button class="btn btn-secondary btn-block"><i data-lucide="send"></i>Send test email</button>
+    </div>
+  </div>
+  <nav class="tabbar">
+    <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+    <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+    <a href="#"><i data-lucide="wallet"></i>Money</a>
+    <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="dot">1</span></a>
+    <a href="#" class="on" aria-current="page"><i data-lucide="settings"></i>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

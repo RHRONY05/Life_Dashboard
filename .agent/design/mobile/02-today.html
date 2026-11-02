@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>M02 · Today</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-m">
+  <header class="m-header">
+    <h1>Today<small>Mon 2 Nov</small></h1>
+    <button class="iconbtn" aria-label="Account"><span class="avatar">R</span></button>
+  </header>
+  <div class="m-body">
+    <div class="seg block" style="margin-bottom:12px">
+      <button>Yest. <span class="c">3</span></button>
+      <button class="on">Today <span class="c">4</span></button>
+      <button>Tmrw <span class="c">2</span></button>
+      <button>Lists</button>
+    </div>
+    <div class="m-card" style="padding:10px 8px 6px">
+      <div style="display:flex;justify-content:space-between;padding:0 4px 8px;font-size:var(--text-xs);color:var(--ink-3);font-weight:600"><span>Mon 2 Nov</span><span><b style="color:var(--success-text)">2</b> of 6 done</span></div>
+      <div class="task-input"><i data-lucide="plus"></i><span>Add a task…</span></div>
+      <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Draft thesis topic shortlist (3 ideas)</div><div class="task-note">Agentic workflows, small-model fine-tuning, workflow automation.</div></div><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+      <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">NeetCode 150: Contains Duplicate</div><div class="task-meta"><span class="badge b-tracker"><i data-lucide="list-checks"></i>NeetCode 150</span><span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></div></div><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+      <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">NeetCode 150: Valid Anagram</div><div class="task-meta"><span class="badge b-tracker"><i data-lucide="list-checks"></i>NeetCode 150</span><span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></div></div><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+      <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Buy Upwork Connects</div></div><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+      <div class="sep-done">Done</div>
+      <div class="task done"><span class="check on"><i data-lucide="check"></i></span><div class="task-main"><div class="task-title">Morning English session (20 min)</div></div></div>
+      <div class="task done"><span class="check on"><i data-lucide="check"></i></span><div class="task-main"><div class="task-title">Pay Karim back for the bus tickets</div></div></div>
+    </div>
+    <div class="linkstrip">
+      <a class="chip" href="#"><i data-lucide="book-open"></i>Vocab</a>
+      <a class="chip" href="#"><i data-lucide="globe"></i>Portfolio</a>
+      <a class="chip" href="#"><i data-lucide="briefcase"></i>Upwork</a>
+      <a class="chip" href="#"><i data-lucide="briefcase"></i>Fiverr</a>
+      <a class="chip" href="#"><i data-lucide="github"></i>GitHub</a>
+    </div>
+    <div class="m-card" style="margin-top:12px;padding:6px 14px">
+      <div class="upc"><span class="ic"><i data-lucide="gift"></i></span><div class="t"><b>Azure for Students credit</b><span>Ends Sat 7 Nov</span></div><span class="badge b-warn">In 5 days</span></div>
+    </div>
+  </div>
+  <nav class="tabbar">
+    <a href="#" class="on" aria-current="page"><i data-lucide="calendar-check"></i>Today</a>
+    <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+    <a href="#"><i data-lucide="wallet"></i>Money</a>
+    <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="dot">1</span></a>
+    <a href="#"><i data-lucide="settings"></i>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

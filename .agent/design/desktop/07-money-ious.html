@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D07 · Money · IOUs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-d">
+  <header class="topbar">
+    <div class="brand"><span class="logo"><i data-lucide="layout-dashboard"></i></span>Life Dashboard</div>
+    <nav class="nav">
+      <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+      <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+      <a class="on" href="#"><i data-lucide="wallet"></i>Money</a>
+      <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="nbadge">1</span></a>
+      <a href="#"><i data-lucide="settings"></i>Settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="today-chip">Mon 2 Nov</span>
+      <button class="iconbtn" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button>
+      <button class="avatar" aria-label="Account">R</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-head">
+      <h1>Money</h1><div class="seg"><button>Spending</button><button class="on">IOUs</button></div><span class="sub">Who owes whom, in taka</span>
+      <span class="spacer"></span>
+      <button class="btn btn-primary"><i data-lucide="plus"></i>Add entry<kbd style="margin-left:4px;background:transparent;color:inherit;border-color:currentColor;opacity:.7">A</kbd></button>
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><div class="tile-k"><i data-lucide="arrow-down-left"></i>Others owe you</div><div class="tile-v pos"><span class="taka">৳</span>1,250</div><div class="tile-s">2 people</div></div>
+      <div class="tile"><div class="tile-k"><i data-lucide="arrow-up-right"></i>You owe</div><div class="tile-v neg"><span class="taka">৳</span>600</div><div class="tile-s">1 person</div></div>
+      <div class="tile"><div class="tile-k"><i data-lucide="scale"></i>Net</div><div class="tile-v">you're owed <span class="taka">৳</span>650</div><div class="tile-s">after everyone settles</div></div>
+    </div>
+
+    <div class="money-grid">
+      <section class="card" style="overflow:hidden">
+        <div class="person">
+          <span class="pav">T</span>
+          <div class="t"><b>Tanvir</b><span>Last entry Fri 30 Oct</span></div>
+          <div class="amt pos num"><span class="taka">৳</span>800<small>owes you</small></div>
+          <button class="btn btn-secondary btn-sm">Settle</button>
+        </div>
+        <div class="person on">
+          <span class="pav">K</span>
+          <div class="t"><b>Karim</b><span>Last entry Sun 1 Nov</span></div>
+          <div class="amt neg num"><span class="taka">৳</span>600<small>you owe</small></div>
+          <button class="btn btn-secondary btn-sm">Settle</button>
+        </div>
+        <div class="person">
+          <span class="pav">R</span>
+          <div class="t"><b>Rahim</b><span>Last entry Mon 2 Nov</span></div>
+          <div class="amt pos num"><span class="taka">৳</span>450<small>owes you</small></div>
+          <button class="btn btn-secondary btn-sm">Settle</button>
+        </div>
+        <div class="divider">Settled (2)</div>
+        <div class="person">
+          <span class="pav">S</span>
+          <div class="t"><b>Sakib</b><span>Last entry Tue 20 Oct</span></div>
+          <div class="amt num muted">settled</div>
+        </div>
+        <div class="person">
+          <span class="pav">N</span>
+          <div class="t"><b>Nabila</b><span>Last entry Mon 12 Oct</span></div>
+          <div class="amt num muted">settled</div>
+        </div>
+      </section>
+
+      <section class="card" style="overflow:hidden">
+        <div class="card-head" style="padding:16px 16px 12px">
+          <span class="pav" style="width:32px;height:32px">K</span>
+          <div style="flex:1"><b style="font-size:var(--text-md)">Karim</b><div class="neg num" style="font-size:var(--text-sm);font-weight:600">You owe Karim <span class="taka">৳</span>600</div></div>
+          <button class="iconbtn" aria-label="Person menu"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="entry">
+          <span class="k pos"><i data-lucide="arrow-up-right" class="pos"></i></span>
+          <div class="t"><b>You paid Karim <span class="taka">৳</span>400</b><span>Sun 1 Nov · bus tickets, part 1</span></div>
+          <button class="iconbtn sm" aria-label="Delete entry"><i data-lucide="trash-2"></i></button>
+        </div>
+        <div class="entry">
+          <span class="k neg"><i data-lucide="arrow-down-left" class="neg"></i></span>
+          <div class="t"><b>You borrowed <span class="taka">৳</span>1,000</b><span>Wed 28 Oct · bus tickets to Dhaka</span></div>
+          <button class="iconbtn sm" aria-label="Delete entry"><i data-lucide="trash-2"></i></button>
+        </div>
+        <div class="entry">
+          <span class="k neg"><i data-lucide="arrow-down-left" class="neg"></i></span>
+          <div class="t"><b>Karim paid you <span class="taka">৳</span>200</b><span>Thu 22 Oct</span></div>
+          <button class="iconbtn sm" aria-label="Delete entry"><i data-lucide="trash-2"></i></button>
+        </div>
+        <div class="entry">
+          <span class="k pos"><i data-lucide="arrow-up-right" class="pos"></i></span>
+          <div class="t"><b>You lent <span class="taka">৳</span>200</b><span>Mon 19 Oct · canteen <span class="badge b-agent" style="margin-left:4px"><i data-lucide="bot"></i>via Muse</span></span></div>
+          <button class="iconbtn sm" aria-label="Delete entry"><i data-lucide="trash-2"></i></button>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

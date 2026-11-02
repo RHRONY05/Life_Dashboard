@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D05 · Renewals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-d tall">
+  <header class="topbar">
+    <div class="brand"><span class="logo"><i data-lucide="layout-dashboard"></i></span>Life Dashboard</div>
+    <nav class="nav">
+      <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+      <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+      <a href="#"><i data-lucide="wallet"></i>Money</a>
+      <a class="on" href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="nbadge">1</span></a>
+      <a href="#"><i data-lucide="settings"></i>Settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="today-chip">Mon 2 Nov</span>
+      <button class="iconbtn" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button>
+      <button class="avatar" aria-label="Account">R</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-head">
+      <h1>Renewals</h1>
+      <span class="sub num">≈ <span class="taka">৳</span>499 / month · $27.08 / month</span>
+      <span class="spacer"></span>
+      <div class="seg"><button class="on">Active</button><button>Ended <span class="c">2</span></button></div>
+      <button class="btn btn-primary"><i data-lucide="plus"></i>Add renewal</button>
+    </div>
+
+    <div class="r-group">
+      <h3>Next 30 days <span class="badge b-warn">1 due soon</span></h3>
+      <section class="card">
+        <div class="rrow">
+          <span class="ic"><i data-lucide="gift"></i></span>
+          <div class="t"><b>Azure for Students credit</b><span>Ends Sat 7 Nov · CineReserve VM and demos run on it</span></div>
+          <div class="cost num">$100 credit<small>one-time</small></div>
+          <div><span class="badge b-warn">In 5 days</span></div>
+          <div class="acts"><button class="btn btn-secondary btn-sm"><i data-lucide="flag"></i>Mark ended</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        </div>
+        <div class="rrow">
+          <span class="ic"><i data-lucide="repeat"></i></span>
+          <div class="t"><b>ChatGPT Plus</b><span>Renews Thu 12 Nov · charges $20.00 automatically</span></div>
+          <div class="cost num">$20.00<small>/ month</small></div>
+          <div><span class="badge b-neutral">In 10 days</span></div>
+          <div class="acts"><button class="btn btn-secondary btn-sm"><i data-lucide="check"></i>Renewed</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        </div>
+        <div class="rrow">
+          <span class="ic"><i data-lucide="globe"></i></span>
+          <div class="t"><b>rhrony05.me <span class="badge b-neutral">Portfolio</span></b><span>Renews Mon 16 Nov · charges $12.98 automatically</span></div>
+          <div class="cost num">$12.98<small>/ year</small></div>
+          <div><span class="badge b-neutral">In 14 days</span></div>
+          <div class="acts"><button class="btn btn-secondary btn-sm"><i data-lucide="check"></i>Renewed</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        </div>
+        <div class="rrow">
+          <span class="ic"><i data-lucide="server"></i></span>
+          <div class="t"><b>DigitalOcean droplet <span class="badge b-neutral">CineReserve</span></b><span>Renews Sat 21 Nov · charges $6.00 automatically</span></div>
+          <div class="cost num">$6.00<small>/ month</small></div>
+          <div><span class="badge b-neutral">In 19 days</span></div>
+          <div class="acts"><button class="btn btn-secondary btn-sm"><i data-lucide="check"></i>Renewed</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        </div>
+        <div class="rrow">
+          <span class="ic"><i data-lucide="repeat"></i></span>
+          <div class="t"><b>Mobile internet pack</b><span>Ends Tue 24 Nov</span></div>
+          <div class="cost num"><span class="taka">৳</span>499<small>/ month</small></div>
+          <div><span class="badge b-neutral">In 22 days</span></div>
+          <div class="acts"><button class="btn btn-secondary btn-sm"><i data-lucide="check"></i>Renewed</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="r-group">
+      <h3>Later</h3>
+      <section class="card">
+        <div class="rrow">
+          <span class="ic"><i data-lucide="gift"></i></span>
+          <div class="t"><b>Antigravity Pro (student offer)</b><span>Ends Fri 30 Apr 2027 · free</span></div>
+          <div class="cost num">Free<small>until it ends</small></div>
+          <div><span class="badge b-neutral">30 Apr 2027</span></div>
+          <div class="acts"><button class="btn btn-secondary btn-sm"><i data-lucide="flag"></i>Mark ended</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        </div>
+        <div class="rrow">
+          <span class="ic"><i data-lucide="gift"></i></span>
+          <div class="t"><b>GitHub Student Developer Pack</b><span>Ends Wed 14 Jul 2027 · free · re-verify with CUET email</span></div>
+          <div class="cost num">Free<small>until it ends</small></div>
+          <div><span class="badge b-neutral">14 Jul 2027</span></div>
+          <div class="acts"><button class="btn btn-secondary btn-sm"><i data-lucide="flag"></i>Mark ended</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="r-group">
+      <h3>No date</h3>
+      <section class="card">
+        <div class="rrow">
+          <span class="ic"><i data-lucide="server"></i></span>
+          <div class="t"><b>Vercel Hobby <span class="badge b-neutral">Vocab, Portfolio</span></b><span>Free plan · no end date</span></div>
+          <div class="cost num">Free</div>
+          <div></div>
+          <div class="acts"><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        </div>
+        <div class="rrow">
+          <span class="ic"><i data-lucide="server"></i></span>
+          <div class="t"><b>Supabase free <span class="badge b-neutral">vocab project</span></b><span>Free plan · pauses after 7 days without activity (keepalive cron runs daily)</span></div>
+          <div class="cost num">Free</div>
+          <div></div>
+          <div class="acts"><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

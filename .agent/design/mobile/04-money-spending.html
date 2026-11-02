@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>M04 · Money · Spending</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-m">
+  <header class="m-header">
+    <h1>Money</h1>
+  </header>
+  <div class="m-body">
+    <div class="seg block" style="margin-bottom:12px"><button class="on">Spending</button><button>IOUs</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="tile" style="padding:10px 12px"><div class="tile-k">Today</div><div class="tile-v num" style="font-size:var(--text-lg);line-height:var(--leading-lg);margin-top:2px"><span class="taka">৳</span>160</div></div>
+      <div class="tile" style="padding:10px 12px"><div class="tile-k">Week</div><div class="tile-v num" style="font-size:var(--text-lg);line-height:var(--leading-lg);margin-top:2px"><span class="taka">৳</span>940</div></div>
+      <div class="tile" style="padding:10px 12px"><div class="tile-k">Nov</div><div class="tile-v num" style="font-size:var(--text-lg);line-height:var(--leading-lg);margin-top:2px"><span class="taka">৳</span>730</div></div>
+    </div>
+    <div class="budget" style="margin:0 2px 12px"><div class="bar"><i style="width:9%"></i></div><small><span class="num">of <span class="taka">৳</span>8,000 budget</span><span class="num"><span class="taka">৳</span>7,270 left</span></small></div>
+
+    <div class="m-card" style="overflow:hidden">
+      <div class="quick" style="padding:12px">
+        <div class="quick-row">
+          <div class="input focus" style="height:48px;width:110px;font-size:var(--text-lg);font-weight:650"><span class="pre taka">৳</span><span class="num">120</span></div>
+          <div class="input ph" style="flex:1;height:48px;min-width:0">Note</div>
+          <button class="btn btn-primary" style="height:48px" aria-label="Add">Add</button>
+        </div>
+        <div class="cats" style="flex-wrap:nowrap;overflow:hidden">
+          <span class="cat on"><i data-lucide="utensils"></i>Food</span>
+          <span class="cat"><i data-lucide="bus"></i>Transport</span>
+          <span class="cat"><i data-lucide="book-open"></i>Study</span>
+          <span class="cat"><i data-lucide="receipt"></i>Bills</span>
+        </div>
+      </div>
+      <div class="day-head"><span>Today</span><b class="num"><span class="taka">৳</span>160</b></div>
+      <div class="spend"><span class="cic"><i data-lucide="utensils"></i></span><div class="t">Lunch at the canteen<span>Food · via Muse</span></div><span class="amt num"><span class="taka">৳</span>120</span></div>
+      <div class="spend"><span class="cic"><i data-lucide="bus"></i></span><div class="t">Rickshaw to campus<span>Transport</span></div><span class="amt num"><span class="taka">৳</span>40</span></div>
+      <div class="day-head"><span>Yesterday</span><b class="num"><span class="taka">৳</span>570</b></div>
+      <div class="spend"><span class="cic"><i data-lucide="book-open"></i></span><div class="t">Chapter photocopies<span>Study</span></div><span class="amt num"><span class="taka">৳</span>350</span></div>
+    </div>
+  </div>
+  <nav class="tabbar">
+    <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+    <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+    <a href="#" class="on" aria-current="page"><i data-lucide="wallet"></i>Money</a>
+    <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="dot">1</span></a>
+    <a href="#"><i data-lucide="settings"></i>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,312 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Life Dashboard — design tokens (source of truth)
+   Direction: "Swiss Ink", a soft neo-brutalist editorial grid.
+   ========================================================================== */
+
+:root {
+  /* ---- Fonts ---- */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Hind Siliguri", sans-serif;
+  --font-display: "Schibsted Grotesk", "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --font-taka: "Hind Siliguri", var(--font-sans);
+  --display-weight: 800;
+  --display-tracking: -.025em;
+
+  /* ---- Type scale (size / line-height) ---- */
+  --text-2xs: 11px;  --leading-2xs: 14px;
+  --text-xs: 12px;   --leading-xs: 16px;
+  --text-sm: 13px;   --leading-sm: 18px;
+  --text-base: 14px; --leading-base: 20px;
+  --text-md: 15px;   --leading-md: 22px;
+  --text-lg: 17px;   --leading-lg: 24px;
+  --text-xl: 26px;   --leading-xl: 30px;
+  --text-2xl: 28px;  --leading-2xl: 34px;
+
+  /* ---- Radius ---- */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-full: 999px;
+
+  /* ---- Layout ---- */
+  --topbar-h: 60px;
+  --tabbar-h: 64px;
+  --page-pad-d: 32px;
+  --page-pad-m: 16px;
+  --rail-w: 320px;
+  --list-w: 340px;
+  --detail-w: 420px;
+  --row-h: 40px;
+  --row-h-m: 48px;
+
+  /* ---- Surfaces (shape language) ---- */
+  --frame-w: 1.5px;
+  --card-border: var(--frame-w) solid var(--frame);
+  --card-shadow: 3px 3px 0 var(--frame);
+  --today-shadow: 5px 5px 0 var(--frame);
+  --bg-texture: none;
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+
+  /* ---- Colours: light ---- */
+  --frame: #141414;
+  --bg: #EFEDE6;
+  --surface: #FBFAF6;
+  --surface-2: #E9E6DD;
+  --surface-3: #DDD9CD;
+  --line: #D8D4C8;
+  --line-strong: #2A2A2A;
+  --ink: #141414;
+  --ink-2: #3A3A3A;
+  --ink-3: #5A5A5A;
+  --ink-4: #A3A099;
+
+  --accent: #141414;
+  --accent-hover: #000000;
+  --accent-ink: #FBFAF6;
+  --accent-soft: #FFE45C;
+  --accent-text: #141414;
+  --signal: #E8543A;
+
+  --success: #1E7A46;  --success-soft: #D3F0DD;  --success-text: #145E35;
+  --danger:  #D23B1F;  --danger-soft:  #FBDCD3;  --danger-text:  #A62A13;
+  --warn:    #A86E00;  --warn-soft:    #FFF0C2;  --warn-text:    #784E00;
+  --info-soft: #DCE8FF; --info-text: #1F3F8F;
+
+  --agent: #3B3BD6;   --agent-soft: #DEDFFC;   --agent-text: #2C2CAE;
+
+  --illus-line: var(--ink);
+  --illus-paper: var(--surface);
+  --illus-a: #FFE45C;
+  --illus-b: #BFD8FF;
+  --illus-c: var(--signal);
+
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px #3B3BD6;
+  --shadow-sm: 2px 2px 0 var(--frame);
+  --shadow-md: 3px 3px 0 var(--frame);
+  --shadow-lg: 6px 6px 0 var(--frame);
+  --scrim: rgba(20, 20, 20, .45);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --frame: #E8E4D8;
+    --bg: #111111;
+    --surface: #1A1A1A;
+    --surface-2: #252525;
+    --surface-3: #303030;
+    --line: #333333;
+    --line-strong: #D9D5C9;
+    --ink: #F2EFE6;
+    --ink-2: #D0CCC1;
+    --ink-3: #A9A59B;
+    --ink-4: #5E5C57;
+
+    --accent: #FFE45C;
+    --accent-hover: #FFEC85;
+    --accent-ink: #141414;
+    --accent-soft: #3A3418;
+    --accent-text: #FFE45C;
+    --signal: #FF7A5C;
+
+    --success: #5BCB8A;  --success-soft: #173322;  --success-text: #7FD9A4;
+    --danger:  #FF7A5C;  --danger-soft:  #3D1C14;  --danger-text:  #FF9A82;
+    --warn:    #F2C14E;  --warn-soft:    #3A2E10;  --warn-text:    #F6D27E;
+    --info-soft: #1C2740; --info-text: #A8C2FF;
+
+    --agent: #9EA2FF;   --agent-soft: #26284D;   --agent-text: #B8BBFF;
+
+    --illus-a: #5C5014;
+    --illus-b: #22344F;
+
+    --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px #9EA2FF;
+    --scrim: rgba(0, 0, 0, .65);
+  }
+}
+
+:root[data-theme="dark"] {
+  --frame: #E8E4D8;
+  --bg: #111111;
+  --surface: #1A1A1A;
+  --surface-2: #252525;
+  --surface-3: #303030;
+  --line: #333333;
+  --line-strong: #D9D5C9;
+  --ink: #F2EFE6;
+  --ink-2: #D0CCC1;
+  --ink-3: #A9A59B;
+  --ink-4: #5E5C57;
+
+  --accent: #FFE45C;
+  --accent-hover: #FFEC85;
+  --accent-ink: #141414;
+  --accent-soft: #3A3418;
+  --accent-text: #FFE45C;
+  --signal: #FF7A5C;
+
+  --success: #5BCB8A;  --success-soft: #173322;  --success-text: #7FD9A4;
+  --danger:  #FF7A5C;  --danger-soft:  #3D1C14;  --danger-text:  #FF9A82;
+  --warn:    #F2C14E;  --warn-soft:    #3A2E10;  --warn-text:    #F6D27E;
+  --info-soft: #1C2740; --info-text: #A8C2FF;
+
+  --agent: #9EA2FF;   --agent-soft: #26284D;   --agent-text: #B8BBFF;
+
+  --illus-a: #5C5014;
+  --illus-b: #22344F;
+
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px #9EA2FF;
+  --scrim: rgba(0, 0, 0, .65);
+}
+
+@theme {
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --font-taka: var(--font-taka);
+
+  --color-frame: var(--frame);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --color-signal: var(--signal);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-text: var(--success-text);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-text: var(--danger-text);
+
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-text: var(--warn-text);
+
+  --color-info-soft: var(--info-soft);
+  --color-info-text: var(--info-text);
+
+  --color-agent: var(--agent);
+  --color-agent-soft: var(--agent-soft);
+  --color-agent-text: var(--agent-text);
+
+  --color-illus-line: var(--illus-line);
+  --color-illus-paper: var(--illus-paper);
+  --color-illus-a: var(--illus-a);
+  --color-illus-b: var(--illus-b);
+  --color-illus-c: var(--illus-c);
+
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+}
+
+/* Base styles & resets */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg) var(--bg-texture);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+.num, .tile-v, .amt, .count, td.n {
+  font-variant-numeric: tabular-nums;
+}
+
+.taka {
+  font-family: var(--font-taka);
+  font-weight: inherit;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Swiss Ink signature styles */
+.topbar, .m-header {
+  border-bottom: var(--frame-w) solid var(--frame);
+}
+
+.tabbar {
+  border-top: var(--frame-w) solid var(--frame);
+}
+
+.col.is-today {
+  border: 2px solid var(--frame);
+  box-shadow: var(--today-shadow);
+}
+
+.col.is-today .col-head {
+  background: var(--accent-soft);
+  border-radius: calc(var(--radius-lg) - 2px) calc(var(--radius-lg) - 2px) 0 0;
+  margin-bottom: 8px;
+}
+
+.nav a.on {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  box-shadow: inset 0 0 0 var(--frame-w) var(--frame);
+}
+
+.tabbar a.on {
+  color: var(--ink);
+}
+
+.btn-primary {
+  box-shadow: 2px 2px 0 var(--signal);
+}
+
+.btn-secondary {
+  border: var(--frame-w) solid var(--frame);
+}
+
+.col-title, .td-head h2 {
+  text-transform: uppercase;
+  font-size: var(--text-md);
+  letter-spacing: .02em;
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}

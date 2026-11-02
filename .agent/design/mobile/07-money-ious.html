@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>M07 · Money · IOUs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-m">
+  <header class="m-header">
+    <h1>Money</h1>
+    <button class="iconbtn" aria-label="Add entry"><i data-lucide="plus"></i></button>
+  </header>
+  <div class="m-body">
+    <div class="seg block" style="margin-bottom:12px"><button>Spending</button><button class="on">IOUs</button></div>
+    <div class="row2" style="margin-bottom:10px">
+      <div class="tile" style="padding:12px 14px"><div class="tile-k">Others owe you</div><div class="tile-v pos" style="font-size:var(--text-xl);line-height:var(--leading-xl)"><span class="taka">৳</span>1,250</div></div>
+      <div class="tile" style="padding:12px 14px"><div class="tile-k">You owe</div><div class="tile-v neg" style="font-size:var(--text-xl);line-height:var(--leading-xl)"><span class="taka">৳</span>600</div></div>
+    </div>
+    <div style="font-size:var(--text-sm);color:var(--ink-2);margin:0 2px 12px">Net: you're owed <b class="num"><span class="taka">৳</span>650</b></div>
+    <div class="m-card" style="overflow:hidden">
+      <div class="person"><span class="pav">T</span><div class="t"><b>Tanvir</b><span>Fri 30 Oct</span></div><div class="amt pos num"><span class="taka">৳</span>800<small>owes you</small></div></div>
+      <div class="person" style="background:var(--surface-2)"><span class="pav">K</span><div class="t"><b>Karim</b><span>Sun 1 Nov</span></div><div class="amt neg num"><span class="taka">৳</span>600<small>you owe</small></div></div>
+      <div style="background:var(--surface-2);padding:0 0 10px">
+        <div class="entry" style="border-top:0;padding-top:4px"><span class="k pos"><i data-lucide="arrow-up-right" class="pos"></i></span><div class="t"><b>You paid Karim <span class="taka">৳</span>400</b><span>Sun 1 Nov · bus tickets, part 1</span></div></div>
+        <div class="entry"><span class="k neg"><i data-lucide="arrow-down-left" class="neg"></i></span><div class="t"><b>You borrowed <span class="taka">৳</span>1,000</b><span>Wed 28 Oct · bus tickets to Dhaka</span></div></div>
+        <div style="display:flex;gap:8px;padding:8px 16px 0"><button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;height:44px">Settle</button><button class="btn btn-ghost btn-sm" style="flex:1;justify-content:center;height:44px">All 4 entries</button></div>
+      </div>
+      <div class="person"><span class="pav">R</span><div class="t"><b>Rahim</b><span>Mon 2 Nov</span></div><div class="amt pos num"><span class="taka">৳</span>450<small>owes you</small></div></div>
+      <div class="divider">Settled (2)</div>
+      <div class="person"><span class="pav">S</span><div class="t"><b>Sakib</b><span>Tue 20 Oct</span></div><div class="amt muted">settled</div></div>
+    </div>
+  </div>
+  <button class="fab"><i data-lucide="plus"></i>Add entry</button>
+  <nav class="tabbar">
+    <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+    <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+    <a href="#" class="on" aria-current="page"><i data-lucide="wallet"></i>Money</a>
+    <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="dot">1</span></a>
+    <a href="#"><i data-lucide="settings"></i>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

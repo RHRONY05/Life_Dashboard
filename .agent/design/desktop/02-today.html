@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D02 · Today</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-d tall">
+  <header class="topbar">
+    <div class="brand"><span class="logo"><i data-lucide="layout-dashboard"></i></span>Life Dashboard</div>
+    <nav class="nav">
+      <a class="on" href="#"><i data-lucide="calendar-check"></i>Today</a>
+      <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+      <a href="#"><i data-lucide="wallet"></i>Money</a>
+      <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="nbadge">1</span></a>
+      <a href="#"><i data-lucide="settings"></i>Settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="today-chip">Mon 2 Nov</span>
+      <button class="iconbtn" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button>
+      <button class="avatar" aria-label="Account">R</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="today-grid">
+      <div class="today-main">
+      <div class="days">
+        <!-- YESTERDAY -->
+        <section class="col is-past">
+          <div class="col-head"><svg class="day-glyph" aria-hidden="true"><use href="../illustrations/sprite.svg?v=3#day-yesterday"/></svg><span class="col-title">Yesterday</span><span class="col-date">Sun 1 Nov</span><span class="col-count"><b>2</b> of 4 done</span></div>
+          <div class="col-body">
+            <div class="task">
+              <span class="check"></span>
+              <div class="task-main">
+                <div class="task-title">Submit CN lab report</div>
+                <div class="task-note">Wireshark capture of the TCP handshake + 2-page write-up</div>
+              </div>
+            </div>
+            <div class="task hover">
+              <span class="check"></span>
+              <div class="task-main">
+                <div class="task-title">Send 3 Upwork proposals (vibe-coded app fixes)</div>
+                <div class="task-meta"><span class="badge b-moved"><i data-lucide="history"></i>moved 2×</span></div>
+              </div>
+              <div class="task-actions">
+                <button class="iconbtn sm" aria-label="Move to today"><i data-lucide="arrow-right"></i></button>
+                <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+              </div>
+            </div>
+            <div class="sep-done">Done</div>
+            <div class="task done">
+              <span class="check on"><i data-lucide="check"></i></span>
+              <div class="task-main">
+                <div class="task-title">NeetCode 150: Two Sum</div>
+                <div class="task-meta"><span class="badge b-tracker"><i data-lucide="list-checks"></i>NeetCode 150</span><span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></div>
+              </div>
+            </div>
+            <div class="task done">
+              <span class="check on"><i data-lucide="check"></i></span>
+              <div class="task-main"><div class="task-title">Revise CN chapter 3: TCP congestion control</div></div>
+            </div>
+          </div>
+          <div class="col-foot">
+            <div class="older">
+              <div class="older-head"><i data-lucide="chevron-down"></i><span class="grow">Older unfinished · 1</span></div>
+              <div class="older-body">
+                <div class="task">
+                  <span class="check"></span>
+                  <div class="task-main">
+                    <div class="task-title">Reply to SabaiHealth about the Thai i18n bug</div>
+                    <div class="task-meta"><span class="date">Thu 29 Oct</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="justify-content:center"><i data-lucide="arrow-right-to-line"></i>Move all unfinished to today (3)</button>
+          </div>
+        </section>
+
+        <!-- TODAY -->
+        <section class="col is-today">
+          <div class="col-head"><svg class="day-glyph" aria-hidden="true"><use href="../illustrations/sprite.svg?v=3#day-today"/></svg><span class="col-title">Today</span><span class="col-date">Mon 2 Nov</span><span class="col-count"><b>2</b> of 6 done</span></div>
+          <div class="task-input focus"><i data-lucide="plus"></i><span class="caret"></span><span style="color:var(--ink-4)">Add a task…</span><kbd>N</kbd></div>
+          <div class="col-body">
+            <div class="task">
+              <span class="check"></span>
+              <div class="task-main">
+                <div class="task-title">Draft thesis topic shortlist (3 ideas)</div>
+                <div class="task-note">Agentic workflows, small-model fine-tuning, workflow automation. One paragraph each.</div>
+              </div>
+            </div>
+            <div class="task">
+              <span class="check"></span>
+              <div class="task-main">
+                <div class="task-title">NeetCode 150: Contains Duplicate</div>
+                <div class="task-meta"><span class="badge b-tracker"><i data-lucide="list-checks"></i>NeetCode 150</span><span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></div>
+              </div>
+            </div>
+            <div class="task">
+              <span class="check"></span>
+              <div class="task-main"><div class="task-title">NeetCode 150: Valid Anagram</div>
+                <div class="task-meta"><span class="badge b-tracker"><i data-lucide="list-checks"></i>NeetCode 150</span><span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></div>
+              </div>
+            </div>
+            <div class="task">
+              <span class="check"></span>
+              <div class="task-main"><div class="task-title">Buy Upwork Connects</div></div>
+            </div>
+            <div class="sep-done">Done</div>
+            <div class="task done">
+              <span class="check on"><i data-lucide="check"></i></span>
+              <div class="task-main"><div class="task-title">Morning English session (20 min)</div></div>
+            </div>
+            <div class="task done">
+              <span class="check on"><i data-lucide="check"></i></span>
+              <div class="task-main"><div class="task-title">Pay Karim back for the bus tickets</div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TOMORROW -->
+        <section class="col">
+          <div class="col-head"><svg class="day-glyph" aria-hidden="true"><use href="../illustrations/sprite.svg?v=3#day-tomorrow"/></svg><span class="col-title">Tomorrow</span><span class="col-date">Tue 3 Nov</span><span class="col-count"><b>0</b> of 2 done</span></div>
+          <div class="task-input"><i data-lucide="plus"></i><span>Add a task…</span><kbd>⇧</kbd><kbd style="margin-left:2px">N</kbd></div>
+          <div class="col-body">
+            <div class="task">
+              <span class="check"></span>
+              <div class="task-main">
+                <div class="task-title">OS class test: process scheduling</div>
+                <div class="task-note">Room 304, 10:00. Revise SJF, round robin, priority.</div>
+              </div>
+            </div>
+            <div class="task">
+              <span class="check"></span>
+              <div class="task-main"><div class="task-title">Record the Fiverr Gig 3 video voiceover</div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="lists">
+        <div class="lists-head"><h2>Lists</h2><span class="sub">Yours to arrange. Nothing here moves by itself.</span><span class="spacer"></span><button class="btn btn-secondary btn-sm"><i data-lucide="plus"></i>New list</button></div>
+        <div class="lists-grid" style="margin-top:12px">
+        <section class="lcard">
+          <div class="col-head"><span class="col-title">TO DO LATER</span><span class="lcount">5</span><span class="lhead-actions"><button class="iconbtn sm" aria-label="Collapse"><i data-lucide="chevron-up"></i></button><button class="iconbtn sm" aria-label="List menu"><i data-lucide="more-horizontal"></i></button></span></div>
+          <div class="task-input"><i data-lucide="plus"></i><span>Add to To do later…</span></div>
+          <div class="col-body">
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Learn Docker networking (bridge vs host)</div></div></div>
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Set up the Fiverr Gig 1 (n8n) page</div><div class="task-meta"><span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></div></div></div>
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Read Kurose ch. 4 before class</div><div class="task-meta"><span class="badge b-moved"><i data-lucide="history"></i>moved 2×</span></div></div></div>
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Fix the Vocab review badge bug</div></div></div>
+            <div class="task hover" style="position:relative"><span class="check"></span><div class="task-main"><div class="task-title">Write a LinkedIn post about CineReserve</div></div>
+              <div class="task-actions"><button class="iconbtn sm" aria-label="Plan for today"><i data-lucide="calendar-check"></i></button><button class="iconbtn sm" aria-label="More" style="background:var(--surface-3)"><i data-lucide="more-horizontal"></i></button></div>
+              <div class="menu" style="right:0;top:38px;width:220px">
+                <div class="mi on"><i data-lucide="calendar-check"></i>Plan for today</div>
+                <div class="mi"><i data-lucide="calendar-plus"></i>Plan for tomorrow</div>
+                <div class="mi"><i data-lucide="corner-down-right"></i>Move to list →</div>
+                <hr>
+                <div class="mi"><i data-lucide="arrow-up"></i>Move up<kbd>Alt ↑</kbd></div>
+                <div class="mi"><i data-lucide="arrow-down"></i>Move down<kbd>Alt ↓</kbd></div>
+                <div class="mi"><i data-lucide="pencil"></i>Edit<kbd>E</kbd></div>
+                <hr>
+                <div class="mi danger"><i data-lucide="trash-2"></i>Delete</div>
+              </div>
+            </div>
+          </div>
+          <div class="done-toggle"><i data-lucide="chevron-right" class="sm"></i><span class="grow">Done · 2</span><a href="#">Clear done</a></div>
+        </section>
+        <section class="lcard">
+          <div class="col-head"><span class="col-title">THIS WEEK'S TARGETS</span><span class="lcount">3</span><span class="lhead-actions"><button class="iconbtn sm" aria-label="Collapse"><i data-lucide="chevron-up"></i></button><button class="iconbtn sm" aria-label="List menu"><i data-lucide="more-horizontal"></i></button></span></div>
+          <div class="task-input"><i data-lucide="plus"></i><span>Add to This week's targets…</span></div>
+          <div class="col-body">
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Send 10 Upwork proposals</div><div class="task-meta"><span class="badge b-neutral">4 sent</span></div></div></div>
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Finish CN labs 3 and 4</div></div></div>
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Render the Gig 3 video with my own voice</div></div></div>
+          </div>
+          <div class="done-toggle"><i data-lucide="chevron-right" class="sm"></i><span class="grow">Done · 1</span><a href="#">Clear done</a></div>
+        </section>
+        <section class="lcard">
+          <div class="col-head"><span class="col-title">THIS MONTH'S TARGETS</span><span class="lcount">4</span><span class="lhead-actions"><button class="iconbtn sm" aria-label="Collapse"><i data-lucide="chevron-up"></i></button><button class="iconbtn sm" aria-label="List menu"><i data-lucide="more-horizontal"></i></button></span></div>
+          <div class="task-input"><i data-lucide="plus"></i><span>Add to This month's targets…</span></div>
+          <div class="col-body">
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Land the first paid client ($300+)</div></div></div>
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">NeetCode: 60 problems</div><div class="task-meta"><span class="badge b-tracker"><i data-lucide="list-checks"></i>NeetCode 150</span></div></div></div>
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Choose a thesis supervisor</div></div></div>
+            <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Book the IELTS test date</div></div></div>
+          </div>
+        </section>
+        </div>
+      </section>
+      </div>
+
+      <!-- RAIL -->
+      <aside class="rail">
+        <section class="card">
+          <div class="card-head"><h3>Quick links</h3><a href="#">Edit</a></div>
+          <div class="card-body">
+            <div class="linkgrid">
+              <a class="linktile" href="#"><i data-lucide="book-open"></i><span>Vocab</span></a>
+              <a class="linktile" href="#"><i data-lucide="globe"></i><span>Portfolio</span></a>
+              <a class="linktile" href="#"><i data-lucide="briefcase"></i><span>Upwork</span></a>
+              <a class="linktile" href="#"><i data-lucide="briefcase"></i><span>Fiverr</span></a>
+              <a class="linktile" href="#"><i data-lucide="github"></i><span>GitHub</span></a>
+              <a class="linktile" href="#"><i data-lucide="linkedin"></i><span>LinkedIn</span></a>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><h3>Coming up</h3><a href="#">All renewals →</a></div>
+          <div class="card-body">
+            <div class="upc"><span class="ic"><i data-lucide="gift"></i></span><div class="t"><b>Azure for Students credit</b><span>Ends Sat 7 Nov · $100 credit</span></div><span class="badge b-warn">In 5 days</span></div>
+            <div class="upc"><span class="ic"><i data-lucide="repeat"></i></span><div class="t"><b>ChatGPT Plus</b><span>Renews Thu 12 Nov · $20.00</span></div><span class="badge b-neutral">In 10 days</span></div>
+            <div class="upc"><span class="ic"><i data-lucide="globe"></i></span><div class="t"><b>rhrony05.me</b><span>Renews Mon 16 Nov · $12.98</span></div><span class="badge b-neutral">In 14 days</span></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><h3>Money</h3><a href="#">Open Money →</a></div>
+          <div class="card-body">
+            <div class="mini-person"><span>Spent today</span><b class="num"><span class="taka">৳</span>160</b></div>
+            <div class="budget"><div class="bar"><i style="width:9%"></i></div><small><span class="num"><span class="taka">৳</span>730 of <span class="taka">৳</span>8,000 this month</span><span class="num"><span class="taka">৳</span>7,270 left</span></small></div>
+            <div class="mini-tot" style="margin:14px 0 0">
+              <div><small>Others owe you</small><b class="pos num"><span class="taka">৳</span>1,250</b></div>
+              <div><small>You owe</small><b class="neg num"><span class="taka">৳</span>600</b></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><h3>Trackers</h3></div>
+          <div class="card-body">
+            <div class="tp"><div class="tp-top">NeetCode 150<span class="num">4 / 150</span></div><div class="bar"><i style="width:3%"></i></div></div>
+            <div class="tp"><div class="tp-top">Thesis reading list<span class="num">3 / 12</span></div><div class="bar"><i style="width:25%"></i></div></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+</body>
+</html>

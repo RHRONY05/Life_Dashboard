@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>M08 · Today · Lists</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-m">
+  <header class="m-header">
+    <h1>Today<small>Mon 2 Nov</small></h1>
+    <button class="iconbtn" aria-label="New list"><i data-lucide="list-plus"></i></button>
+  </header>
+  <div class="m-body">
+    <div class="seg block" style="margin-bottom:12px">
+      <button>Yest. <span class="c">3</span></button>
+      <button>Today <span class="c">4</span></button>
+      <button>Tmrw <span class="c">2</span></button>
+      <button class="on">Lists</button>
+    </div>
+    <section class="lcard" style="margin-bottom:12px">
+      <div class="col-head"><span class="col-title">TO DO LATER</span><span class="lcount">5</span><span class="lhead-actions"><button class="iconbtn" aria-label="Collapse"><i data-lucide="chevron-up"></i></button><button class="iconbtn" aria-label="List menu"><i data-lucide="more-horizontal"></i></button></span></div>
+      <div class="task-input" style="margin:0 8px 6px"><i data-lucide="plus"></i><span>Add to To do later…</span></div>
+      <div class="col-body">
+        <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Learn Docker networking (bridge vs host)</div></div><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Set up the Fiverr Gig 1 (n8n) page</div><div class="task-meta"><span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></div></div><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+      </div>
+      <div class="done-toggle"><i data-lucide="chevron-right" class="sm"></i><span class="grow">Done · 2</span><a href="#">Clear done</a></div>
+    </section>
+    <section class="lcard" style="margin-bottom:12px">
+      <div class="col-head"><span class="col-title">THIS WEEK'S TARGETS</span><span class="lcount">3</span><span class="lhead-actions"><button class="iconbtn" aria-label="Collapse"><i data-lucide="chevron-up"></i></button><button class="iconbtn" aria-label="List menu"><i data-lucide="more-horizontal"></i></button></span></div>
+      <div class="task-input" style="margin:0 8px 6px"><i data-lucide="plus"></i><span>Add to This week's targets…</span></div>
+      <div class="col-body">
+        <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Send 10 Upwork proposals</div><div class="task-meta"><span class="badge b-neutral">4 sent</span></div></div><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+        <div class="task"><span class="check"></span><div class="task-main"><div class="task-title">Finish CN labs 3 and 4</div></div><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div>
+      </div>
+      <div class="done-toggle"><i data-lucide="chevron-right" class="sm"></i><span class="grow">Done · 1</span><a href="#">Clear done</a></div>
+    </section>
+  </div>
+  <nav class="tabbar">
+    <a href="#" class="on" aria-current="page"><i data-lucide="calendar-check"></i>Today</a>
+    <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+    <a href="#"><i data-lucide="wallet"></i>Money</a>
+    <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="dot">1</span></a>
+    <a href="#"><i data-lucide="settings"></i>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

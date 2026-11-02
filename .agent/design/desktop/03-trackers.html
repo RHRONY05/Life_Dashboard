@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D03 · Trackers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-d tall">
+  <header class="topbar">
+    <div class="brand"><span class="logo"><i data-lucide="layout-dashboard"></i></span>Life Dashboard</div>
+    <nav class="nav">
+      <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+      <a class="on" href="#"><i data-lucide="list-checks"></i>Trackers</a>
+      <a href="#"><i data-lucide="wallet"></i>Money</a>
+      <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="nbadge">1</span></a>
+      <a href="#"><i data-lucide="settings"></i>Settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="today-chip">Mon 2 Nov</span>
+      <button class="iconbtn" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button>
+      <button class="avatar" aria-label="Account">R</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-head">
+      <h1>Trackers</h1><span class="sub">Lists you work through, one item at a time</span>
+      <span class="spacer"></span>
+      <button class="btn btn-primary"><i data-lucide="plus"></i>New tracker</button>
+    </div>
+
+    <div class="two-pane">
+      <div>
+        <a class="tcard on" href="#">
+          <h4>NeetCode 150 <span class="badge b-agent"><i data-lucide="bot"></i>via Antigravity</span></h4>
+          <p>2 problems a day in C++, 1 Nov – 14 Jan</p>
+          <div class="bar"><i style="width:3%"></i></div>
+          <div class="row"><span class="num">4 / 150</span><span class="num">3%</span></div>
+        </a>
+        <a class="tcard" href="#">
+          <h4>Thesis reading list</h4>
+          <p>Papers on agentic workflows and small language models</p>
+          <div class="bar"><i style="width:25%"></i></div>
+          <div class="row"><span class="num">3 / 12</span><span class="num">25%</span></div>
+        </a>
+        <a class="tcard" href="#">
+          <h4>CN hands-on labs</h4>
+          <p>Kurose &amp; Ross labs from the CN workspace</p>
+          <div class="bar"><i style="width:63%"></i></div>
+          <div class="row"><span class="num">5 / 8</span><span class="num">63%</span></div>
+        </a>
+        <button class="btn btn-ghost btn-sm"><i data-lucide="archive"></i>Archived (1)</button>
+      </div>
+
+      <section class="card tdetail">
+        <div class="td-head">
+          <div style="flex:1">
+            <h2>NeetCode 150</h2>
+            <p>2 problems a day in C++, 1 Nov – 14 Jan</p>
+          </div>
+          <div class="seg"><button>All</button><button class="on">To do</button><button>Done</button></div>
+          <button class="iconbtn" aria-label="Tracker menu"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="td-prog"><b class="num">4 / 150</b><div class="bar lg"><i style="width:3%"></i></div><span class="num">3%</span></div>
+
+        <div class="group-head"><span>Arrays &amp; Hashing</span><span class="num">2 / 9</span></div>
+        <div class="item">
+          <span class="check"></span>
+          <div class="t"><span>Contains Duplicate</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <span class="badge b-tracker"><i data-lucide="calendar-check"></i>On board · Today</span>
+          <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="item">
+          <span class="check"></span>
+          <div class="t"><span>Valid Anagram</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <span class="badge b-tracker"><i data-lucide="calendar-check"></i>On board · Today</span>
+          <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="item" style="position:relative">
+          <span class="check"></span>
+          <div class="t"><span>Group Anagrams</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <button class="iconbtn sm" aria-label="More" style="background:var(--surface-2)"><i data-lucide="more-horizontal"></i></button>
+          <div class="menu" style="right:0;top:38px">
+            <div class="mi on"><i data-lucide="calendar-check"></i>Add to today</div>
+            <div class="mi"><i data-lucide="calendar-plus"></i>Add to tomorrow</div>
+            <div class="mi"><i data-lucide="skip-forward"></i>Skip</div>
+            <div class="mi"><i data-lucide="pencil"></i>Edit<kbd>E</kbd></div>
+            <hr>
+            <div class="mi danger"><i data-lucide="trash-2"></i>Delete</div>
+          </div>
+        </div>
+        <div class="item">
+          <span class="check"></span>
+          <div class="t"><span>Top K Frequent Elements</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="item">
+          <span class="check"></span>
+          <div class="t"><span>Encode and Decode Strings</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="item">
+          <span class="check"></span>
+          <div class="t"><span>Product of Array Except Self</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="item">
+          <span class="check"></span>
+          <div class="t"><span>Valid Sudoku</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+
+        <div class="group-head"><span>Two Pointers</span><span class="num">2 / 5</span></div>
+        <div class="item">
+          <span class="check"></span>
+          <div class="t"><span>3Sum</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="item">
+          <span class="check"></span>
+          <div class="t"><span>Container With Most Water</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="item">
+          <span class="check"></span>
+          <div class="t"><span>Trapping Rain Water</span><a href="#" aria-label="Open problem"><i data-lucide="external-link"></i></a></div>
+          <button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+
+        <div class="add-items"><button class="btn btn-ghost btn-sm"><i data-lucide="plus"></i>Add items</button></div>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

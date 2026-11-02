@@ -1,0 +1,173 @@
+/* ==========================================================================
+   Life Dashboard — design tokens (source of truth)
+   Direction: "Swiss Ink", a soft neo-brutalist editorial grid. Black ink on
+   off-white paper, hard 1.5 px frames with offset (not blurred) shadows,
+   one highlighter yellow that marks "now" (Today, the current page, the
+   selection). Uppercase grotesk titles, plain readable body text,
+   tabular numbers. Dark mode flips the frame to light ink and makes the
+   yellow the main accent.
+   Copy these variables into src/app/globals.css and map them in Tailwind's
+   @theme block. Components use ONLY these tokens: no raw hex values.
+   ========================================================================== */
+
+:root {
+  /* ---- Fonts ---- */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Hind Siliguri", sans-serif;
+  --font-display: "Schibsted Grotesk", "IBM Plex Sans", sans-serif;   /* page/column titles, big numbers */
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas, monospace; /* keys, tool names, kbd */
+  --font-taka: "Hind Siliguri", var(--font-sans);   /* only for the ৳ glyph (Plex has none) */
+  --display-weight: 800;
+  --display-tracking: -.025em;
+
+  /* ---- Type scale (size / line-height) ---- */
+  --text-2xs: 11px;  --leading-2xs: 14px;   /* badges */
+  --text-xs: 12px;   --leading-xs: 16px;    /* meta, captions */
+  --text-sm: 13px;   --leading-sm: 18px;    /* secondary, table cells */
+  --text-base: 14px; --leading-base: 20px;  /* UI default, task titles */
+  --text-md: 15px;   --leading-md: 22px;    /* column titles (uppercase) */
+  --text-lg: 17px;   --leading-lg: 24px;    /* card titles, dialog titles */
+  --text-xl: 26px;   --leading-xl: 30px;    /* page titles */
+  --text-2xl: 28px;  --leading-2xl: 34px;   /* big numbers (money tiles) */
+
+  /* ---- Radius (small and square-ish: printed, not bubbly) ---- */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-full: 999px;    /* only avatars, switches, status dots */
+
+  /* ---- Layout ---- */
+  --topbar-h: 60px;
+  --tabbar-h: 64px;
+  --page-pad-d: 32px;      /* desktop side padding */
+  --page-pad-m: 16px;      /* mobile side padding */
+  --rail-w: 320px;         /* Today right rail */
+  --list-w: 340px;         /* Trackers list pane */
+  --detail-w: 420px;       /* Money history pane */
+  --row-h: 40px;           /* task / item row min height (desktop) */
+  --row-h-m: 48px;         /* mobile row min height */
+
+  /* ---- Surfaces (shape language) ---- */
+  --frame-w: 1.5px;
+  --card-border: var(--frame-w) solid var(--frame);
+  --card-shadow: 3px 3px 0 var(--frame);           /* hard offset, no blur */
+  --today-shadow: 5px 5px 0 var(--frame);
+  --bg-texture: none;
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+
+  /* ---- Colours: light ---- */
+  --frame: #141414;          /* card/column frames and offset shadows */
+  --bg: #EFEDE6;             /* off-white paper */
+  --surface: #FBFAF6;        /* cards, columns */
+  --surface-2: #E9E6DD;      /* inputs at rest, chips, hovered rows */
+  --surface-3: #DDD9CD;      /* pressed, progress track */
+  --line: #D8D4C8;           /* hairlines inside cards */
+  --line-strong: #2A2A2A;    /* input borders, checkboxes */
+  --ink: #141414;
+  --ink-2: #3A3A3A;
+  --ink-3: #5A5A5A;          /* meta text, done tasks (AA on bg, surface and surface-2) */
+  --ink-4: #A3A099;          /* placeholders, disabled, decorative only: never for readable text */
+
+  --accent: #141414;         /* primary buttons, focus frame: black ink */
+  --accent-hover: #000000;
+  --accent-ink: #FBFAF6;
+  --accent-soft: #FFE45C;    /* highlighter yellow: Today band, current nav item, selection */
+  --accent-text: #141414;    /* text on/near the highlighter */
+  --signal: #E8543A;         /* small second ink: primary-button offset, illustration marks */
+
+  --success: #1E7A46;  --success-soft: #D3F0DD;  --success-text: #145E35;   /* done, "owes you" */
+  --danger:  #D23B1F;  --danger-soft:  #FBDCD3;  --danger-text:  #A62A13;   /* overdue, "you owe", delete */
+  --warn:    #A86E00;  --warn-soft:    #FFF0C2;  --warn-text:    #784E00;   /* due soon, moved 2×, rate limited */
+  --info-soft: #DCE8FF; --info-text: #1F3F8F;                               /* neutral banners */
+
+  --agent: #3B3BD6;   --agent-soft: #DEDFFC;   --agent-text: #2C2CAE;       /* "via Muse" badge, agent rows */
+
+  --illus-line: var(--ink);
+  --illus-paper: var(--surface);
+  --illus-a: #FFE45C;        /* highlighter wash */
+  --illus-b: #BFD8FF;        /* blue wash */
+  --illus-c: var(--signal);  /* small marks */
+
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px #3B3BD6;
+  --shadow-sm: 2px 2px 0 var(--frame);
+  --shadow-md: 3px 3px 0 var(--frame);
+  --shadow-lg: 6px 6px 0 var(--frame);             /* menus, dialogs, toasts */
+  --scrim: rgba(20, 20, 20, .45);
+}
+
+/* ---- Colours: dark (system preference, unless forced light) ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --frame: #E8E4D8;
+    --bg: #111111;
+    --surface: #1A1A1A;
+    --surface-2: #252525;
+    --surface-3: #303030;
+    --line: #333333;
+    --line-strong: #D9D5C9;
+    --ink: #F2EFE6;
+    --ink-2: #D0CCC1;
+    --ink-3: #A9A59B;
+    --ink-4: #5E5C57;
+
+    --accent: #FFE45C;
+    --accent-hover: #FFEC85;
+    --accent-ink: #141414;
+    --accent-soft: #3A3418;
+    --accent-text: #FFE45C;
+    --signal: #FF7A5C;
+
+    --success: #5BCB8A;  --success-soft: #173322;  --success-text: #7FD9A4;
+    --danger:  #FF7A5C;  --danger-soft:  #3D1C14;  --danger-text:  #FF9A82;
+    --warn:    #F2C14E;  --warn-soft:    #3A2E10;  --warn-text:    #F6D27E;
+    --info-soft: #1C2740; --info-text: #A8C2FF;
+
+    --agent: #9EA2FF;   --agent-soft: #26284D;   --agent-text: #B8BBFF;
+
+    --illus-a: #5C5014;
+    --illus-b: #22344F;
+
+    --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px #9EA2FF;
+    --scrim: rgba(0, 0, 0, .65);
+  }
+}
+
+/* ---- Colours: dark (forced, used by the mockups' ?theme=dark) ---- */
+:root[data-theme="dark"] {
+  --frame: #E8E4D8;
+  --bg: #111111;
+  --surface: #1A1A1A;
+  --surface-2: #252525;
+  --surface-3: #303030;
+  --line: #333333;
+  --line-strong: #D9D5C9;
+  --ink: #F2EFE6;
+  --ink-2: #D0CCC1;
+  --ink-3: #A9A59B;
+  --ink-4: #5E5C57;
+
+  --accent: #FFE45C;
+  --accent-hover: #FFEC85;
+  --accent-ink: #141414;
+  --accent-soft: #3A3418;
+  --accent-text: #FFE45C;
+  --signal: #FF7A5C;
+
+  --success: #5BCB8A;  --success-soft: #173322;  --success-text: #7FD9A4;
+  --danger:  #FF7A5C;  --danger-soft:  #3D1C14;  --danger-text:  #FF9A82;
+  --warn:    #F2C14E;  --warn-soft:    #3A2E10;  --warn-text:    #F6D27E;
+  --info-soft: #1C2740; --info-text: #A8C2FF;
+
+  --agent: #9EA2FF;   --agent-soft: #26284D;   --agent-text: #B8BBFF;
+
+  --illus-a: #5C5014;
+  --illus-b: #22344F;
+
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px #9EA2FF;
+  --scrim: rgba(0, 0, 0, .65);
+}
