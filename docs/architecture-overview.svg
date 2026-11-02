@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" style="background:#FBFAF6; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <defs>
+    <filter id="card-shadow" x="-4%" y="-4%" width="108%" height="114%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="3" dy="3" stdDeviation="0" flood-color="#141414" flood-opacity="1" />
+    </filter>
+    <filter id="pill-shadow" x="-4%" y="-4%" width="108%" height="116%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="2" dy="2" stdDeviation="0" flood-color="#141414" flood-opacity="1" />
+    </filter>
+  </defs>
+
+  <!-- Title / Brand Top Bar -->
+  <g transform="translate(30, 24)">
+    <!-- Logo square -->
+    <rect x="0" y="0" width="36" height="36" rx="8" fill="#FFE45C" stroke="#141414" stroke-width="2" />
+    <path d="M10 18.5 L15 23.5 L26 12" fill="none" stroke="#141414" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <text x="48" y="24" font-size="20" font-weight="800" fill="#141414" letter-spacing="0.5">LIFE DASHBOARD</text>
+    <text x="240" y="23" font-size="12" font-weight="600" fill="#6B6A65" letter-spacing="0.3">SYSTEM ARCHITECTURE &amp; FEATURE OVERVIEW</text>
+
+    <!-- Badges on right -->
+    <rect x="740" y="4" width="95" height="26" rx="6" fill="#F0EFEA" stroke="#141414" stroke-width="1.5"/>
+    <text x="787" y="21" font-size="11" font-weight="700" fill="#141414" text-anchor="middle">Next.js 16</text>
+
+    <rect x="845" y="4" width="95" height="26" rx="6" fill="#F0EFEA" stroke="#141414" stroke-width="1.5"/>
+    <text x="892" y="21" font-size="11" font-weight="700" fill="#141414" text-anchor="middle">Supabase</text>
+  </g>
+
+  <!-- Front Doors Row (User UI & AI Agents) -->
+  <!-- Box 1: Owner Browser UI -->
+  <g transform="translate(30, 80)">
+    <rect x="0" y="0" width="455" height="96" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+    <rect x="16" y="16" width="34" height="34" rx="8" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
+    <!-- User Icon -->
+    <circle cx="33" cy="28" r="5" fill="#141414"/>
+    <path d="M23 43 C23 37, 43 37, 43 43" fill="none" stroke="#141414" stroke-width="2"/>
+
+    <text x="60" y="32" font-size="15" font-weight="800" fill="#141414">Front Door 1: Owner Browser UI</text>
+    <text x="60" y="48" font-size="11" font-weight="600" fill="#6B6A65">Desktop (1440×900) &amp; Mobile (390×844) Parity • Single-User Auth</text>
+    <text x="60" y="70" font-size="11" font-weight="700" fill="#141414">Session Auth: <tspan font-weight="500" fill="#6B6A65">Email + Password Cookie • /api/* Owner Routes • Light/Dark Mode</tspan></text>
+  </g>
+
+  <!-- Box 2: Remote MCP Server -->
+  <g transform="translate(515, 80)">
+    <rect x="0" y="0" width="455" height="96" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+    <rect x="16" y="16" width="34" height="34" rx="8" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
+    <!-- Robot / Agent Icon -->
+    <rect x="24" y="27" width="18" height="14" rx="3" fill="none" stroke="#141414" stroke-width="2"/>
+    <circle cx="29" cy="34" r="1.5" fill="#141414"/>
+    <circle cx="37" cy="34" r="1.5" fill="#141414"/>
+    <line x1="33" y1="23" x2="33" y2="27" stroke="#141414" stroke-width="2"/>
+
+    <text x="60" y="32" font-size="15" font-weight="800" fill="#141414">Front Door 2: Remote MCP Server</text>
+    <text x="60" y="48" font-size="11" font-weight="600" fill="#6B6A65">For Antigravity, Claude Code, Muse • Stateless Streamable HTTP</text>
+    <text x="60" y="70" font-size="11" font-weight="700" fill="#141414">API Endpoint: <tspan font-weight="500" fill="#6B6A65">/api/mcp • Bearer Token • Scoped Keys • Rate-Limited • Audit Log</tspan></text>
+  </g>
+
+  <!-- Connector to Core Pillars -->
+  <g stroke="#141414" stroke-width="1.5" stroke-dasharray="4 3">
+    <line x1="257" y1="180" x2="257" y2="204" />
+    <line x1="742" y1="180" x2="742" y2="204" />
+    <line x1="257" y1="204" x2="742" y2="204" />
+    <line x1="500" y1="204" x2="500" y2="218" />
+  </g>
+  <circle cx="500" cy="218" r="3" fill="#141414"/>
+
+  <!-- Core Pillars Label -->
+  <rect x="375" y="194" width="250" height="22" rx="4" fill="#141414"/>
+  <text x="500" y="209" font-size="11" font-weight="800" fill="#FFE45C" text-anchor="middle" letter-spacing="0.5">5 CORE FUNCTIONAL PILLARS</text>
+
+  <!-- 5 Core Pillars Grid -->
+  <!-- Pillar 1: Today Board -->
+  <g transform="translate(30, 230)">
+    <rect x="0" y="0" width="175" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+    <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
+    <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">📅</text>
+    
+    <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Today Board</text>
+    <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">Daily Flow</text>
+
+    <line x1="12" y1="48" x2="163" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+
+    <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Yest · Today · Tmrw</text>
+    <text x="14" y="82" font-size="10" fill="#6B6A65">Calendar in Asia/Dhaka</text>
+    
+    <text x="14" y="104" font-size="11" font-weight="700" fill="#141414">• Sticky Tasks</text>
+    <text x="14" y="120" font-size="10" fill="#6B6A65">Nothing moves by itself</text>
+
+    <text x="14" y="142" font-size="11" font-weight="700" fill="#141414">• Custom Lists</text>
+    <text x="14" y="158" font-size="10" fill="#6B6A65">To do later, targets…</text>
+
+    <text x="14" y="180" font-size="11" font-weight="700" fill="#141414">• Keyboard Hotkeys</text>
+    <text x="14" y="196" font-size="10" fill="#6B6A65">N (new), E (edit), ? (help)</text>
+  </g>
+
+  <!-- Pillar 2: Trackers -->
+  <g transform="translate(225, 230)">
+    <rect x="0" y="0" width="175" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+    <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
+    <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">🎯</text>
+
+    <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Trackers</text>
+    <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">Goal Checklists</text>
+
+    <line x1="12" y1="48" x2="163" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+
+    <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Fixed List Tracking</text>
+    <text x="14" y="82" font-size="10" fill="#6B6A65">e.g. NeetCode 150</text>
+    
+    <text x="14" y="104" font-size="11" font-weight="700" fill="#141414">• Visual Progress</text>
+    <text x="14" y="120" font-size="10" fill="#6B6A65">Percent &amp; ratio meters</text>
+
+    <text x="14" y="142" font-size="11" font-weight="700" fill="#141414">• Fast Check &amp; Filter</text>
+    <text x="14" y="158" font-size="10" fill="#6B6A65">All, remaining, completed</text>
+
+    <text x="14" y="180" font-size="11" font-weight="700" fill="#141414">• Right-Rail Widget</text>
+    <text x="14" y="196" font-size="10" fill="#6B6A65">Pinned to main board</text>
+  </g>
+
+  <!-- Pillar 3: Money -->
+  <g transform="translate(420, 230)">
+    <rect x="0" y="0" width="175" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+    <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
+    <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">৳</text>
+
+    <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Money</text>
+    <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">Budget &amp; IOUs</text>
+
+    <line x1="12" y1="48" x2="163" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+
+    <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Daily Expenses</text>
+    <text x="14" y="82" font-size="10" fill="#6B6A65">Logged in whole BDT (৳)</text>
+    
+    <text x="14" y="104" font-size="11" font-weight="700" fill="#141414">• Monthly Budget</text>
+    <text x="14" y="120" font-size="10" fill="#6B6A65">Pacing vs days left</text>
+
+    <text x="14" y="142" font-size="11" font-weight="700" fill="#141414">• Week Cycle</text>
+    <text x="14" y="158" font-size="10" fill="#6B6A65">Saturday → Friday</text>
+
+    <text x="14" y="180" font-size="11" font-weight="700" fill="#141414">• Who Owes Whom</text>
+    <text x="14" y="196" font-size="10" fill="#6B6A65">IOUs with 1-click settle</text>
+  </g>
+
+  <!-- Pillar 4: Renewals -->
+  <g transform="translate(615, 230)">
+    <rect x="0" y="0" width="175" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+    <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
+    <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">🔄</text>
+
+    <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Renewals</text>
+    <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">Subscriptions</text>
+
+    <line x1="12" y1="48" x2="163" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+
+    <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Services &amp; Hosting</text>
+    <text x="14" y="82" font-size="10" fill="#6B6A65">Domains, credits, tools</text>
+    
+    <text x="14" y="104" font-size="11" font-weight="700" fill="#141414">• Dual Currency</text>
+    <text x="14" y="120" font-size="10" fill="#6B6A65">BDT &amp; USD separate totals</text>
+
+    <text x="14" y="142" font-size="11" font-weight="700" fill="#141414">• Expiry Warning</text>
+    <text x="14" y="158" font-size="10" fill="#6B6A65">Color alert before charge</text>
+
+    <text x="14" y="180" font-size="11" font-weight="700" fill="#141414">• Gmail SMTP Cron</text>
+    <text x="14" y="196" font-size="10" fill="#6B6A65">Daily reminders to email</text>
+  </g>
+
+  <!-- Pillar 5: Agent Hub -->
+  <g transform="translate(810, 230)">
+    <rect x="0" y="0" width="160" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+    <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
+    <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">⚡</text>
+
+    <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Agent Hub</text>
+    <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">MCP &amp; Keys</text>
+
+    <line x1="12" y1="48" x2="148" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+
+    <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Remote MCP</text>
+    <text x="14" y="82" font-size="10" fill="#6B6A65">HTTP endpoint at /api/mcp</text>
+    
+    <text x="14" y="104" font-size="11" font-weight="700" fill="#141414">• Scoped Keys</text>
+    <text x="14" y="120" font-size="10" fill="#6B6A65">tasks:read, write, money…</text>
+
+    <text x="14" y="142" font-size="11" font-weight="700" fill="#141414">• Guardrails</text>
+    <text x="14" y="158" font-size="10" fill="#6B6A65">No delete tools for agents</text>
+
+    <text x="14" y="180" font-size="11" font-weight="700" fill="#141414">• Audit Log</text>
+    <text x="14" y="196" font-size="10" fill="#6B6A65">Every call logged &amp; visible</text>
+  </g>
+
+  <!-- Foundation & Storage Bottom Layer -->
+  <g transform="translate(30, 480)">
+    <rect x="0" y="0" width="940" height="110" rx="10" fill="#141414" filter="url(#card-shadow)" />
+    
+    <text x="24" y="32" font-size="14" font-weight="800" fill="#FFE45C">SHARED BACKEND SERVICES &amp; PERSISTENCE LAYER</text>
+    <text x="24" y="50" font-size="11" font-weight="500" fill="#E6E4DD">Unified business logic: Both browser session routes and the agent MCP server execute identical service functions in <tspan font-family="monospace" fill="#FFE45C">src/lib/services/</tspan></text>
+
+    <!-- Sub-blocks inside foundation -->
+    <rect x="24" y="64" width="280" height="34" rx="6" fill="#262626" stroke="#404040" stroke-width="1"/>
+    <text x="36" y="85" font-size="11" font-weight="700" fill="#FBFAF6">PostgreSQL (Supabase) + RLS</text>
+
+    <rect x="320" y="64" width="310" height="34" rx="6" fill="#262626" stroke="#404040" stroke-width="1"/>
+    <text x="332" y="85" font-size="11" font-weight="700" fill="#FBFAF6">Vercel Cron (Daily 02:00 UTC / 08:00 BST)</text>
+
+    <rect x="646" y="64" width="270" height="34" rx="6" fill="#262626" stroke="#404040" stroke-width="1"/>
+    <text x="658" y="85" font-size="11" font-weight="700" fill="#FBFAF6">Gmail SMTP (Reminder Transporter)</text>
+  </g>
+</svg>
