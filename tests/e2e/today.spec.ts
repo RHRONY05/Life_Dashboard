@@ -59,6 +59,56 @@ test.describe("Today Board E2E", () => {
     }
   });
 
+  test("three-dot dropdown menu opens anchored directly below the trigger", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "Desktop only test");
+
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    // Add a task in Tomorrow
+    const tmrwInput = page.locator(".col").nth(2).getByPlaceholder(/Add a task/i);
+    const title = `Dropdown Anchor Test ${Date.now()}`;
+    await tmrwInput.fill(title);
+    await tmrwInput.press("Enter");
+
+    const taskRow = page.locator(".task", { hasText: title }).first();
+    await expect(taskRow).toBeVisible();
+
+    // Hover task to reveal actions and click the three dots button
+    await taskRow.hover();
+    const moreBtn = taskRow.getByRole("button", { name: "More actions" });
+    await expect(moreBtn).toBeVisible();
+
+    const triggerBox = await moreBtn.boundingBox();
+    expect(triggerBox).not.toBeNull();
+
+    await moreBtn.click();
+
+    // Verify dropdown content appears
+    const menu = page.locator("[role='menu']");
+    await expect(menu).toBeVisible();
+
+    const menuBox = await menu.boundingBox();
+    expect(menuBox).not.toBeNull();
+
+    // Verify it is positioned directly adjacent to the trigger, NOT at (0, 0)
+    // The trigger y-coordinate should be close to menu y-coordinate (sideOffset ~ 6px)
+    expect(menuBox!.y).toBeGreaterThan(triggerBox!.y);
+    expect(Math.abs(menuBox!.y - (triggerBox!.y + triggerBox!.height))).toBeLessThan(20);
+    // Menu x-position should be aligned near the right edge of trigger
+    expect(menuBox!.x).toBeGreaterThan(100);
+
+    // Edit item should be visible in menu
+    await expect(menu.getByText("Edit")).toBeVisible();
+
+    // Press Escape to close
+    await page.keyboard.press("Escape");
+    await expect(menu).not.toBeVisible();
+  });
+
   test("mobile DaySwitcher switches views properly", async ({
     page,
     isMobile,

@@ -28,7 +28,14 @@ import {
   DialogFooter,
 } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/DropdownMenu";
+import clsx from "clsx";
 
 interface TaskRowProps {
   task: TaskDto;
@@ -67,6 +74,7 @@ export function TaskRow({
   const [editNote, setEditNote] = useState(task.note || "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const targets = moveTargets(task, column);
   const quickTarget = targets[0];
@@ -145,9 +153,12 @@ export function TaskRow({
   return (
     <>
       <div
-        className={`task ${task.done ? "done" : ""} ${
-          isFocused ? "focus" : ""
-        }`}
+        className={clsx(
+          "task",
+          task.done && "done",
+          isFocused && "focus",
+          menuOpen && "hover bg-surface-2"
+        )}
         data-task-id={task.id}
       >
         {/* Checkbox */}
@@ -190,7 +201,13 @@ export function TaskRow({
         </div>
 
         {/* Hover / Focus Actions */}
-        <div className="task-actions">
+        <div
+          className={clsx(
+            "task-actions flex items-center gap-1",
+            menuOpen && "!flex"
+          )}
+          style={{ display: menuOpen ? "flex" : undefined }}
+        >
           {/* Quick move button */}
           {!task.done && column === "list" && (
             <IconButton
@@ -223,122 +240,98 @@ export function TaskRow({
           )}
 
           {/* More menu dropdown */}
-          <DropdownMenuPrimitive.Root>
-            <DropdownMenuPrimitive.Trigger asChild>
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+            <DropdownMenuTrigger asChild>
               <IconButton size="sm" aria-label="More actions">
                 <MoreHorizontal className="w-4 h-4" />
               </IconButton>
-            </DropdownMenuPrimitive.Trigger>
+            </DropdownMenuTrigger>
 
-            <DropdownMenuPrimitive.Portal>
-              <DropdownMenuPrimitive.Content
-                className="menu"
-                align="end"
-                sideOffset={4}
+            <DropdownMenuContent
+              align="end"
+              sideOffset={6}
+              collisionPadding={16}
+            >
+              {!task.done && column === "list" && (
+                <>
+                  <DropdownMenuItem onClick={() => onMove(task, "today")}>
+                    <CalendarCheck className="w-3.5 h-3.5 mr-2" />
+                    <span>Plan for today</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onMove(task, "tomorrow")}>
+                    <CalendarPlus className="w-3.5 h-3.5 mr-2" />
+                    <span>Plan for tomorrow</span>
+                  </DropdownMenuItem>
+                  {onReorder && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => onReorder(task, "up")}>
+                        <ArrowUp className="w-3.5 h-3.5 mr-2" />
+                        <span className="flex-1">Move up</span>
+                        <kbd className="ml-auto">Alt ↑</kbd>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onReorder(task, "down")}>
+                        <ArrowDown className="w-3.5 h-3.5 mr-2" />
+                        <span className="flex-1">Move down</span>
+                        <kbd className="ml-auto">Alt ↓</kbd>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </>
+              )}
+
+              {!task.done && column !== "list" && (
+                <>
+                  {targets.includes("today") && (
+                    <DropdownMenuItem onClick={() => onMove(task, "today")}>
+                      <CalendarCheck className="w-3.5 h-3.5 mr-2" />
+                      <span>Move to today</span>
+                    </DropdownMenuItem>
+                  )}
+                  {targets.includes("tomorrow") && (
+                    <DropdownMenuItem onClick={() => onMove(task, "tomorrow")}>
+                      <CalendarPlus className="w-3.5 h-3.5 mr-2" />
+                      <span>Move to tomorrow</span>
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
+
+              {/* Move to list submenu / items */}
+              {!task.done && lists.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  {lists
+                    .filter((l) => l.id !== task.listId)
+                    .map((l) => (
+                      <DropdownMenuItem
+                        key={l.id}
+                        onClick={() => onMove(task, { listId: l.id })}
+                      >
+                        <CornerDownRight className="w-3.5 h-3.5 mr-2" />
+                        <span>Move to {l.name}</span>
+                      </DropdownMenuItem>
+                    ))}
+                </>
+              )}
+
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                <Pencil className="w-3.5 h-3.5 mr-2" />
+                <span className="flex-1">Edit</span>
+                <kbd className="ml-auto">E</kbd>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                danger
+                onClick={() => setShowDeleteConfirm(true)}
               >
-                {!task.done && column === "list" && (
-                  <>
-                    <DropdownMenuPrimitive.Item
-                      className="mi cursor-pointer"
-                      onClick={() => onMove(task, "today")}
-                    >
-                      <CalendarCheck className="w-3.5 h-3.5" />
-                      Plan for today
-                    </DropdownMenuPrimitive.Item>
-                    <DropdownMenuPrimitive.Item
-                      className="mi cursor-pointer"
-                      onClick={() => onMove(task, "tomorrow")}
-                    >
-                      <CalendarPlus className="w-3.5 h-3.5" />
-                      Plan for tomorrow
-                    </DropdownMenuPrimitive.Item>
-                    {onReorder && (
-                      <>
-                        <DropdownMenuPrimitive.Separator className="border-t border-[var(--line)] my-1" />
-                        <DropdownMenuPrimitive.Item
-                          className="mi cursor-pointer"
-                          onClick={() => onReorder(task, "up")}
-                        >
-                          <ArrowUp className="w-3.5 h-3.5" />
-                          Move up
-                          <kbd>Alt ↑</kbd>
-                        </DropdownMenuPrimitive.Item>
-                        <DropdownMenuPrimitive.Item
-                          className="mi cursor-pointer"
-                          onClick={() => onReorder(task, "down")}
-                        >
-                          <ArrowDown className="w-3.5 h-3.5" />
-                          Move down
-                          <kbd>Alt ↓</kbd>
-                        </DropdownMenuPrimitive.Item>
-                      </>
-                    )}
-                  </>
-                )}
-
-                {!task.done && column !== "list" && (
-                  <>
-                    {targets.includes("today") && (
-                      <DropdownMenuPrimitive.Item
-                        className="mi cursor-pointer"
-                        onClick={() => onMove(task, "today")}
-                      >
-                        <CalendarCheck className="w-3.5 h-3.5" />
-                        Move to today
-                      </DropdownMenuPrimitive.Item>
-                    )}
-                    {targets.includes("tomorrow") && (
-                      <DropdownMenuPrimitive.Item
-                        className="mi cursor-pointer"
-                        onClick={() => onMove(task, "tomorrow")}
-                      >
-                        <CalendarPlus className="w-3.5 h-3.5" />
-                        Move to tomorrow
-                      </DropdownMenuPrimitive.Item>
-                    )}
-                  </>
-                )}
-
-                {/* Move to list submenu / items */}
-                {!task.done && lists.length > 0 && (
-                  <>
-                    <DropdownMenuPrimitive.Separator className="border-t border-[var(--line)] my-1" />
-                    {lists
-                      .filter((l) => l.id !== task.listId)
-                      .map((l) => (
-                        <DropdownMenuPrimitive.Item
-                          key={l.id}
-                          className="mi cursor-pointer"
-                          onClick={() => onMove(task, { listId: l.id })}
-                        >
-                          <CornerDownRight className="w-3.5 h-3.5" />
-                          Move to {l.name}
-                        </DropdownMenuPrimitive.Item>
-                      ))}
-                  </>
-                )}
-
-                <DropdownMenuPrimitive.Separator className="border-t border-[var(--line)] my-1" />
-                <DropdownMenuPrimitive.Item
-                  className="mi cursor-pointer"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                  Edit
-                  <kbd>E</kbd>
-                </DropdownMenuPrimitive.Item>
-
-                <DropdownMenuPrimitive.Separator className="border-t border-[var(--line)] my-1" />
-                <DropdownMenuPrimitive.Item
-                  className="mi danger cursor-pointer"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Delete
-                </DropdownMenuPrimitive.Item>
-              </DropdownMenuPrimitive.Content>
-            </DropdownMenuPrimitive.Portal>
-          </DropdownMenuPrimitive.Root>
+                <Trash2 className="w-3.5 h-3.5 mr-2 text-danger-text" />
+                <span>Delete</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

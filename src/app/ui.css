@@ -187,7 +187,13 @@ kbd { font-family: var(--font-mono); font-size: 11px; line-height: 16px; padding
 .task-meta { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .task.done .task-title { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--line-strong); }
 .task-actions { display: none; gap: 2px; margin: -4px -4px 0 0; }
-.task:hover .task-actions, .task.hover .task-actions, .task.focus .task-actions { display: flex; }
+.task:hover .task-actions,
+.task.hover .task-actions,
+.task.focus .task-actions,
+.task:focus-within .task-actions,
+.task:has([data-state="open"]) .task-actions {
+  display: flex !important;
+}
 .task .date { font-size: var(--text-xs); color: var(--danger-text); font-weight: 600; }
 .sep-done { font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 650; padding: 10px 8px 4px; }
 

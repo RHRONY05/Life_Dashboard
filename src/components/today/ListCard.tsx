@@ -24,7 +24,13 @@ import {
   DialogFooter,
 } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
-import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/DropdownMenu";
 
 interface ListCardProps {
   list: TaskListDto;
@@ -155,67 +161,49 @@ export function ListCard({
             </IconButton>
 
             {/* List Menu */}
-            <DropdownMenuPrimitive.Root>
-              <DropdownMenuPrimitive.Trigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <IconButton size="sm" aria-label="List options">
                   <MoreHorizontal className="w-4 h-4" />
                 </IconButton>
-              </DropdownMenuPrimitive.Trigger>
+              </DropdownMenuTrigger>
 
-              <DropdownMenuPrimitive.Portal>
-                <DropdownMenuPrimitive.Content
-                  className="menu"
-                  align="end"
-                  sideOffset={4}
+              <DropdownMenuContent align="end" sideOffset={6} collisionPadding={16}>
+                <DropdownMenuItem onClick={() => setIsRenaming(true)}>
+                  <Pencil className="w-3.5 h-3.5 mr-2" />
+                  <span>Rename</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onReorderList(list.id, "up")}>
+                  <ArrowLeft className="w-3.5 h-3.5 mr-2" />
+                  <span className="flex-1">Move left</span>
+                  <kbd className="ml-auto">Alt ←</kbd>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onReorderList(list.id, "down")}>
+                  <ArrowRight className="w-3.5 h-3.5 mr-2" />
+                  <span className="flex-1">Move right</span>
+                  <kbd className="ml-auto">Alt →</kbd>
+                </DropdownMenuItem>
+
+                {list.done.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setShowClearDoneConfirm(true)}>
+                      <CheckCircle2 className="w-3.5 h-3.5 mr-2" />
+                      <span>Clear done</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  danger
+                  onClick={() => setShowDeleteConfirm(true)}
                 >
-                  <DropdownMenuPrimitive.Item
-                    className="mi cursor-pointer"
-                    onClick={() => setIsRenaming(true)}
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    Rename
-                  </DropdownMenuPrimitive.Item>
-                  <DropdownMenuPrimitive.Item
-                    className="mi cursor-pointer"
-                    onClick={() => onReorderList(list.id, "up")}
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    Move left
-                    <kbd>Alt ←</kbd>
-                  </DropdownMenuPrimitive.Item>
-                  <DropdownMenuPrimitive.Item
-                    className="mi cursor-pointer"
-                    onClick={() => onReorderList(list.id, "down")}
-                  >
-                    <ArrowRight className="w-3.5 h-3.5" />
-                    Move right
-                    <kbd>Alt →</kbd>
-                  </DropdownMenuPrimitive.Item>
-
-                  {list.done.length > 0 && (
-                    <>
-                      <DropdownMenuPrimitive.Separator className="border-t border-[var(--line)] my-1" />
-                      <DropdownMenuPrimitive.Item
-                        className="mi cursor-pointer"
-                        onClick={() => setShowClearDoneConfirm(true)}
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Clear done
-                      </DropdownMenuPrimitive.Item>
-                    </>
-                  )}
-
-                  <DropdownMenuPrimitive.Separator className="border-t border-[var(--line)] my-1" />
-                  <DropdownMenuPrimitive.Item
-                    className="mi danger cursor-pointer"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Delete list
-                  </DropdownMenuPrimitive.Item>
-                </DropdownMenuPrimitive.Content>
-              </DropdownMenuPrimitive.Portal>
-            </DropdownMenuPrimitive.Root>
+                  <Trash2 className="w-3.5 h-3.5 mr-2 text-danger-text" />
+                  <span>Delete list</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
