@@ -1,21 +1,30 @@
 import React from "react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { requireOwner } from "@/lib/auth";
+import { getBoard } from "@/lib/services/tasks";
+import { getLists } from "@/lib/services/lists";
+import { TodayBoard } from "@/components/today/TodayBoard";
 
-export default function TodayPage() {
+export default async function TodayPage() {
+  const ctx = await requireOwner();
+  const [board, listsResult] = await Promise.all([
+    getBoard(ctx),
+    getLists(ctx),
+  ]);
+
   return (
     <div className="page max-w-[1440px] mx-auto p-4 md:p-8">
       <div className="page-head flex items-center gap-3 mb-6">
         <h1 className="text-xl md:text-2xl font-display font-extrabold tracking-tight">
           TODAY
         </h1>
-        <span className="sub text-ink-3 text-sm font-medium">
+        <span className="sub text-[var(--ink-3)] text-sm font-medium">
           Yesterday · Today · Tomorrow
         </span>
       </div>
-      <EmptyState
-        illustration="today-empty"
-        title="Nothing planned yet."
-        description="Add the first task above or pick from your lists below."
+
+      <TodayBoard
+        initialBoard={board}
+        initialLists={listsResult.lists || []}
       />
     </div>
   );

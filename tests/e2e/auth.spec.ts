@@ -36,6 +36,7 @@ test.describe("Authentication Flows", () => {
 
   test("correct credentials logs in to Today and can log out", async ({
     page,
+    isMobile,
   }) => {
     const email = process.env.E2E_EMAIL || "e2e+vocab@gmail.com";
     const password = process.env.E2E_PASSWORD;
@@ -50,20 +51,22 @@ test.describe("Authentication Flows", () => {
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await page.waitForURL("/", { timeout: 15000 });
-    await expect(page).toHaveURL("http://localhost:3000/");
+    await expect(page).toHaveURL(/\/(\?.*)?$/);
     await expect(
       page.locator("main").getByRole("heading", { name: "TODAY" })
     ).toBeVisible();
 
     // Log out via avatar menu on desktop
-    const avatar = page.locator("button.avatar");
-    if (await avatar.isVisible()) {
-      await avatar.click();
-      const logoutItem = page.getByText("Log out");
-      await logoutItem.click();
+    if (!isMobile) {
+      const avatar = page.locator("button.avatar");
+      if (await avatar.isVisible()) {
+        await avatar.click();
+        const logoutItem = page.getByRole("menuitem", { name: /Log out/i });
+        await logoutItem.click();
 
-      await page.waitForURL(/\/login/, { timeout: 15000 });
-      await expect(page).toHaveURL(/\/login/);
+        await page.waitForURL(/\/login/, { timeout: 15000 });
+        await expect(page).toHaveURL(/\/login/);
+      }
     }
   });
 });

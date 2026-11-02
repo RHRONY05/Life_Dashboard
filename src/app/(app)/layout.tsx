@@ -3,6 +3,8 @@ import { AppHeader } from "@/components/shell/AppHeader";
 import { MobileHeader } from "@/components/shell/MobileHeader";
 import { TabBar } from "@/components/shell/TabBar";
 
+export const dynamic = "force-dynamic";
+
 export default function AppLayout({
   children,
 }: {

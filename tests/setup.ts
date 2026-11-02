@@ -1,5 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
+import { vi } from "vitest";
+
+// Mock server-only in Vitest unit/integration runs
+vi.mock("server-only", () => ({}));
 
 // In Node < 22, @supabase/realtime-js checks for globalThis.WebSocket
 const globalObj = globalThis as unknown as { WebSocket?: unknown };

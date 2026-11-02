@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./ui.css";
 
 /* ==========================================================================
    Life Dashboard — design tokens (source of truth)
@@ -305,8 +306,21 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 300ms ease-in-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spin {
+    animation: none;
+  }
+  .animate-shake {
     animation: none;
   }
 }

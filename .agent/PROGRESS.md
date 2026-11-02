@@ -9,10 +9,10 @@
 | | |
 |---|---|
 | **Phase** | Building M1 (Foundation + Today) |
-| **Next task** | V2 Data, auth, first deploy |
+| **Next task** | V3 Today board + Lists |
 | **Blocked on** | — |
-| **Production URL** | — (planned: https://life.rhrony05.me) |
-| **Last updated** | 2026-11-02 by Antigravity (V1 Scaffold done) |
+| **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
+| **Last updated** | 2026-11-02 by Antigravity (V2 Data & Auth done) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -30,8 +30,8 @@ Things only the human can do. Agents add to this list; the human ticks them.
 |---|---|
 | GitHub repo | `RHRONY05/Life_Dashboard` (private) |
 | Supabase project | `vocab` · ref `vnadntttnwylvarcqwhe` · ap-southeast-1 · shared with the Vocab app |
-| Owner / e2e user ids | — (from `scripts/check-owner.ts` in V2) |
-| Vercel project / URL | — (planned `life-dashboard`, `life.rhrony05.me`) |
+| Owner / e2e user ids | Owner: `7e8be51c-2337-4746-a7be-9caaa9ce9223` · E2E: `dc69c1f3-8c23-41c5-841b-9b05a2dceb20` |
+| Vercel project / URL | `life-dashboard` · `https://life-rony.vercel.app` & `https://life.rhrony05.me` |
 | MCP packages (versions) | `mcp-handler` 2.3.0 · `@modelcontextprotocol/server` 2.4.0 · `@modelcontextprotocol/sdk` 1.32.2 |
 | Node / npm | Node v20.19.2 · npm 10.8.2 |
 
@@ -108,3 +108,11 @@ Deploy: — (starts V2)
 Commits: feat(v1): scaffold project, design system, shell, and tests
 Problems / surprises: none
 Next: V2 Data, auth, first deploy
+
+### 2026-11-02 22:08 — Antigravity — V2 Data, auth, first deploy
+Did: applied migrations 20261102215000_life_init.sql and 20261102215300_cover_foreign_keys.sql to shared Supabase project vocab; generated src/types/database.ts; verified check-owner.ts (owner & e2e IDs); built auth system (proxy.ts session refresh and redirects, requireOwner, Ctx scopes, /api/auth/login and logout with local session scope); built reset test helpers; created Vercel project life-dashboard; securely synced 10 production env vars; configured custom domains life.rhrony05.me and life-rony.vercel.app; triggered production deployment.
+Tests: typecheck ✅ lint ✅ unit ✅ (4 passed) int ✅ (1 passed) e2e ✅ (11 passed) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (Vocab at vocab.rhrony05.me unaffected, Life Dashboard responds with 307 /login)
+Commits: 656898d feat(v2): database migrations, auth routes, test helpers, and E2E auth setup
+Problems / surprises: Cloudflare apex needs CNAME for life.rhrony05.me, added life-rony.vercel.app as immediate working live domain
+Next: V3 Today board + Lists

@@ -3,6 +3,42 @@
  * Maps API / domain conflict/error reasons to clear, plain-language sentences.
  */
 
+export class NotFoundError extends Error {
+  status = 404;
+  constructor(message = "Not found") {
+    super(message);
+    this.name = "NotFoundError";
+  }
+}
+
+export class ConflictError extends Error {
+  status = 409;
+  reason: string;
+  constructor(reason: string, message?: string) {
+    super(message || getErrorMessage(reason, "Conflict"));
+    this.name = "ConflictError";
+    this.reason = reason;
+  }
+}
+
+export class InvalidInputError extends Error {
+  status = 400;
+  details?: unknown;
+  constructor(message = "Invalid input", details?: unknown) {
+    super(message);
+    this.name = "InvalidInputError";
+    this.details = details;
+  }
+}
+
+export class UnauthorizedError extends Error {
+  status = 401;
+  constructor(message = "Unauthorized") {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
 export const ERROR_MESSAGES: Record<string, string> = {
   // Tasks & lists
   TASK_ALREADY_DONE: "You can't move a completed task.",

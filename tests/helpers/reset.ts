@@ -1,5 +1,7 @@
 import { getAdminClient } from "@/lib/supabase/admin";
 
+export const E2E_USER_ID = "dc69c1f3-8c23-41c5-841b-9b05a2dceb20";
+
 export async function getE2EUserId(): Promise<string> {
   const admin = getAdminClient();
   const e2eEmail = process.env.E2E_EMAIL || "e2e+vocab@gmail.com";
