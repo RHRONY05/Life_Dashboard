@@ -1,6 +1,12 @@
 import * as fs from "fs";
 import * as path from "path";
 
+// In Node < 22, @supabase/realtime-js checks for globalThis.WebSocket
+const globalObj = globalThis as unknown as { WebSocket?: unknown };
+if (typeof globalObj.WebSocket === "undefined") {
+  globalObj.WebSocket = class MockWebSocket {};
+}
+
 // Load .env.local into process.env if present
 const envPath = path.resolve(process.cwd(), ".env.local");
 if (fs.existsSync(envPath)) {

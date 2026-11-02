@@ -43,24 +43,22 @@ export default defineConfig({
     },
     {
       name: "desktop",
+      dependencies: ["setup"],
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1440, height: 900 },
-        storageState: fs.existsSync("playwright/.auth/user.json")
-          ? "playwright/.auth/user.json"
-          : undefined,
+        storageState: "playwright/.auth/user.json",
       },
     },
     {
       name: "mobile",
+      dependencies: ["setup"],
       use: {
         ...devices["Pixel 5"],
         viewport: { width: 390, height: 844 },
         isMobile: true,
         hasTouch: true,
-        storageState: fs.existsSync("playwright/.auth/user.json")
-          ? "playwright/.auth/user.json"
-          : undefined,
+        storageState: "playwright/.auth/user.json",
       },
     },
     {

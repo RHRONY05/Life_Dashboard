@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run --exclude \"**/*.int.test.ts\" --exclude \"tests/e2e/**\"",
     "test": "vitest run --exclude \"**/*.int.test.ts\" --exclude \"tests/e2e/**\"",
     "test:int": "vitest run --config vitest.int.config.ts",
     "test:e2e": "playwright test",

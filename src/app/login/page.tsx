@@ -10,6 +10,7 @@ import { Illustration } from "@/components/illustrations";
 function LoginForm() {
   const searchParams = useSearchParams();
   const isExpired = searchParams.get("expired") === "1";
+  const [email, setEmail] = useState("muhammadrony147@gmail.com");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -28,7 +29,7 @@ function LoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
@@ -78,14 +79,18 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-ink-2 uppercase tracking-wide">
+          <label
+            htmlFor="email"
+            className="text-xs font-semibold text-ink-2 uppercase tracking-wide"
+          >
             Email
           </label>
           <input
+            id="email"
             type="email"
-            disabled
-            value="muhammadrony147@gmail.com"
-            className="w-full h-10 px-3 rounded-md border border-line bg-surface-2 text-ink-3 text-sm cursor-not-allowed select-none"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full h-10 px-3 rounded-md border border-line bg-surface-2 text-ink-3 text-sm"
           />
         </div>
 
