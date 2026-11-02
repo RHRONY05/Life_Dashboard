@@ -128,7 +128,7 @@ export function AppHeader({
               R
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" sideOffset={8} collisionPadding={16}>
             <DropdownMenuItem
               danger
               onClick={async () => {

@@ -361,7 +361,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
 .tabs-line button.on { color: var(--accent-text); border-bottom-color: var(--accent); font-weight: 600; }
 
 /* ---- Menu (DropdownMenu) ---- */
-.menu { position: absolute; z-index: 5; width: 210px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 4px; }
+.menu { z-index: 50; min-width: 160px; background: var(--surface); border: var(--card-border); border-radius: var(--radius-md); box-shadow: var(--card-shadow); padding: 4px; }
 .menu a, .menu div.mi { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: var(--radius-sm); color: var(--ink); font-size: var(--text-sm); }
 .menu a:hover, .menu .mi.on { background: var(--surface-2); }
 .menu svg.lucide { width: 15px; height: 15px; color: var(--ink-3); }

@@ -12,13 +12,15 @@ export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
 export const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
+>(({ className, sideOffset = 6, align = "end", collisionPadding = 16, ...props }, ref) => (
   <DropdownMenuPrimitive.Portal>
     <DropdownMenuPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
+      align={align}
+      collisionPadding={collisionPadding}
       className={clsx(
-        "menu z-50 min-w-[210px] overflow-hidden rounded-md border border-frame bg-surface p-1 shadow-lg text-ink text-sm focus:outline-none animate-in fade-in-80",
+        "z-50 min-w-[160px] overflow-hidden rounded-md border border-frame bg-surface p-1 shadow-[var(--card-shadow)] text-ink text-sm focus:outline-none animate-in fade-in-80",
         className
       )}
       {...props}
