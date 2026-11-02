@@ -5,7 +5,7 @@
   <h1>Life Dashboard</h1>
   <p><strong>My private command center for daily tasks, trackers, small debts, and renewals — built for me and my AI agents.</strong></p>
   <p>
-    <a href="https://life.rhrony05.me"><strong>🌐 life.rhrony05.me</strong></a>
+    <a href="https://life.rhrony05.me"><strong>🌐 dashboard.rhrony05.me</strong></a>
     &nbsp;•&nbsp;
     <a href="https://life-rony.vercel.app">Vercel Mirror</a>
   </p>
