@@ -3,7 +3,7 @@
     <img src="public/icon-192.png" width="80" height="80" alt="Life Dashboard Logo" style="border-radius: 18px;" />
   </a>
   <h1>Life Dashboard</h1>
-  <p><strong>A private, single-user command center for daily tasks, trackers, small debts, and renewals — built for Muhammad Rony and his AI agents.</strong></p>
+  <p><strong>My private command center for daily tasks, trackers, small debts, and renewals — built for me and my AI agents.</strong></p>
   <p>
     <a href="https://life.rhrony05.me"><strong>🌐 life.rhrony05.me</strong></a>
     &nbsp;•&nbsp;
@@ -29,103 +29,73 @@
   <img src="docs/architecture-overview.svg" alt="Life Dashboard Architecture & Features Overview" width="100%" />
 </div>
 
-### System Flow Diagram
+---
 
-```mermaid
-flowchart TD
-  classDef userNode fill:#FFE45C,stroke:#141414,stroke-width:2px,color:#141414;
-  classDef agentNode fill:#FFE45C,stroke:#141414,stroke-width:2px,color:#141414;
-  classDef appNode fill:#FFFFFF,stroke:#141414,stroke-width:2px,color:#141414;
-  classDef dbNode fill:#141414,stroke:#141414,stroke-width:2px,color:#FBFAF6;
+## Why I Built This
 
-  User["👤 Muhammad Rony (Browser)"]:::userNode
-  Agent["🤖 AI Agents (Antigravity / Claude / Muse)"]:::agentNode
+I am currently in my final year of university, studying computer science, picking up freelance client projects, and coding almost daily with autonomous AI agents. 
 
-  subgraph FrontDoors ["Two Front Doors"]
-    UI["Owner Web App\nDesktop 1440×900 · Mobile 390×844\nCookie Session Auth (/api/*)"]:::appNode
-    MCP["Remote MCP Server\nStateless Streamable HTTP (/api/mcp)\nBearer Token · Scoped · Rate Limited"]:::appNode
-  end
+Before building **Life Dashboard**, my daily life was basically running on pure adrenaline and chaos:
+- **My daily tasks lived purely in my head:** I would tell myself *"I'll definitely remember to submit that lab report and reply to that client by 5 PM"*, only to experience a full-blown panic attack at 11:58 PM.
+- **My small debts lived in messy phone notes:** Whenever my friends and I had lunch, small borrowings and lendings (*"who owes whom"*) ended up scattered across phone notes and random WhatsApp messages. Half the time, I forgot who owed me money or felt awkward calculating it.
+- **My renewal dates lived nowhere at all:** Domains, cloud servers, software subscriptions, and student trial credits would expire silently — or worse, suddenly hit my credit card with surprise renewal charges because I forgot to cancel a trial.
+- **My AI pair-programmers were working in the dark:** I collaborate daily with autonomous coding agents (Claude Code, Antigravity, Muse). Yet none of them had any idea what I was actually supposed to work on today. I was spending half my time acting as their unpaid human secretary, manually copy-pasting tasks between chats.
 
-  subgraph CoreLogic ["Shared Service Layer (src/lib/services/)"]
-    TasksSvc["Board & Tasks\nYesterday · Today · Tomorrow · Lists"]:::appNode
-    TrackersSvc["Trackers\nChecklists · NeetCode 150 · Progress"]:::appNode
-    MoneySvc["Money\nDaily Budget · Saturday→Friday · IOUs"]:::appNode
-    RenewalsSvc["Renewals\nBDT / USD · Expiry Alerts · Gmail Cron"]:::appNode
-    KeysSvc["API Keys & Audit\nHashed Keys · Scopes · Audit Log"]:::appNode
-  end
+> **The realization:**  
+> My brain simply doesn't have enough RAM to remember Dijkstra's algorithm, keep track of who owes me 200 taka for campus biryani, **and** remember which free trial is going to charge my card tomorrow morning.  
+> 
+> If AI agents are supposedly going to take over software engineering anyway, the very least they can do right now is help me do my chores and keep my day organized.
 
-  subgraph Persistence ["Persistence & External Services"]
-    DB[("Supabase PostgreSQL\nRow-Level Security (RLS)")]:::dbNode
-    Cron["Vercel Cron (Daily 02:00 UTC)"]:::appNode
-    Gmail["Gmail SMTP (Email Alerts)"]:::appNode
-  end
-
-  User --> UI
-  Agent --> MCP
-  UI --> TasksSvc & TrackersSvc & MoneySvc & RenewalsSvc & KeysSvc
-  MCP --> TasksSvc & TrackersSvc & MoneySvc & RenewalsSvc & KeysSvc
-  TasksSvc & TrackersSvc & MoneySvc & RenewalsSvc & KeysSvc --> DB
-  Cron --> RenewalsSvc
-  RenewalsSvc --> Gmail
-```
+So I decided to build **Life Dashboard** as my personal daily command center.
 
 ---
 
-## The Problem & The Solution
+## How It Works: Two Front Doors, One Service Layer
 
-### The Problem
-During his final year at university and freelance work, Muhammad Rony's day lived scattered across disconnected apps:
-- **Tasks lived in his head:** Deadlines were easily missed or caused constant mental fatigue.
-- **Debts lived in phone notes:** Small balances borrowed or lent to friends ("who owes whom") were forgotten or awkward to calculate.
-- **Renewals lived nowhere:** Domain expirations, server hosting bills, and student credit deadlines arrived unexpectedly, charging subscriptions without warning.
-- **AI agents worked in silos:** AI pair-programmers (Antigravity, Claude Code, Muse) could not inspect what Rony was working on, add tasks, or check upcoming renewal deadlines without manual copy-pasting.
+I wanted an app that is fast, beautiful, and accessible to both me and my agents without cutting corners:
 
-### The Solution
-**Life Dashboard** is a private personal dashboard paired with an **agent-native MCP engine**:
-- **Swiss Ink Design System:** Soft neo-brutalist aesthetic with crisp borders, warm yellow accents (`#FFE45C`), paper background (`#FBFAF6`), and full light/dark mode support.
-- **Strict Parity:** 100% desktop (1440×900) and mobile (390×844) feature parity without horizontal drift or layout leakage.
-- **Two Front Doors, One Service Layer:** Rony uses the browser web UI; AI agents connect to the `/api/mcp` endpoint via the Model Context Protocol. Both fronts call the exact same backend service functions in `src/lib/services/`.
-- **Zero AI Latency & Complete Control:** The app does not call external LLMs internally. The agents connecting from the outside *are* the AI.
+1. **Front Door 1 (For Me):** A responsive web app with a custom **Swiss Ink** design system (soft neo-brutalism, warm `#FFE45C` yellow accent, crisp borders, and dark mode toggle). Built with strict parity: 100% of features work identically on my desktop monitor (1440×900) and on my phone (390×844) while on the go.
+2. **Front Door 2 (For My AI Agents):** A remote, stateless Streamable HTTP **Model Context Protocol (MCP)** server running at `/api/mcp`. My agents connect using hashed, scoped API keys (`tasks:read`, `tasks:write`, `trackers:*`, `money:*`, `renewals:*`).
+3. **Unified Backend Services:** Both front doors call the exact same backend service functions in `src/lib/services/`. There is no separate or outdated public API — whenever an agent updates my board or adds an expense, it runs the exact same code my browser runs.
+4. **Zero AI Latency & Guardrails:** The web app itself doesn't call an LLM on every page load (keeping it instantaneous and free of API bill spikes). The agents connecting from outside *are* the AI. And for safety, agents are given **no delete tools** — only I can delete my data.
 
 ---
 
-## What You Can Do
+## What I Can Do
 
 ### 1. Yesterday · Today · Tomorrow Board
-A focused daily board organized around real human working habits:
-- **Calendar Days in `Asia/Dhaka`:** Natural day transitions anchored to local time.
-- **Sticky Tasks:** Tasks stay on their assigned day until explicitly moved or marked done. Nothing disappears automatically.
-- **Older Unfinished Tasks:** Unfinished tasks from previous days stay visible under Yesterday in an expandable badge with one-click "Move all to today".
-- **Custom Lists:** Create undated target lists ("To do later", "This week's targets", "Reading list") that live alongside the board.
-- **Keyboard Navigation:** Rapid task management via `N` (new task), `E` (edit), `X` (toggle done), `J`/`K` (navigate), and `?` (shortcut cheatsheet).
-- **Right Rail:** Instant visibility into quick links, upcoming renewals (next 14 days), net debt balances, and tracker milestones.
+My central daily workspace:
+- **Calendar Days in `Asia/Dhaka`:** Day transitions and dates are permanently anchored to my local timezone.
+- **Sticky Tasks:** Tasks stay on their assigned day until I (or one of my agents) check them off or move them. Nothing vanishes automatically overnight.
+- **Older Unfinished Tasks:** Any unfinished tasks from previous days remain clearly visible under Yesterday with a 1-click *"Move all to today"* button.
+- **Custom Lists:** I keep undated target lists ("To do later", "This week's targets", "Reading list") right beside my daily board.
+- **Keyboard Shortcuts:** Fast management with `N` (new task), `E` (edit), `X` (toggle done), `J`/`K` (navigate), and `?` (shortcuts cheat-sheet).
+- **Right Rail Widget:** Immediate glance at my quick links, upcoming renewals (next 14 days), net debt balance, and tracker progress.
 
 ### 2. Goal Trackers
-Keep long-running technical lists and personal curricula organized:
-- **Discrete Progress Checklists:** Built for lists with fixed goals (e.g. NeetCode 150, System Design topics, Book trackers).
-- **Progress Metrics:** Visual percentage and completion ratios (e.g., `42 / 150 completed`).
-- **Filter & Search:** Filter by active, completed, or remaining items with immediate client-side responsiveness.
+For structured, long-term technical learning:
+- **Fixed Checklist Tracking:** Tailored for discrete goals like completing the **NeetCode 150**, system design patterns, or books.
+- **Visual Progress:** Real-time percentage meters and ratio completion counts (e.g. `42 / 150 completed`).
+- **Instant Filtering:** Filter between all, remaining, and completed items without full page reloads.
 
 ### 3. Money & IOUs (Whole BDT)
-Track daily expenses and personal debts in taka (`৳`) with zero decimal noise:
-- **Monthly Budget Pacing:** Visual progress bar tracking spending against monthly limits and days remaining.
-- **Weekly Cycles:** Budgeting weeks aligned from **Saturday to Friday** matching Bangladeshi working and weekend schedules.
-- **Who Owes Whom (IOUs):** Log lent and borrowed amounts with names, notes, and 1-click settlement.
-- **Net Balance Calculation:** Instantly see total money you are owed vs. money you owe.
+Tracking daily expenses and personal debts in taka (`৳`) without confusing decimal noise:
+- **Monthly Budget Pacing:** A visual pacing bar showing how much I have spent versus how many days remain in the month.
+- **Saturday → Friday Cycle:** Budgeting weeks aligned with Bangladesh's working and weekend rhythm.
+- **Who Owes Whom (IOUs):** Quick logging of who lent or borrowed what, with 1-click settlement and net balance calculation.
 
 ### 4. Renewals & Subscriptions (BDT & USD)
-Never get hit by surprise subscription renewals or expired student credits:
-- **Multi-Currency:** Support for subscriptions in **BDT or USD** with separate totals (no misleading automatic conversions).
-- **Billing Cycles:** Monthly, annual, or one-off renewal tracking.
-- **Automated Daily Reminder Cron:** Vercel Cron triggers `/api/cron/daily` at 08:00 BST (02:00 UTC), sending warning emails via **Gmail SMTP** 7 days, 3 days, and 1 day before renewal.
+No more surprise credit card charges:
+- **Multi-Currency:** Keeps subscriptions in their native currency (**BDT or USD**) with separate totals — no misleading daily exchange rate conversions.
+- **Expiry Warnings:** Clear visual color warnings as renewal dates approach.
+- **Automated Daily Reminder Emails:** A Vercel Cron runs daily at 08:00 BST (02:00 UTC) to check renewals and sends reminder emails directly to my Gmail inbox via **Gmail SMTP** (7 days, 3 days, and 1 day before charge).
 
-### 5. Remote MCP Server & AI Agent Hub
-Enable autonomous AI assistants (Antigravity, Claude Code, Muse) to collaborate directly:
-- **Streamable HTTP MCP Endpoint:** Remote Model Context Protocol server running at `/api/mcp`.
-- **Scoped & Revocable API Keys:** Keys are hashed with SHA-256 (only shown once at creation) with granular permissions (`tasks:read`, `tasks:write`, `trackers:*`, `money:*`, `renewals:*`).
-- **Agent Guardrails:** Agents get read, create, and update capabilities, but **no delete tools**. Destructive actions remain human-only.
-- **Immutable Audit Logging:** Every agent request, tool name, timestamp, and response status is recorded in an audit log visible in the Settings dashboard.
-- **Rate Limiting:** Built-in protection limiting keys to 30 requests per minute and 1,000 requests per day.
+### 5. Agent Hub & Remote MCP Server
+Where I pair-program with my AI agents:
+- **Remote Streamable HTTP Endpoint:** Live at `/api/mcp`.
+- **Hashed, Scoped API Keys:** Every agent has its own key with granular permissions. Keys are SHA-256 hashed and shown only once upon creation.
+- **Immutable Audit Logging:** Every single agent tool invocation, timestamp, parameter, and response code is logged and visible in my Settings dashboard.
+- **Rate Limiting:** Built-in rate limits (30 requests/min, 1,000 requests/day) prevent rogue agent loops from exhausting database resources.
 
 ---
 
@@ -137,7 +107,7 @@ If you want to run your own instance of Life Dashboard:
 - **Node.js** ≥ 20
 - **npm** ≥ 10
 - **Git**
-- A **[Supabase](https://supabase.com/)** PostgreSQL database
+- A free **[Supabase](https://supabase.com/)** PostgreSQL database
 - A **Gmail App Password** (for daily renewal reminder emails)
 
 ### 2. Clone and Install
@@ -194,7 +164,7 @@ E2E_PASSWORD=<e2e-user-password>
 2. Run the migrations in sequence from `supabase/migrations/`:
    - `20261102215000_life_init.sql` (Tables, columns, indexes, RLS policies)
    - `20261102215300_cover_foreign_keys.sql` (Composite indexes and performance constraints)
-3. Confirm that the tables are created: `tasks`, `task_lists`, `trackers`, `tracker_items`, `expenses`, `ious`, `renewals`, `quick_links`, `api_keys`, `audit_logs`.
+3. Confirm the tables are created: `tasks`, `task_lists`, `trackers`, `tracker_items`, `expenses`, `ious`, `renewals`, `quick_links`, `api_keys`, `audit_logs`.
 
 ### 5. Run Locally
 ```bash
