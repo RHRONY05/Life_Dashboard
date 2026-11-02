@@ -52,9 +52,13 @@ test.describe("Authentication Flows", () => {
 
     await page.waitForURL("/", { timeout: 15000 });
     await expect(page).toHaveURL(/\/(\?.*)?$/);
-    await expect(
-      page.locator("main").getByRole("heading", { name: "TODAY" })
-    ).toBeVisible();
+    if (!isMobile) {
+      await expect(
+        page.locator("main").getByRole("heading", { name: "TODAY" })
+      ).toBeVisible();
+    } else {
+      await expect(page.locator("header.m-header h1")).toContainText(/Today/i);
+    }
 
     // Log out via avatar menu on desktop
     if (!isMobile) {

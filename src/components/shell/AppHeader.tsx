@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { IconButton } from "@/components/ui/IconButton";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -103,6 +104,8 @@ export function AppHeader({
         <span className="today-chip text-xs text-ink-2 font-medium px-2 py-1">
           {dateStr}
         </span>
+
+        <ThemeToggle className="sm" />
 
         <IconButton
           aria-label="Keyboard shortcuts"

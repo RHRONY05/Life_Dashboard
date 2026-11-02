@@ -20,7 +20,7 @@ export function DaySwitcher({
   onSelectSegment,
 }: DaySwitcherProps) {
   return (
-    <div className="seg block w-full mb-3 lg:hidden">
+    <div className="seg block day-switcher w-full mb-3 lg:hidden">
       <button
         type="button"
         className={currentSegment === "yesterday" ? "on" : ""}

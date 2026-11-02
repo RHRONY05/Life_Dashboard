@@ -38,7 +38,7 @@ the finished app and reads the code-flow walkthrough; he doesn't write code.
 | Topic | Decision |
 |---|---|
 | Users | Exactly one human user (`ALLOWED_EMAIL`), email + password, no sign-up. Agents are **not** users: they authenticate with API keys. |
-| Device | Desktop-first. Design sizes are 1440×900 and 390×844, and both must work fully. |
+| Device | Desktop (1440×900) and Mobile (390×844) parity. Both must work fully without layout leakage. Light mode is default with user toggle. |
 | Stack | Next.js 16 (App Router, TS strict) + Tailwind v4 + Supabase + Zod + Vitest + Playwright, on Vercel. |
 | Supabase | **Reuse the existing free project `vocab`** (ref `vnadntttnwylvarcqwhe`, org "RHRONY05's Org"). The org already has 2 active free projects, so no new project is created. The same owner login works for both apps. Every object this app creates is listed in `03-DATABASE.md`. **Never touch Vocab's tables (`words`, `quiz_attempts`) or its functions.** Schema changes go through the Supabase MCP, and each one is also a file in `supabase/migrations/`. |
 | Vercel | New project `life-dashboard` through the **Vercel MCP**, Hobby (free) plan, domain `life.rhrony05.me` (fallback `life-rony.vercel.app`). |

@@ -41,6 +41,10 @@ If a rule conflicts with a task description, the rule wins. Stop and flag it in 
 
 ## Quality bar
 - Every async action has loading, success and a friendly error state with Retry. Nothing fails silently. Every screen implements all the states in `10-STATES.md` (empty, none, too many, done, offline…), not only the happy path.
+- **Desktop & Mobile Parity (Strict):** Every module must be fully implemented, responsive, and verified for BOTH desktop (1440×900) and mobile (390×844) viewports:
+  - Mobile elements (`MobileHeader`, `TabBar`, `DaySwitcher`, mobile FABs) must NEVER appear on desktop (`md:hidden` / `lg:hidden`).
+  - Desktop elements (`AppHeader`, desktop multi-column layouts, sidebar rails) must adapt cleanly on mobile without horizontal overflowing.
+  - **Light mode is the default theme** across all devices. A theme toggle button (Sun/Moon) must be available in the shell on both desktop and mobile, persisting user selection in `localStorage`.
 - Visible focus, labelled icon buttons, AA contrast, touch targets ≥ 44 px on mobile, respects reduced motion.
 - Fast daily use: the Today page is usable (input focused) within 1 s on desktop. Ticking and moving are optimistic.
 - Every date shown or compared uses `APP_TIMEZONE` through `domain/dates.ts`. No `new Date().toISOString().slice(0,10)` anywhere.

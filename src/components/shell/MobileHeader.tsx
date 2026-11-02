@@ -3,6 +3,7 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import { IconButton } from "@/components/ui/IconButton";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Keyboard } from "lucide-react";
 
 interface MobileHeaderProps {
@@ -28,28 +29,50 @@ export function MobileHeader({
     return "Life Dashboard";
   };
 
+  const getSubtitle = () => {
+    if (subtitle) return subtitle;
+    if (pathname === "/") {
+      try {
+        return new Date().toLocaleDateString("en-US", {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+          timeZone: "Asia/Dhaka",
+        });
+      } catch {
+        return undefined;
+      }
+    }
+    return undefined;
+  };
+
+  const sub = getSubtitle();
+
   return (
     <header className="m-header md:hidden h-14 flex-none flex items-center gap-2 pl-4 pr-2 bg-surface border-b border-frame z-30 relative select-none">
       <h1 className="m-0 text-lg font-display font-extrabold flex-1 tracking-tight">
         <span>{getPageTitle()}</span>
-        {subtitle && (
+        {sub && (
           <small className="block text-xs text-ink-3 font-medium leading-[14px]">
-            {subtitle}
+            {sub}
           </small>
         )}
       </h1>
-      {rightAction ? (
-        rightAction
-      ) : (
-        <IconButton
-          aria-label="Shortcuts"
-          onClick={() => {
-            window.dispatchEvent(new KeyboardEvent("keydown", { key: "?" }));
-          }}
-        >
-          <Keyboard className="w-5 h-5" />
-        </IconButton>
-      )}
+      <div className="flex items-center gap-1">
+        <ThemeToggle className="sm" />
+        {rightAction ? (
+          rightAction
+        ) : (
+          <IconButton
+            aria-label="Shortcuts"
+            onClick={() => {
+              window.dispatchEvent(new KeyboardEvent("keydown", { key: "?" }));
+            }}
+          >
+            <Keyboard className="w-5 h-5" />
+          </IconButton>
+        )}
+      </div>
     </header>
   );
 }

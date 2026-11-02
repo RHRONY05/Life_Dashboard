@@ -22,8 +22,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${fontSans.variable} ${fontDisplay.variable} ${fontMono.variable} ${fontTaka.variable}`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"){document.documentElement.setAttribute("data-theme","dark");}else{document.documentElement.removeAttribute("data-theme");}}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-bg text-ink font-sans antialiased selection:bg-accent-soft selection:text-accent-text">
         <OfflineBar />
         {children}
