@@ -135,7 +135,12 @@ kbd { font-family: var(--font-mono); font-size: 11px; line-height: 16px; padding
 
 /* ---- Page frame ---- */
 .page { padding: 24px var(--page-pad-d); }
-.page-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+@media (min-width: 768px) {
+  .page-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+}
+@media (max-width: 767px) {
+  .page-head { display: none !important; }
+}
 .page-head h1 { margin: 0; font-size: var(--text-xl); line-height: var(--leading-xl); font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); }
 .page-head .sub { color: var(--ink-3); font-size: var(--text-sm); }
 .page-head .spacer { flex: 1; }
@@ -198,7 +203,12 @@ kbd { font-family: var(--font-mono); font-size: 11px; line-height: 16px; padding
 .col-empty svg.lucide { width: 28px; height: 28px; color: var(--ink-4); margin-bottom: 8px; stroke-width: 1.5; }
 
 /* TodayRail */
-.rail { display: flex; flex-direction: column; gap: 16px; }
+@media (min-width: 1024px) {
+  .rail { display: flex; flex-direction: column; gap: 16px; }
+}
+@media (max-width: 1023px) {
+  .rail { display: none !important; }
+}
 .linkgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .linktile { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border-radius: var(--radius-md); background: var(--surface-2); color: var(--ink); font-weight: 550; font-size: var(--text-sm); min-width: 0; }
 .linktile:hover { background: var(--surface-3); }
