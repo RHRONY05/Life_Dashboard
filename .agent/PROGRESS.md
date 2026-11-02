@@ -129,5 +129,5 @@ Next: Goal 2 / M2 (Trackers + Money: V4 & V5)
 Did: fixed CSS cascade collision where ui.css display definitions overrode Tailwind responsive utilities; wrapped topbar, m-header, tabbar, rail, and day-switcher in strict media queries so mobile elements never leak onto desktop and vice versa; built ThemeToggle component with light default theme and local storage persistence; added ThemeToggle to both AppHeader and MobileHeader; updated project rules (.agent/rules/life-dashboard.md and AGENTS.md) requiring strict desktop (1440x900) and mobile (390x844) parity and light default theme across every module; took live screenshots and verified on production.
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (16 passed) int ✅ (5 passed) e2e ✅ (16 passed, 3 skipped for viewport) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅ (verified desktop and mobile layouts live via Playwright screenshots)
-Commits: a70e43d, 55cb27b
+Commits: a70e43d, 55cb27b, 7bad01f (dropdown alignment & custom scrollbar)
 Next: Goal 2 / M2 (Trackers + Money: V4 & V5)
