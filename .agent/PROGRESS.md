@@ -9,10 +9,10 @@
 | | |
 |---|---|
 | **Phase** | Building M1 (Foundation + Today) |
-| **Next task** | V1 Scaffold + design system |
+| **Next task** | V2 Data, auth, first deploy |
 | **Blocked on** | — |
 | **Production URL** | — (planned: https://life.rhrony05.me) |
-| **Last updated** | 2026-11-02 by Antigravity (V0 Preflight done) |
+| **Last updated** | 2026-11-02 by Antigravity (V1 Scaffold done) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -28,7 +28,7 @@ Things only the human can do. Agents add to this list; the human ticks them.
 ## Environment facts (no secrets here!)
 | Item | Value |
 |---|---|
-| GitHub repo | — (private, planned `RHRONY05/Life_Dashboard`) |
+| GitHub repo | `RHRONY05/Life_Dashboard` (private) |
 | Supabase project | `vocab` · ref `vnadntttnwylvarcqwhe` · ap-southeast-1 · shared with the Vocab app |
 | Owner / e2e user ids | — (from `scripts/check-owner.ts` in V2) |
 | Vercel project / URL | — (planned `life-dashboard`, `life.rhrony05.me`) |
@@ -100,3 +100,11 @@ Deploy: — (starts V2)
 Commits: —
 Problems / surprises: none
 Next: V1 Scaffold + design system
+
+### 2026-11-02 21:49 — Antigravity — V1 Scaffold + design system
+Did: scaffolded Next.js 16 + Tailwind v4 + TS strict + Radix UI + Zod + Vitest + Playwright. Integrated Swiss Ink design tokens into globals.css and @theme. Built 16 inline SVG illustrations and DayGlyphs from sprite.svg. Built full UI primitive set (Button, IconButton, Kbd, Chip, Badge, Segmented, Switch, Checkbox, Banner, Skeleton, ProgressBar, Dialog, DropdownMenu, Toast, EmptyState, Logo) and shell components (AppHeader, MobileHeader, TabBar, ShortcutsDialog). Configured ESLint rule forbidding admin.ts import outside authorized directories. Created private GitHub repository RHRONY05/Life_Dashboard and pushed initial commit.
+Tests: typecheck ✅ lint ✅ unit ✅ e2e ✅ (4 passed) build ✅
+Deploy: — (starts V2)
+Commits: feat(v1): scaffold project, design system, shell, and tests
+Problems / surprises: none
+Next: V2 Data, auth, first deploy

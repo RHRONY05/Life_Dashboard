@@ -36,7 +36,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
   - Read the current READMEs of `mcp-handler` and `@modelcontextprotocol/sdk` (stateless Streamable HTTP, per-request auth, JSON responses, the client transport for tests). Pick versions and record them.
   - **AC:** a preflight table in PROGRESS.md (item · ✅/❌ · what the agent did / what the human must do).
 
-- [ ] **V1 Scaffold + design system** — in progress: Antigravity
+- [x] **V1 Scaffold + design system** — Next.js 16, Tailwind v4 Swiss Ink tokens, full base component suite & shell, tests passing, pushed to private GitHub.
   - Next.js 16 + TS strict + Tailwind v4 + shadcn/ui (the primitives in 02), Zod, `@supabase/ssr`, `lucide-react`, `sonner`, `date-fns` + `@date-fns/tz`, Vitest (unit + `vitest.int.config.ts`), Playwright (`setup`, `desktop`, `mobile`, `api` projects). Folder skeleton from 02. Scripts from 09.
   - The folder already has `AGENTS.md`, `CLAUDE.md` and `.agent/`, so scaffold in a temporary folder and move the files in. **Never overwrite our `AGENTS.md` or `CLAUDE.md`.** If Next.js writes its own agent-rules block, put it at the top of our `AGENTS.md`.
   - Design system: `design/tokens.css` → `globals.css` + `@theme`; fonts via `next/font` (02); base components from the design README component map (`Illustration` + `DayGlyph` as inline SVG components generated from `design/illustrations/sprite.svg`, `Button`, `IconButton`, `Kbd`, `Chip`, `Badge`, `Segmented`, `Switch`, `Checkbox`, `Banner`, `Skeleton`, `ProgressBar`, `Dialog`, `Menu`, `Toast`, `EmptyState`, `Logo`); the shell (`AppHeader` ≥ 768, `MobileHeader` + `TabBar` < 768) with placeholder pages for the 5 sections; the shortcuts dialog (`?`) with `g` navigation; the global state pieces from `10-STATES.md` §2–5 (`OfflineBar`, refetch progress line, `ErrorState`, `error.tsx`, `not-found.tsx`, toast helpers with Undo/Retry, `src/lib/errors.ts` reason → sentence map, the 300 ms / 400 ms spinner rule, `/login?expired=1` handling).
@@ -45,7 +45,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
   - `git init`, private repo `RHRONY05/Life_Dashboard`, first commit pushed.
   - **AC:** `build`, `typecheck`, `lint`, `test` pass; a sample Playwright test opens `/` on desktop and mobile; the shell matches the design header/tab bar at 1440 and 390, light and dark; importing `admin.ts` from a page fails lint; repo is private.
 
-- [ ] **V2 Data, auth, first deploy**
+- [ ] **V2 Data, auth, first deploy** — in progress: Antigravity
   - `supabase/migrations/<ts>_life_init.sql` = 03 exactly → `apply_migration` on `vocab` → types into `src/types/database.ts` → `get_advisors` and fix every warning **on our tables** (list any warning about Vocab's tables in PROGRESS.md, but don't change them).
   - `scripts/check-owner.ts`: prints the owner and e2e user ids (record in PROGRESS environment facts).
   - `/login` (design 01), logout, `proxy.ts` (02 Auth, with the `/api/mcp` and `/api/cron/daily` exclusions), `requireOwner()`, `src/lib/ctx.ts` (`Ctx`, `assertScope`), `supabase/{server,client,proxy,admin}.ts`. Test helpers: `reset.ts` (with its safety check), Playwright login setup.
