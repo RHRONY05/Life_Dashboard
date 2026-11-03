@@ -278,3 +278,176 @@ export interface TrackerDetailDto {
   groups: TrackerGroupDto[];
 }
 
+// ─── SPENDING ───
+
+export const SpendingCategories = [
+  "food",
+  "transport",
+  "study",
+  "bills",
+  "health",
+  "shopping",
+  "fun",
+  "other",
+] as const;
+
+export type SpendingCategory = (typeof SpendingCategories)[number];
+
+export const CreateExpenseSchema = z.object({
+  amount: z
+    .number()
+    .int("Amount must be a whole number")
+    .min(1, "Amount must be at least ৳1")
+    .max(10_000_000, "Amount must be ৳10,000,000 or less"),
+  category: z.enum(SpendingCategories),
+  note: z
+    .string()
+    .max(120, "Note must be 120 characters or less")
+    .trim()
+    .nullable()
+    .optional(),
+  spentOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)")
+    .optional(),
+});
+
+export type CreateExpenseInput = z.infer<typeof CreateExpenseSchema>;
+
+export const UpdateExpenseSchema = z.object({
+  amount: z
+    .number()
+    .int("Amount must be a whole number")
+    .min(1, "Amount must be at least ৳1")
+    .max(10_000_000, "Amount must be ৳10,000,000 or less")
+    .optional(),
+  category: z.enum(SpendingCategories).optional(),
+  note: z
+    .string()
+    .max(120, "Note must be 120 characters or less")
+    .trim()
+    .nullable()
+    .optional(),
+  spentOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)")
+    .optional(),
+});
+
+export type UpdateExpenseInput = z.infer<typeof UpdateExpenseSchema>;
+
+export const SetBudgetSchema = z.object({
+  monthlyBudget: z
+    .number()
+    .int("Budget must be a whole number")
+    .min(1, "Budget must be at least ৳1")
+    .max(10_000_000, "Budget must be ৳10,000,000 or less")
+    .nullable(),
+});
+
+export type SetBudgetInput = z.infer<typeof SetBudgetSchema>;
+
+export interface ExpenseDto {
+  id: string;
+  amount: number;
+  category: SpendingCategory;
+  note: string | null;
+  spentOn: string;
+  createdBy: string;
+}
+
+export interface SpendingSummaryDto {
+  today: number;
+  week: number;
+  month: number;
+  weekRange: { from: string; to: string };
+  monthLabel: string;
+  budget: number | null;
+  budgetLeft: number | null;
+  budgetPct: number | null;
+  byCategory: { category: SpendingCategory; amount: number; pct: number }[];
+}
+
+export interface SpendingDayGroupDto {
+  day: string;
+  total: number;
+  expenses: ExpenseDto[];
+}
+
+export interface SpendingDaysResponseDto {
+  days: SpendingDayGroupDto[];
+  hasMore: boolean;
+}
+
+// ─── MONEY (IOUs) ───
+
+export const IouKinds = ["lent", "paid", "borrowed", "received"] as const;
+export type IouKindSchemaType = (typeof IouKinds)[number];
+
+export const CreateEntrySchema = z.object({
+  personName: z
+    .string()
+    .trim()
+    .min(1, "Person name is required")
+    .max(60, "Person name must be 60 characters or less"),
+  kind: z.enum(IouKinds),
+  amount: z
+    .number()
+    .int("Amount must be a whole number")
+    .min(1, "Amount must be at least ৳1")
+    .max(10_000_000, "Amount must be ৳10,000,000 or less"),
+  note: z
+    .string()
+    .max(200, "Note must be 200 characters or less")
+    .trim()
+    .nullable()
+    .optional(),
+  occurredOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)")
+    .optional(),
+});
+
+export type CreateEntryInput = z.infer<typeof CreateEntrySchema>;
+
+export const UpdatePersonSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Person name is required")
+    .max(60, "Person name must be 60 characters or less"),
+});
+
+export type UpdatePersonInput = z.infer<typeof UpdatePersonSchema>;
+
+export interface PersonDto {
+  id: string;
+  name: string;
+  balance: number;
+  lastEntryDate: string | null;
+  entriesCount?: number;
+}
+
+export interface EntryDto {
+  id: string;
+  personId: string;
+  kind: IouKindSchemaType;
+  amount: number;
+  note: string | null;
+  occurredOn: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface MoneyTotalsDto {
+  owedToMe: number;
+  iOwe: number;
+  net: number;
+}
+
+export interface MoneyOverviewDto {
+  totals: MoneyTotalsDto;
+  people: PersonDto[];
+}
+
+

@@ -3,15 +3,20 @@ import { requireOwner } from "@/lib/auth";
 import { getBoard } from "@/lib/services/tasks";
 import { getLists } from "@/lib/services/lists";
 import { listTrackers } from "@/lib/services/trackers";
+import { getSpendingSummary } from "@/lib/services/spending";
+import { getMoneyOverview } from "@/lib/services/money";
 import { TodayBoard } from "@/components/today/TodayBoard";
 
 export default async function TodayPage() {
   const ctx = await requireOwner();
-  const [board, listsResult, trackers] = await Promise.all([
-    getBoard(ctx),
-    getLists(ctx),
-    listTrackers(ctx, false),
-  ]);
+  const [board, listsResult, trackers, spendingSummary, moneyOverview] =
+    await Promise.all([
+      getBoard(ctx),
+      getLists(ctx),
+      listTrackers(ctx, false),
+      getSpendingSummary(ctx),
+      getMoneyOverview(ctx),
+    ]);
 
   return (
     <div className="page max-w-[1440px] mx-auto p-3 sm:p-4 md:p-8">
@@ -28,6 +33,8 @@ export default async function TodayPage() {
         initialBoard={board}
         initialLists={listsResult.lists || []}
         initialTrackers={trackers}
+        initialSpendingSummary={spendingSummary}
+        initialMoneyTotals={moneyOverview.totals}
       />
     </div>
   );

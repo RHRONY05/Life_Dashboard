@@ -4,7 +4,13 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { BoardResponse, moveTargets } from "@/lib/domain/board";
 import { BoardColumnKey } from "@/lib/domain/board";
-import { TaskDto, TaskListDto, TrackerSummaryDto } from "@/lib/schemas";
+import {
+  TaskDto,
+  TaskListDto,
+  TrackerSummaryDto,
+  SpendingSummaryDto,
+  MoneyTotalsDto,
+} from "@/lib/schemas";
 import { DayColumn } from "./DayColumn";
 import { ListsSection } from "./ListsSection";
 import { TodayRail } from "./TodayRail";
@@ -16,17 +22,27 @@ interface TodayBoardProps {
   initialBoard: BoardResponse;
   initialLists: TaskListDto[];
   initialTrackers?: TrackerSummaryDto[];
+  initialSpendingSummary?: SpendingSummaryDto;
+  initialMoneyTotals?: MoneyTotalsDto;
 }
 
 export function TodayBoard({
   initialBoard,
   initialLists,
   initialTrackers = [],
+  initialSpendingSummary,
+  initialMoneyTotals,
 }: TodayBoardProps) {
   const [board, setBoard] = useState<BoardResponse>(initialBoard);
   const [lists, setLists] = useState<TaskListDto[]>(initialLists);
   const [trackers, setTrackers] =
     useState<TrackerSummaryDto[]>(initialTrackers);
+  const [spendingSummary] = useState<
+    SpendingSummaryDto | undefined
+  >(initialSpendingSummary);
+  const [moneyTotals] = useState<MoneyTotalsDto | undefined>(
+    initialMoneyTotals
+  );
   const [mobileSegment, setMobileSegment] = useState<DaySegment>("today");
   const [refetching, setRefetching] = useState(false);
   const [focusedTaskId, setFocusedTaskId] = useState<string | null>(null);
@@ -805,7 +821,11 @@ export function TodayBoard({
         </div>
 
         {/* Right Rail (Desktop only) */}
-        <TodayRail trackers={trackers} />
+        <TodayRail
+          trackers={trackers}
+          spendingSummary={spendingSummary}
+          moneyTotals={moneyTotals}
+        />
       </div>
     </>
   );

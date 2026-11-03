@@ -2,19 +2,42 @@
 
 import React from "react";
 import Link from "next/link";
-import { TrackerSummaryDto } from "@/lib/schemas";
+import {
+  TrackerSummaryDto,
+  SpendingSummaryDto,
+  MoneyTotalsDto,
+} from "@/lib/schemas";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { BudgetBar } from "@/components/money/BudgetBar";
+import { formatTaka } from "@/lib/domain/money";
 
 interface TodayRailProps {
   trackers?: TrackerSummaryDto[];
+  spendingSummary?: SpendingSummaryDto;
+  moneyTotals?: MoneyTotalsDto;
 }
 
-export function TodayRail({ trackers = [] }: TodayRailProps) {
+export function TodayRail({
+  trackers = [],
+  spendingSummary,
+  moneyTotals,
+}: TodayRailProps) {
   const activeTrackers = trackers.filter((t) => !t.archived);
+
+  const hasSpending =
+    spendingSummary &&
+    (spendingSummary.today > 0 ||
+      spendingSummary.month > 0 ||
+      spendingSummary.budget !== null);
+
+  const hasIOUs =
+    moneyTotals && (moneyTotals.owedToMe > 0 || moneyTotals.iOwe > 0);
+
+  const showMoneyBlock = hasSpending || hasIOUs;
 
   return (
     <aside className="rail hidden lg:flex flex-col gap-4 w-[320px] flex-none">
-      {/* Quick Links Card */}
+      {/* 1. Quick Links Card */}
       <section className="card">
         <div className="card-head">
           <h3>Quick links</h3>
@@ -32,7 +55,7 @@ export function TodayRail({ trackers = [] }: TodayRailProps) {
         </div>
       </section>
 
-      {/* Coming Up Card */}
+      {/* 2. Coming Up Card */}
       <section className="card">
         <div className="card-head">
           <h3>Coming up</h3>
@@ -50,7 +73,59 @@ export function TodayRail({ trackers = [] }: TodayRailProps) {
         </div>
       </section>
 
-      {/* Trackers Rail Block (06-UI §TodayRail: max 4 non-archived trackers) */}
+      {/* 3. Money Rail Block (06-UI §TodayRail) */}
+      {showMoneyBlock && (
+        <section className="card">
+          <div className="card-head">
+            <h3>Money</h3>
+            <Link
+              href="/money"
+              className="text-[var(--text-sm)] text-[var(--accent-text)] font-medium"
+            >
+              Open Money →
+            </Link>
+          </div>
+          <div className="card-body flex flex-col gap-3">
+            {hasSpending && spendingSummary && (
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between text-[var(--text-sm)]">
+                  <span className="text-[var(--ink-2)]">Spent today</span>
+                  <b className="num font-semibold text-[var(--ink)]">
+                    {formatTaka(spendingSummary.today)}
+                  </b>
+                </div>
+                <BudgetBar
+                  budget={spendingSummary.budget}
+                  budgetLeft={spendingSummary.budgetLeft}
+                  budgetPct={spendingSummary.budgetPct}
+                  monthSpent={spendingSummary.month}
+                />
+              </div>
+            )}
+
+            {hasSpending && hasIOUs && (
+              <div className="border-t border-[var(--line)]" />
+            )}
+
+            {hasIOUs && moneyTotals && (
+              <div className="flex items-center justify-between text-[var(--text-sm)] flex-wrap gap-1">
+                {moneyTotals.owedToMe > 0 && (
+                  <span className="text-[var(--success-text)] font-medium">
+                    Others owe you {formatTaka(moneyTotals.owedToMe)}
+                  </span>
+                )}
+                {moneyTotals.iOwe > 0 && (
+                  <span className="text-[var(--danger-text)] font-medium">
+                    You owe {formatTaka(moneyTotals.iOwe)}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* 4. Trackers Rail Block (06-UI §TodayRail: max 4 non-archived trackers) */}
       {activeTrackers.length > 0 && (
         <section className="card">
           <div className="card-head">

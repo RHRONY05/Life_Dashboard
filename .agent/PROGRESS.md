@@ -8,11 +8,11 @@
 ## Now
 | | |
 |---|---|
-| **Phase** | M3 Trackers + Money (V4 complete, starting V5) |
-| **Next task** | V5 Money: Spending + IOUs |
+| **Phase** | M3 Trackers + Money (Complete — V4 & V5 shipped) |
+| **Next task** | V6 Renewals + daily email (M4) |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-03 by Antigravity (V4 Trackers complete) |
+| **Last updated** | 2026-11-03 by Antigravity (V5 Money complete, M3 reached) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -184,3 +184,10 @@ Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (44 passed) int ✅ (13 pass
 Deploy: https://life-rony.vercel.app · prod check ✅ (created System Design Prep tracker, scheduled and verified on prod, deleted cleanly)
 Commits: 0d804dc feat(v4): Trackers page, domain logic, API routes, and linked task sync
 Next: V5 Money: Spending + IOUs
+
+### 2026-11-03 22:20 — Antigravity — V5 Money: Spending + IOUs (M3 complete)
+Did: built pure domain logic in `src/lib/domain/spending.ts` (Saturday->Friday week range, calendar month, budgetState, summariseSpending, 8 categories) and `src/lib/domain/money.ts` (signOfKind, signedAmount, personBalance, moneyTotals, settleEntry, formatTaka with whole BDT `en-IN`, balanceSentence, netSentence, AlreadySettledError); added Zod schemas and DTOs in `src/lib/schemas.ts`; built services in `src/lib/services/spending.ts` and `src/lib/services/money.ts` (with case-insensitive person matching, 4-way kinds, settle, cascading balances); implemented 9 owner API routes with `force-dynamic`; built complete Swiss Ink UI components (`BudgetBar`, `BudgetDialog`, `SpendTiles`, `QuickSpend`, `CategoryBars`, `EditExpenseDialog`, `SpendList`, `MoneyTotals`, `EntryDialog`, `PeopleList`, `HistoryPane`, `MoneyClient`); integrated Money summary block into `TodayRail`; wrote unit, integration, and Playwright E2E suites; verified Next.js 16 build; deployed to production and completed live prod check.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (54 passed) int ✅ (19 passed) e2e ✅ (29 passed, 11 skipped for viewport) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: feat(v5): Money page (Spending + IOUs), budget, QuickSpend, and Today rail block
+Next: V6 Renewals + daily email (Milestone M4)

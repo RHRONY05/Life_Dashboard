@@ -84,13 +84,13 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 <!-- ─── end of M2: stop here and give the milestone report ─── -->
 
-- [ ] **V4 Trackers** — in progress: Antigravity
+- [x] **V4 Trackers** — Trackers two-pane & mobile view, bulk paste format, linked task sync both ways, Today rail block & chip, tests passing, verified live on production.
   - `domain/trackers.ts` (07 §5), `services/trackers.ts` (incl. linked-task sync both ways and `schedule`), routes (04 Trackers). Pages `/trackers` (two panes ≥ 1024) and `/trackers/[id]` per design `03-trackers`. Rail block "Trackers" on Today. Tracker chip on linked `TaskRow`s.
   - **Tests:** unit `trackers.test.ts`; integration trackers + linked items (09); e2e `trackers.spec.ts`.
   - **AC:** pasting the 07 §5 example → 3 items in 2 groups with a link icon on the first; "Add to today" → the task appears on Today titled "NeetCode 150: Valid Anagram"; ticking it there ticks the item; progress updates on the rail.
   - **Prod check:** deploy; create one real tracker (any small list Rony would use) and delete it again.
 
-- [ ] **V5 Money: Spending + IOUs**
+- [x] **V5 Money: Spending + IOUs** — Spending with budget bar & QuickSpend, IOUs with people list, settle & history, Today rail block, tests passing.
   - Spending: `domain/spending.ts` (07 §3b), `services/spending.ts`, routes (04 Spending + `PUT /api/settings/budget`). `/money` Spending tab per design `04-money-spending`: `SpendTiles`, `BudgetBar` + budget dialog, `QuickSpend`, `CategoryBars`, `SpendList` with edit/delete and Load more.
   - IOUs: `domain/money.ts` (07 §3), `services/money.ts`, routes (04 Money (IOUs)). `/money?tab=ious` per design `07-money-ious`: totals, `EntryDialog` (autocomplete, 4-way kind, ৳ amount), people list with Settle + confirm, person menu, history pane / inline expansion, delete entry.
   - Rail block "Money" on Today (spending + IOU halves).
