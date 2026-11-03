@@ -8,11 +8,11 @@
 ## Now
 | | |
 |---|---|
-| **Phase** | M2 Canvas complete (ready for M3: V4) |
-| **Next task** | V4 Trackers |
+| **Phase** | M3 Trackers + Money (V4 complete, starting V5) |
+| **Next task** | V5 Money: Spending + IOUs |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-03 by Antigravity (Milestone M2 Canvas: V3a & V3b complete) |
+| **Last updated** | 2026-11-03 by Antigravity (V4 Trackers complete) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -176,4 +176,11 @@ Did: lifted checklist flex-row rules into root globals.css targeting all task li
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (37 passed) int ✅ (9 passed) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅
 Commits: 1edb18d fix(canvas): guarantee same-line flex layout for task list checkboxes across all selectors
-Next: M3 Trackers + Money (V4 Trackers)
+Next: V4 Trackers
+
+### 2026-11-03 21:40 — Antigravity — V4 Trackers
+Did: implemented pure domain logic in `src/lib/domain/trackers.ts` (paste format parsing with ## groups, bullets, URLs, item limits, progress formula); added Zod schemas and DTO types in `src/lib/schemas.ts`; implemented trackers service in `src/lib/services/trackers.ts` (CRUD, item status toggles, schedule items to Today board, two-way sync with linked tasks, cascade decouples); created 5 API route endpoints (/api/trackers, /api/trackers/[id], /api/trackers/[id]/items, /api/tracker-items/[id], /api/tracker-items/[id]/schedule); updated TodayRail to show Trackers progress block and TaskRow to display tracker chips; built full Swiss Ink Trackers UI (TrackerCard, TrackerDetail with groups and items, NewTrackerDialog with live parse counter, two-pane desktop layout and single-pane mobile layout with back button, j/k/x keyboard shortcuts, 100% done celebration banner); wrote unit, integration, and E2E Playwright tests; deployed to Vercel production and completed live prod check.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (44 passed) int ✅ (13 passed) e2e ✅ (24 passed, 11 skipped for viewport) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (created System Design Prep tracker, scheduled and verified on prod, deleted cleanly)
+Commits: 0d804dc feat(v4): Trackers page, domain logic, API routes, and linked task sync
+Next: V5 Money: Spending + IOUs
