@@ -156,4 +156,9 @@ Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (32 passed) int ✅ (9 passe
 Deploy: https://life-rony.vercel.app · prod check ✅ (307 redirect on unauth /canvas verified)
 Commits: feat(canvas): implement Milestone M2 Canvas (scratch & saved notes)
 Problems / surprises: none; Vocab app verified healthy on vocab.rhrony05.me
+### 2026-11-03 18:20 — Antigravity — Canvas polish: paste & cursor ergonomics
+Did: fixed unexpected code block box when copying Markdown/prose from VS Code (mode was treated as codeBlock instead of markdown/plain text); enabled full-canvas cursor feel (clicking anywhere in the whitespace focuses editor at the end immediately, `min-height: 500px` on TipTap and ProseMirror, `cursor: text` across writing surface, `autofocus: 'end'`); theme-adaptive caret styling (`caret-color: var(--ink)` matching dark ink in light theme and light ink in dark theme); added unit tests for `analyzePaste`; verified unit (37 passed), integration (9 passed), E2E (6 passed), production build, and deployed to production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (37 passed) int ✅ (9 passed) e2e ✅ (22 passed, 9 skipped for viewport) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: 51f7cad fix(canvas): remove code block box on pasted markdown, full-canvas cursor and theme-adaptive caret
 Next: M3 Trackers + Money (V4 Trackers)
