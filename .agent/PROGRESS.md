@@ -8,11 +8,11 @@
 ## Now
 | | |
 |---|---|
-| **Phase** | M2 Canvas in progress |
-| **Next task** | V3b Canvas: saved notes + images |
+| **Phase** | M2 Canvas complete (ready for M3: V4) |
+| **Next task** | V4 Trackers |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-03 by Antigravity (V3a Canvas editor + Scratch complete) |
+| **Last updated** | 2026-11-03 by Antigravity (Milestone M2 Canvas: V3a & V3b complete) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -149,3 +149,11 @@ Deploy: https://life-rony.vercel.app · prod check ✅
 Commits: feat(v3a): Canvas page, TipTap v3 Scratch editor, IndexedDB persistence, tests
 Problems / surprises: Web Locks in React 19 fast-mount required abort signal and module-level lock persistence to prevent double-mount contention
 Next: V3b Canvas: saved notes + images
+
+### 2026-11-03 16:35 — Antigravity — V3b Canvas: saved notes + images (M2 complete)
+Did: applied migration 20261103163000_life_canvas.sql (public.notes table, life-notes storage bucket with RLS and user folder isolation); updated database types; built domain canvas logic and image magic-byte detection; implemented notes service (list/search, 300 notes limit, optimistic concurrency 409 stale conflict check, storage cleanup for unreferenced images older than 10m, magic bytes validation, 30 images limit); created owner API routes (/api/notes, /api/notes/[id], /api/notes/[id]/images, /api/notes/images/[...path] with 302 signed URL redirect); integrated UI in NotesPane and CanvasEditor (note list, real-time search, editable title, 800ms autosave with beforeunload guard, 'Save as note' from Scratch, 'Copy to Scratch', 'Delete note' with confirm dialog, 409 stale conflict banner with 'Load latest' / 'Keep mine', mobile Notes tab and back navigation); wrote integration and E2E test suites; verified all green; deployed to Vercel production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (32 passed) int ✅ (9 passed) e2e ✅ (22 passed, 9 skipped for viewport) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (307 redirect on unauth /canvas verified)
+Commits: feat(canvas): implement Milestone M2 Canvas (scratch & saved notes)
+Problems / surprises: none; Vocab app verified healthy on vocab.rhrony05.me
+Next: M3 Trackers + Money (V4 Trackers)

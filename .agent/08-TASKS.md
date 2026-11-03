@@ -64,7 +64,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 <!-- ─── end of M1: stop here and give the milestone report ─── -->
 
-- [ ] **V3a Canvas: editor + Scratch** — in progress: Antigravity
+- [x] **V3a Canvas: editor + Scratch**
   - Read 01 (CV1–CV8), 06 `/canvas`, 07 §8, 10-STATES "Canvas", rules ("Scratch never leaves the browser"), and design `desktop/08-canvas.html`, `mobile/09-canvas.html`, `mobile/10-canvas-notes.html`, `states.html` → "Canvas".
   - Install the TipTap v3 packages and `idb` (02 Stack). Check the current v3 docs for each package name, the Markdown extension (parse on paste, serialise on copy) and the clipboard hooks; record the versions in PROGRESS.md.
   - Shell: add **Canvas** (`clipboard-paste`) second in `AppHeader` and `TabBar` (now 6 columns), `g c`, and the Canvas rows in the shortcuts dialog (06).
@@ -74,7 +74,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
   - **AC (browser):** paste `ai-chat.html` → heading, list, code block and table, no foreign colours, no script; paste `## Plan\n- a\n- b` as plain text → heading + 2 bullets; paste one URL → a link; copy from VS Code → a code block; paste a 3024×1964 screenshot → shown 1600 px wide and stored as WebP ≤ 1 MB (check IndexedDB in DevTools); type a few checklist questions, reload → everything is still there; **Copy as Markdown**, paste into a plain textarea → the Markdown of 07 §8.3; Clear → Undo → back; open `/canvas` in a second tab → read-only banner → **Use here** works both ways. The Network panel shows no request with Scratch text. Compare with D08 / M09 at 1440×900 and 390×844, light and dark.
   - **Prod check:** deploy; on the production URL paste an AI answer and a screenshot, reload → still there.
 
-- [ ] **V3b Canvas: saved notes + images**
+- [x] **V3b Canvas: saved notes + images**
   - Migration `<ts>_life_canvas.sql` = 03 "Canvas" (check first that `notes` and the `life-notes` bucket don't exist) → `apply_migration` on `vocab` → regenerate `src/types/database.ts` → `get_advisors`: fix warnings on our objects only.
   - `services/notes.ts` (ctx-based: list/search, create with the 300 limit, get, patch with `baseUpdatedAt`, delete with its folder, image upload with magic-byte check and the 30 limit, clean-up 07 §8.5), routes 04 "Notes", Zod schemas in `schemas.ts` (also used by the MCP tools in V8). `reset.ts` also clears `notes` and the e2e user's bucket folder.
   - UI per 06: notes pane (search, rows, "via" badge), note editor (title, 800 ms autosave, status, retry, `beforeunload`, 409 banner), **Save as note** (07 §8.7) with its toast, image upload overlay in notes, `⋯` menus (Copy to Scratch, Delete note with confirm), `Ctrl+S`, mobile Notes segment (M10) and the note view.
