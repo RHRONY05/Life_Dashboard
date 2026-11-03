@@ -1,22 +1,38 @@
 import React from "react";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { requireOwner } from "@/lib/auth";
+import { listTrackers, getTracker } from "@/lib/services/trackers";
+import { TrackersClient } from "@/components/trackers/TrackersClient";
 
-export default function TrackersPage() {
+export default async function TrackersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string }>;
+}) {
+  const ctx = await requireOwner();
+  const { id: queryId } = await searchParams;
+
+  const [activeTrackers, archivedTrackers] = await Promise.all([
+    listTrackers(ctx, false),
+    listTrackers(ctx, true),
+  ]);
+
+  const allTrackers = [...activeTrackers, ...archivedTrackers];
+  const targetId = queryId || activeTrackers[0]?.id || allTrackers[0]?.id;
+
+  let initialDetail = null;
+  if (targetId) {
+    try {
+      initialDetail = await getTracker(ctx, targetId);
+    } catch {
+      // Ignore not found
+    }
+  }
+
   return (
-    <div className="page max-w-[1440px] mx-auto p-4 md:p-8">
-      <div className="page-head flex items-center gap-3 mb-6">
-        <h1 className="text-xl md:text-2xl font-display font-extrabold tracking-tight">
-          TRACKERS
-        </h1>
-        <span className="sub text-ink-3 text-sm font-medium">
-          Curated problem sets and learning targets
-        </span>
-      </div>
-      <EmptyState
-        illustration="trackers-empty"
-        title="No trackers yet."
-        description="Track problem sets, reading lists, or courses step by step."
-      />
-    </div>
+    <TrackersClient
+      initialTrackers={allTrackers}
+      initialDetail={initialDetail}
+      selectedId={targetId}
+    />
   );
 }

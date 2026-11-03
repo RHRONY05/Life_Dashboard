@@ -193,7 +193,9 @@ export function TaskRow({
             {task.trackerItemId && (
               <span className="badge b-tracker">
                 <ListChecks className="w-3 h-3" />
-                Tracker
+                {task.title.includes(":")
+                  ? task.title.split(":")[0].trim()
+                  : "Tracker"}
               </span>
             )}
             {dateLabel && <span className="date">{dateLabel}</span>}

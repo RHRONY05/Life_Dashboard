@@ -2,13 +2,15 @@ import React from "react";
 import { requireOwner } from "@/lib/auth";
 import { getBoard } from "@/lib/services/tasks";
 import { getLists } from "@/lib/services/lists";
+import { listTrackers } from "@/lib/services/trackers";
 import { TodayBoard } from "@/components/today/TodayBoard";
 
 export default async function TodayPage() {
   const ctx = await requireOwner();
-  const [board, listsResult] = await Promise.all([
+  const [board, listsResult, trackers] = await Promise.all([
     getBoard(ctx),
     getLists(ctx),
+    listTrackers(ctx, false),
   ]);
 
   return (
@@ -25,6 +27,7 @@ export default async function TodayPage() {
       <TodayBoard
         initialBoard={board}
         initialLists={listsResult.lists || []}
+        initialTrackers={trackers}
       />
     </div>
   );

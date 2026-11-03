@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { BoardResponse, moveTargets } from "@/lib/domain/board";
 import { BoardColumnKey } from "@/lib/domain/board";
-import { TaskDto, TaskListDto } from "@/lib/schemas";
+import { TaskDto, TaskListDto, TrackerSummaryDto } from "@/lib/schemas";
 import { DayColumn } from "./DayColumn";
 import { ListsSection } from "./ListsSection";
 import { TodayRail } from "./TodayRail";
@@ -15,11 +15,18 @@ import { msUntilNextMidnight, todayIn } from "@/lib/domain/dates";
 interface TodayBoardProps {
   initialBoard: BoardResponse;
   initialLists: TaskListDto[];
+  initialTrackers?: TrackerSummaryDto[];
 }
 
-export function TodayBoard({ initialBoard, initialLists }: TodayBoardProps) {
+export function TodayBoard({
+  initialBoard,
+  initialLists,
+  initialTrackers = [],
+}: TodayBoardProps) {
   const [board, setBoard] = useState<BoardResponse>(initialBoard);
   const [lists, setLists] = useState<TaskListDto[]>(initialLists);
+  const [trackers, setTrackers] =
+    useState<TrackerSummaryDto[]>(initialTrackers);
   const [mobileSegment, setMobileSegment] = useState<DaySegment>("today");
   const [refetching, setRefetching] = useState(false);
   const [focusedTaskId, setFocusedTaskId] = useState<string | null>(null);
@@ -40,9 +47,10 @@ export function TodayBoard({ initialBoard, initialLists }: TodayBoardProps) {
   const refetchData = useCallback(async () => {
     setRefetching(true);
     try {
-      const [boardRes, listsRes] = await Promise.all([
+      const [boardRes, listsRes, trackersRes] = await Promise.all([
         fetch("/api/board"),
         fetch("/api/lists"),
+        fetch("/api/trackers"),
       ]);
       if (boardRes.ok && listsRes.ok) {
         const newBoard = await boardRes.json();
@@ -50,6 +58,10 @@ export function TodayBoard({ initialBoard, initialLists }: TodayBoardProps) {
         setBoard(newBoard);
         setLists(newLists.lists || []);
         lastFetchTimeRef.current = Date.now();
+      }
+      if (trackersRes.ok) {
+        const newTrackers = await trackersRes.json();
+        setTrackers(newTrackers.trackers || []);
       }
     } catch (err) {
       console.error("Refetch error:", err);
@@ -214,6 +226,15 @@ export function TodayBoard({ initialBoard, initialLists }: TodayBoardProps) {
 
       if (!res.ok) {
         throw new Error("Failed to update status");
+      }
+
+      if (task.trackerItemId) {
+        fetch("/api/trackers")
+          .then((r) => r.json())
+          .then((data) => {
+            if (data?.trackers) setTrackers(data.trackers);
+          })
+          .catch(() => {});
       }
     } catch {
       // Rollback
@@ -784,7 +805,7 @@ export function TodayBoard({ initialBoard, initialLists }: TodayBoardProps) {
         </div>
 
         {/* Right Rail (Desktop only) */}
-        <TodayRail />
+        <TodayRail trackers={trackers} />
       </div>
     </>
   );

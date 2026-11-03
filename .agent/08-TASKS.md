@@ -84,7 +84,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 <!-- ─── end of M2: stop here and give the milestone report ─── -->
 
-- [ ] **V4 Trackers**
+- [ ] **V4 Trackers** — in progress: Antigravity
   - `domain/trackers.ts` (07 §5), `services/trackers.ts` (incl. linked-task sync both ways and `schedule`), routes (04 Trackers). Pages `/trackers` (two panes ≥ 1024) and `/trackers/[id]` per design `03-trackers`. Rail block "Trackers" on Today. Tracker chip on linked `TaskRow`s.
   - **Tests:** unit `trackers.test.ts`; integration trackers + linked items (09); e2e `trackers.spec.ts`.
   - **AC:** pasting the 07 §5 example → 3 items in 2 groups with a link icon on the first; "Add to today" → the task appears on Today titled "NeetCode 150: Valid Anagram"; ticking it there ticks the item; progress updates on the rail.
