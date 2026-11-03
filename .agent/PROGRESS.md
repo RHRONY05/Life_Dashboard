@@ -166,4 +166,9 @@ Did: resolved 5-6s frozen navigation transition between tabs. Root causes: 1) ab
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (37 passed) int ✅ (9 passed) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅
 Commits: e6d3ae7 fix(nav): instant tab switching, route loading skeletons, and eliminate redundant auth roundtrips
+### 2026-11-03 19:18 — Antigravity — Canvas list markers & checklist alignment fix
+Did: fixed numbered list and bullet list markers not rendering (Tailwind CSS preflight reset `list-style: none` had overridden `ol` and `ul`); added explicit `list-style-type: decimal !important` and `list-style-type: disc !important` with padding; fixed checklist / to-do list (`ul[data-type="taskList"]` & `li[data-type="taskItem"]`) where `<label>` and text `<div>` were rendering on separate lines, setting flex row alignment so the checkbox and text/cursor sit on the exact same line matching the user's reference. Verified build and deployed to production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (37 passed) int ✅ (9 passed) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: dbacfe4 fix(canvas): restore list markers and inline alignment for checklist task items
 Next: M3 Trackers + Money (V4 Trackers)
