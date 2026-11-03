@@ -86,7 +86,46 @@ Worked example:
 
 `totals` → owedToMe 300, iOwe 600, net −300 ("Net: you owe ৳300"). Settle Rahim → `received 300`. Settle Karim → `paid 600`.
 
-**Tests (`money.test.ts`):** every row; `formatTaka(1234567)` = `৳12,34,567`; `formatTaka(500)` = `৳500`; settle at 0 throws.
+**Tests (`money.test.ts`):** every row; `formatTaka(1234567)` = `৳12,34,567`; `formatTaka(500)` = `৳500`; settle at 0 throws; the 3c examples.
+
+## 3c. IOU ledger, reminders, import (`domain/money.ts`)
+- `withBalances(entries)` (oldest → newest by `occurredOn`, then `createdAt`) → each entry plus `balanceAfter` = running Σ signed.
+- `sinceSettled(entries)` = the entries after the last one whose `balanceAfter = 0` (all of them if it never was 0). `recent` = the last 6 of those, oldest first; `lastNote` = the newest non-empty note among them.
+- `reminderText(name, balance, since)` (only `balance > 0`): `Hi <name>, a quick reminder: you owe me ৳<balance> (<parts>). Thanks!` where parts = each entry of `since` as `৳100 on 2 Jan` (lent) or `৳350 paid back on 9 Jan` (received), joined with ", "; more than 6 → the last 6 after "…, ". With 1 entry and no paybacks, the parenthesis is just `from 2 Jan`. `reminderTask` = `Ask <name> for ৳<balance>`; when `balance < 0`: `Pay <name> ৳<|balance|>` (no text).
+
+Example (Saimun: lent 100 on 2 Jan, 75 on 8 Jan, 300 on 3 Feb, 95 on 4 Nov) → `Hi Saimun, a quick reminder: you owe me ৳570 (৳100 on 2 Jan, ৳75 on 8 Jan, ৳300 on 3 Feb, ৳95 on 4 Nov). Thanks!`
+Ledger example (Humayen, oldest first): lent 2,200 → 2,200 · received 600 → 1,600 · lent 500 → 2,100 · received 2,100 → **0** · lent 300 → 300. `sinceSettled` = [lent 300]; `recent` chips `+300`.
+
+`parseIouText(text)` → `ImportLine[] = { lineNo, name, direction: "owes_me"|"i_owe"|null, terms: { amount, sign: 1|-1, note|null }[], balance, error|null }`:
+1. Split lines; skip empty ones. Tabs/extra spaces collapse.
+2. **Name** = text before the first separator: the words `dibe` / `pabe` (any case), `=`, `:` or ` - ` / `-` followed by a space, digit or sign. `_` → space; trimmed; 1–60 chars, else error `no_name`.
+3. **Direction**: `dibe` → `owes_me`; `pabe` → `i_owe`; neither → `null` (the preview asks).
+4. **Terms** = the rest, split on `+` and `-` signs that come before a number. Each term: a number with optional `,`, optional `k` (× 1000), optional `tk`/`taka`/`৳`, optional `(text)` = its note. The first term with no sign is `+`. A leading `-` right after the separator (as in `Juman dibe-280 tk`) is the separator, not a sign. A term that isn't a whole number > 0 → error `bad_amount: "abc"`. No terms → error `no_amount`.
+5. Entries: `owes_me` → `+` = `lent`, `−` = `received`; `i_owe` → `+` = `borrowed`, `−` = `paid`. `balance` = Σ sign × amount, made negative for `i_owe`.
+
+| Line | name · direction · terms | balance |
+|---|---|---|
+| `Juman dibe-280 tk` | Juman · owes_me · +280 | +280 |
+| `Majharul pabe- 454 tk` | Majharul · i_owe · +454 | −454 |
+| `Rafi dibe - 45 + 22` | Rafi · owes_me · +45 +22 | +67 |
+| `Humayen = 2200 tk + 200  + 430 tk - 600 tk - 350tk + 500 tk + 50 tk + 300 tk + 1k - 1k - 200 tk` | Humayen · null · +2200 +200 +430 −600 −350 +500 +50 +300 +1000 −1000 −200 | +2,530 (once a direction is chosen; owes_me) |
+| `Naif dibe - 70 tk +  90 tk + 500tk(kayes)` | Naif · owes_me · +70 +90 +500 (note "kayes") | +660 |
+| `Naim -  + 160 tk` | Naim · null · +160 | +160 (owes_me) |
+| `Group_print - 272 tk` | Group print · null · +272 | +272 (owes_me) |
+| `Yousuf mama - 2950 tk` | Yousuf mama · null · +2950 | +2,950 (owes_me) |
+| `hello` | error `no_amount` | — |
+
+## 3d. To pay (`domain/money.ts`)
+- `dueState(todo, today)`: paid → `paid`; no `dueOn` → `no_date`; `dueOn < today` → `overdue`; `dueOn ≤ today + 3` → `due_soon`; else `upcoming`.
+- `nextMonthly(dueOn, today)`: `dueOn` set → same day next month, clamped to the month's last day (31 Jan → 28/29 Feb); `dueOn` null → the 1st of the month after `today`.
+- `openTotal` = Σ amount of open items.
+
+Examples (today 2026-11-04): due 2026-11-02 → overdue ("2 days overdue"); due 2026-11-07 → due_soon ("due in 3 days"); due 2026-11-20 → upcoming; `nextMonthly("2026-01-31")` = 2026-02-28; `nextMonthly(null, 2026-11-04)` = 2026-12-01.
+
+## 3e. CSV (`domain/csv.ts`)
+`csvCell(v)`: null → empty; contains `,` `"` `\r` or `\n` → wrapped in `"` with `"` doubled; else as is. Lines end with `\r\n`; the file starts with `\uFEFF`. Example: note `bus, Dhaka "AC"` → `"bus, Dhaka ""AC"""`.
+
+**Tests (`money.test.ts`, `csv.test.ts`):** the 3c ledger, reminder and every parse row; the 3d examples; the 3e example.
 
 ## 3b. Spending (`domain/spending.ts`)
 | Function | Rule |
@@ -95,7 +134,8 @@ Worked example:
 | `monthRange(today)` | First → last day of `today`'s calendar month. |
 | `summarise(expenses, today, budget)` | `today` = Σ where `spentOn = today`; `week` = Σ in `weekRange`; `month` = Σ in `monthRange`; `budgetLeft = budget − month` (may be negative); `budgetPct = round(month / budget × 100)`; `byCategory` = this month's sums per category, biggest first, `pct = round(amount / month × 100)`, categories with 0 omitted. |
 | `budgetState(pct)` | `null` → none; `< 80` → `ok` (accent bar); `80–100` → `warn`; `> 100` → `over` (danger, text "৳X over budget"). |
-| `CATEGORIES` | `food` (icon `utensils`), `transport` (`bus`), `study` (`book-open`), `bills` (`receipt`), `health` (`heart-pulse`), `shopping` (`shopping-bag`), `fun` (`gamepad-2`), `other` (`circle-dot`). Labels: Food, Transport, Study, Bills, Health, Shopping, Fun, Other. |
+| `CATEGORIES` | `food` (icon `utensils`), `transport` (`bus`), `study` (`book-open`), `bills` (`receipt`), `health` (`heart-pulse`), `shopping` (`shopping-bag`), `fun` (`gamepad-2`), `giving` (`hand-heart`), `other` (`circle-dot`). Labels: Food, Transport, Study, Bills, Health, Shopping, Fun, Giving, Other. |
+| `summarise(…, month)` | With a `month` (YYYY-MM), `month`/`budget*`/`byCategory` use that month's range; `today`/`week` don't change. |
 
 Worked example (today Mon 2026-11-02, budget ৳8,000):
 | spentOn | category | amount |
@@ -202,7 +242,11 @@ Parse `itemsText` line by line: trim; skip empty lines; `## <text>` sets the cur
 | `schedule_item` | `schedule_item "Two Sum" → 2026-11-02` |
 | `add_money_entry` | `add_money_entry Rahim lent ৳500` |
 | `add_expense` | `add_expense ৳120 food "lunch"` |
+| `add_payment_todo` / `mark_payment_paid` | `add_payment_todo "Mahfil LED lights" ৳500` / `mark_payment_paid "Mahfil LED lights"` |
 | `add_renewal` / `update_renewal` / `mark_renewed` / `mark_ended` | `mark_renewed "ChatGPT Plus" → 2026-12-12` |
+| `create_note` | `create_note "Backend tips" in DevTools` |
+| `append_to_note` | `append_to_note "DevTools" under Libraries (+2 lines)` |
+| `replace_note_section` / `update_note` | `replace_note_section "DevTools" Tips` / `update_note "DevTools" (renamed)` |
 | read tools | the tool name, plus the main argument if any (`get_tracker "NeetCode 150"`) |
 | failed auth | `revoked key used` |
 
@@ -212,7 +256,7 @@ Parse `itemsText` line by line: trim; skip empty lines; `## <text>` sets the cur
 - `generateKey(bytes: Uint8Array /* 32 */)` = `"ld_" + base64url(bytes)` with no padding → 46 chars.
 - `keyPrefix(key)` = first 11 chars. `hashKey(key)` = SHA-256 hex (`node:crypto`).
 - `looksLikeKey(s)` = `/^ld_[A-Za-z0-9_-]{43}$/`.
-- `SCOPES` = the 11 scopes in 05 §3 (32 tools), and `TOOL_SCOPE: Record<ToolName, Scope | null>`.
+- `SCOPES` = the 11 scopes in 05 §3 (38 tools), and `TOOL_SCOPE: Record<ToolName, Scope | null>`.
 - `rateLimit(timestamps: Date[] /* counted rows, last 24 h */, now)` → `{ ok: true } | { ok: false, retryAfterS }`: block when `count(last 60 s) ≥ 30` (retry = 60 − age of the oldest of those, rounded up) or `count(last 24 h) ≥ 1000` (retry = time until the oldest leaves the 24 h window).
 
 Worked examples (exact, for the tests):
@@ -260,9 +304,10 @@ Checked in this order; the first match wins:
 | `- just one dash line` | false |
 
 ### 8.3 Markdown out (`lib/canvas/markdown.ts`)
-Used by **Copy as Markdown**, the selection's `text/plain` (TipTap `clipboardTextSerializer`), `body_md`, and `get_note`.
+`docToMarkdown(doc, { images: "placeholder" | "refs" })`. Used by **Copy as Markdown** and `Ctrl+Shift+C` (`placeholder`), and by `body_md` and `get_note` (`refs`). The plain `Ctrl+C` uses 8.3b instead.
 Headings `#`–`###`; bullets `- `; numbers `1. `; checklist `- [ ] ` / `- [x] `; code fences with the language; GFM tables; links `[text](url)`;
-images with an `https:` ref → `![alt](url)`; local (`idb:`) or stored (`sb:`) images → `[image]`. Blocks separated by one blank line; one trailing newline.
+images with an `https:` ref → `![alt](url)`; local (`idb:`) images → `[image]`; stored (`sb:`) images → `[image]` with `placeholder`, `![alt](sb:<path>)` with `refs`. Blocks separated by one blank line; one trailing newline.
+**Round trip:** `markdownToDoc(docToMarkdown(doc, {images:"refs"}))` equals `doc` for every node type the editor has (image `width`/`height` may be missing; the editor fills them on load). `markdownToDoc` maps `![…](sb:…)` and `![…](https:…)` to `canvasImage`.
 
 Worked example (the fixture doc in `tests/fixtures/canvas-doc.json`):
 heading 2 "CN questions" · checklist [open "Why does TCP need a 3-way handshake?", done "What is MSS?"] · code block `bash` "ping -c 3 1.1.1.1" · paragraph "See " + link "RFC 9293" → `https://www.rfc-editor.org/rfc/rfc9293` + "." · a local image →
@@ -281,6 +326,17 @@ See [RFC 9293](https://www.rfc-editor.org/rfc/rfc9293).
 
 [image]
 ~~~
+
+### 8.3b Plain-text copy (`docToPlainText(slice)`, the `clipboardTextSerializer`)
+What you see, as text: marks are dropped (no `**`, `` ` ``, `~~`); a link becomes its text only; a selection inside one block → just that text, no prefix; several blocks → one line per block, list items prefixed `- ` / `1. ` / `[ ] ` / `[x] ` with 2 spaces per nesting level, code blocks as their raw lines (no fences), table rows as cells joined by a tab, images → nothing. No trailing newline.
+
+| Selection | `text/plain` |
+|---|---|
+| inside one bullet: `docker run … -v deeptutor-data:/app/data ` + link "ghcr.io/hkuds/deeptutor:latest" | `docker run … -v deeptutor-data:/app/data ghcr.io/hkuds/deeptutor:latest` |
+| paragraph "See " + link "RFC 9293" + "." | `See RFC 9293.` |
+| two bullets "a", "**b**" | `- a\n- b` |
+
+**Autolink rule** (TipTap Link `shouldAutoLink` and `linkOnPaste`): only text starting with `http://`, `https://` or `www.`. `ghcr.io/hkuds/deeptutor:latest`, `node.js`, `index.ts`, `127.0.0.1:3782` stay plain text. Never inside inline code or code blocks.
 
 ### 8.4 Note title (`titleFromText(md, today)`)
 First non-empty line of the Markdown; strip leading `#`, `>`, `- [ ]`, `- [x]`, `- `, `* `, `1. ` and `**`/`_`/`` ` `` marks; trim. Longer than 60 chars → cut at the last space at or before char 60 and add `…`. Nothing left (empty, or only images) → `Note · <today as "Tue 3 Nov">`.
@@ -312,5 +368,29 @@ Example: refs = {`u/n/a.webp`}; files = a.webp (1 h old), b.webp (1 h old), c.we
 3. `PATCH /api/notes/[id]` with the doc whose refs are swapped and `bodyMd` again.
 4. An image that fails to upload is left out of the note; toast "Saved, but 1 image couldn't be uploaded." Scratch is never changed by saving.
 
-**Tests (`canvas.test.ts`):** every table row above; `imageRefs` on the fixture doc; the 8.3 example (serialise `tests/fixtures/canvas-doc.json`); `cleanPastedHtml` on `tests/fixtures/ai-chat.html` keeps h2/ul/pre/table and drops every `style`/`class`/`<script>`.
+### 8.8 Pages tree (`domain/canvas.ts`)
+- `buildTree(summaries)` → roots with `children`, siblings sorted by title (case-insensitive, then id); `depth` 1 = top level; `path` = titles joined by " / ".
+- `canMove(tree, id, newParentId)` → `ok` | `cycle` (new parent is the page or inside it) | `too_deep` (new parent's depth + height of the page's subtree > 3).
+- `resolveNote(pages, ref)` → by id, then exact path (case-insensitive, spaces around `/` ignored), then title; several title matches → `ambiguous` with their paths.
+
+Example: DevTools (1) → Backend tips (2) → Postgres (3). Move "DevTools" under "Postgres" → `cycle`. Move a page that has one child under "Backend tips" → `too_deep` (2 + 2 > 3). `resolveNote("devtools/backend tips")` → Backend tips.
+
+### 8.9 Save queue and refresh (`lib/canvas/save-queue.ts`, one queue per page)
+1. At most **one** PATCH per page in flight. Changes made during a save set `dirty`; when the save returns and `dirty` is set, send **one** more PATCH with the latest content.
+2. `baseUpdatedAt` is always the `updatedAt` from the last successful response for that page, kept in the queue (a plain object, not React state), set **before** anything re-renders.
+3. Skip the PATCH when the title and `JSON.stringify(doc)` equal the last saved ones.
+4. Loading content (open, tab switch, Load latest, Undo) uses `setContent(…, { emitUpdate: false })`, so it never starts a save.
+5. Moves and pins go through the same queue (they bump `updated_at`).
+6. A 409 `stale` whose `note.bodyMd` equals the last Markdown we sent is our own echo: take its `updatedAt` and continue silently.
+7. Refresh: on `visibilitychange` → visible, on switching to the tab, and every 60 s while visible: `GET /api/notes/[id]?since=<base>`. 204 → nothing. A newer note: queue idle and not dirty → load it (rule 4) and toast; otherwise show the conflict line (06).
+
+### 8.10 Markdown sections (`domain/canvas.ts`, used by the agent page tools)
+- `headingsOf(md)` → ATX headings `#`–`###` outside code fences, in order.
+- A heading's **section** = the lines after it up to the next heading of the same or a higher level (or the end). Heading match: trimmed, case-insensitive, `#`s ignored; first match wins.
+- `appendToSection(md, add, heading?)` → inserts `add` at the end of the section (before trailing blank lines), separated by one blank line unless both the last line and `add` are list items (then no blank line, so the list continues). No heading → end of the page.
+- `replaceSection(md, heading, body)` → keeps the heading line, replaces the section with `body`.
+
+Example `md` = `## Libraries\n- WeasyPrint\n- FFmpeg\n\n## Tips\n1. Golden rule`. `appendToSection(md, "- Spline", "libraries")` → `## Libraries\n- WeasyPrint\n- FFmpeg\n- Spline\n\n## Tips\n1. Golden rule`. `replaceSection(md, "Tips", "1. New tip")` → `…## Tips\n1. New tip`. `headingsOf` ignores `## not a heading` inside a ```` ``` ```` block.
+
+**Tests (`canvas.test.ts`):** every table row above; 8.3b rows and the autolink examples; the round-trip on `tests/fixtures/canvas-doc.json`; the 8.8 and 8.10 examples; `imageRefs` on the fixture doc; the 8.3 example (serialise `tests/fixtures/canvas-doc.json`); `cleanPastedHtml` on `tests/fixtures/ai-chat.html` keeps h2/ul/pre/table and drops every `style`/`class`/`<script>`.
 

@@ -13,12 +13,37 @@ If a rule conflicts with a task description, the rule wins. Stop and flag it in 
   - From V2 on: deployed to production, and the task's **Prod check** passed.
   - No `console.log`, no commented-out code, no `any` without a comment explaining why.
   - Task ticked `[x]` with a one-line note; PROGRESS.md updated ("Now" table + a session-log entry); committed with a conventional message (`feat:`, `fix:`, `test:`, `chore:`, `docs:`).
+  - **Docs updated:** every doc that describes what you changed now matches the code (see "Docs follow code" below), or the commit message says "no doc change" and why.
 - Commit after every task. Never force-push.
 - Before ending any session, update PROGRESS.md. A session that ends without that update isn't done.
 
+## Docs follow code
+The `.agent/` pack is the project's memory for every future agent and session, so it must describe the app **as it is**, not as it was planned.
+- Any change to behaviour, data, API, MCP tools, UI, copy or shortcuts updates the doc that owns it **in the same commit**. This applies to tasks, to bug fixes, and to anything Rony asks for in chat.
+- Which doc owns what:
+
+  | You changed | Update |
+  |---|---|
+  | a feature, a limit, what's in or out of scope | `01-PRODUCT.md` |
+  | a dependency, folder, env var, runtime choice | `02-ARCHITECTURE.md` (+ `.env.example`, README) |
+  | a table, column, constraint, policy, bucket | `03-DATABASE.md` (the migration is the code; the doc is the explanation) |
+  | a route, its input/output or error reason | `04-API.md` |
+  | a scope, MCP tool, tool description, key rule | `05-MCP-AND-KEYS.md` |
+  | a screen's behaviour, copy, shortcut | `06-UI.md` |
+  | a rule, formula, parser, serialiser, worked example | `07-LOGIC.md` (and its test) |
+  | a test file or test case | `09-TESTING.md` |
+  | an empty, error, limit or offline state | `10-STATES.md` |
+  | how it looks | `design/` only if Rony asked for a new look; otherwise follow the design |
+  | a decision the docs didn't cover | PROGRESS.md "Decisions" **and** the doc above |
+
+- A change made outside a task gets one line under "Changes outside tasks" in `08-TASKS.md`.
+- Edit the doc in place so it reads as the current truth. Don't append "update:" notes; history lives in git and PROGRESS.
+- Never change the design or scope just to match code that drifted. If the code is wrong, fix the code. If the doc is wrong because Rony changed his mind, fix the doc.
+- When unsure whether docs drifted (a new session, a long chat of fixes), run `/sync-docs`.
+
 ## Database (Supabase MCP)
 - This app lives in the **existing** project `vocab` (`vnadntttnwylvarcqwhe`). Never create a new Supabase project, and never pause, delete or change another project's settings.
-- **Never alter, drop, truncate or write to Vocab's tables (`words`, `quiz_attempts`) or its function `set_updated_at`.** Tests and the reset helper touch only the 13 tables in `03-DATABASE.md`.
+- **Never alter, drop, truncate or write to Vocab's tables (`words`, `quiz_attempts`) or its function `set_updated_at`.** Tests and the reset helper touch only this app's tables listed in `03-DATABASE.md`.
 - Every schema change = a migration file first (`supabase/migrations/<YYYYMMDDHHMMSS>_<name>.sql`), then `apply_migration` with the same name. `execute_sql` is only for reads, tests and seed data.
 - After each migration: regenerate types into `src/types/database.ts` and run `get_advisors`; fix every security warning on our tables.
 - RLS is on for every table.
@@ -31,7 +56,7 @@ If a rule conflicts with a task description, the rule wins. Stop and flag it in 
 - Every service function that changes or reads data calls `assertScope(ctx, …)` with its scope, even when the route is owner-only.
 - No delete capability is ever exposed to agents.
 
-- **Scratch never leaves the browser.** No request, log, analytics event or error report may contain Scratch content. Only **Save as note** sends it, because Rony asked for that.
+- **Scratch never leaves the browser.** No request, log, analytics event or error report may contain Scratch content. Only **Save as page** (Save as note) sends it, because Rony asked for that.
 
 ## Code style
 - TypeScript strict. Server Components by default; `"use client"` only where interaction needs it.

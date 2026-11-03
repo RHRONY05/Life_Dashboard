@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>M12 · Money v2 (To pay)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-m">
+  <header class="m-header">
+    <h1>Money</h1>
+    <button class="iconbtn" aria-label="Money menu"><i data-lucide="more-horizontal"></i></button>
+  </header>
+  <div class="m-body">
+    <div class="seg block" style="margin-bottom:12px"><button>Spending</button><button>IOUs</button><button class="on">To pay <span class="c">4</span></button></div>
+    <div class="tile" style="padding:12px 14px;margin-bottom:12px"><div class="tile-k">Still to pay</div><div class="tile-v" style="font-size:var(--text-xl);line-height:var(--leading-xl)"><span class="taka">৳</span>4,000</div><div class="tile-s">4 items · <span style="color:var(--danger-text);font-weight:600">1 overdue</span></div></div>
+    <div class="m-card" style="overflow:hidden"><div class="todo"><span class="cic"><i data-lucide="hand-heart"></i></span><div class="t"><b>Mahfil LED lights</b><span><span class="badge b-danger">2 days overdue</span> · collect in the group first</span></div><span class="amt"><span class="taka">৳</span>500</span><button class="btn btn-secondary btn-sm">Paid</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div><div class="todo"><span class="cic"><i data-lucide="home"></i></span><div class="t"><b>Home<i data-lucide="repeat"></i></b><span><span class="badge b-warn">due in 3 days</span> · for Ammu</span></div><span class="amt"><span class="taka">৳</span>3,000</span><button class="btn btn-secondary btn-sm">Paid</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div><div class="todo"><span class="cic"><i data-lucide="hand-heart"></i></span><div class="t"><b>Ranggashimulia Youth Foundation<i data-lucide="repeat"></i></b><span><span class="badge b-neutral">Tue 1 Dec</span> · monthly pledge</span></div><span class="amt"><span class="taka">৳</span>200</span><button class="btn btn-secondary btn-sm">Paid</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div><div class="todo"><span class="cic"><i data-lucide="gift"></i></span><div class="t"><b>Giveaway for the eid post</b><span></span></div><span class="amt"><span class="taka">৳</span>300</span><button class="btn btn-secondary btn-sm">Paid</button><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div><div class="divider">Paid · 2</div><div class="todo paid"><span class="cic"><i data-lucide="hand-heart"></i></span><div class="t"><b>Mosque donation</b><span>paid Sun 1 Nov</span></div><span class="amt"><span class="taka">৳</span>500</span><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div><div class="todo paid"><span class="cic"><i data-lucide="home"></i></span><div class="t"><b>Home</b><span>paid Thu 8 Oct</span></div><span class="amt"><span class="taka">৳</span>3,000</span><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div></div>
+  </div>
+  <button class="fab"><i data-lucide="plus"></i>Add payment</button>
+<nav class="tabbar">
+    <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+    <a href="#"><i data-lucide="clipboard-paste"></i>Canvas</a>
+    <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+    <a href="#" class="on" aria-current="page"><i data-lucide="wallet"></i>Money</a>
+    <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="dot">1</span></a>
+    <a href="#"><i data-lucide="settings"></i>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

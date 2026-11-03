@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D07b · Money v2 (IOU ledger)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-d">
+  <header class="topbar">
+    <div class="brand"><span class="logo"><i data-lucide="layout-dashboard"></i></span>Life Dashboard</div>
+    <nav class="nav">
+      <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+      <a href="#"><i data-lucide="clipboard-paste"></i>Canvas</a>
+      <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+      <a class="on" href="#"><i data-lucide="wallet"></i>Money</a>
+      <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="nbadge">1</span></a>
+      <a href="#"><i data-lucide="settings"></i>Settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="today-chip">Mon 2 Nov</span>
+      <button class="iconbtn" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button>
+      <button class="avatar" aria-label="Account">R</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-head">
+      <h1>Money</h1><div class="seg"><button>Spending</button><button class="on">IOUs</button><button>To pay <span class="c">3</span></button></div><span class="sub">Who owes whom, in taka</span>
+      <span class="spacer"></span>
+      <button class="btn btn-primary"><i data-lucide="plus"></i>Add entry<kbd style="margin-left:4px;background:transparent;color:inherit;border-color:currentColor;opacity:.7">A</kbd></button>
+      <button class="iconbtn" aria-label="Money menu"><i data-lucide="more-horizontal"></i></button>
+    </div>
+    <div class="tiles">
+      <div class="tile"><div class="tile-k"><i data-lucide="arrow-down-left"></i>Others owe you</div><div class="tile-v pos"><span class="taka">৳</span>6,710</div><div class="tile-s">4 people</div></div>
+      <div class="tile"><div class="tile-k"><i data-lucide="arrow-up-right"></i>You owe</div><div class="tile-v neg"><span class="taka">৳</span>454</div><div class="tile-s">1 person</div></div>
+      <div class="tile"><div class="tile-k"><i data-lucide="scale"></i>Net</div><div class="tile-v">you're owed <span class="taka">৳</span>6,256</div><div class="tile-s">after everyone settles</div></div>
+    </div>
+    <div class="money-grid">
+      <section class="card" style="overflow:hidden"><div class="person"><span class="pav">Y</span><div class="t"><b>Yousuf Mama</b><div class="bk"><i class="p">+2,950</i><em>· imported</em></div></div><div class="amt pos num"><span class="taka">৳</span>2,950<small>owes you</small></div><button class="iconbtn addbtn" aria-label="Add to Yousuf Mama"><i data-lucide="plus"></i></button><button class="btn btn-secondary btn-sm">Settle</button></div><div class="person on"><span class="pav">H</span><div class="t"><b>Humayen</b><div class="bk"><i class="p">+2,200</i><i class="p">+430</i><i class="p">+1,000</i><i class="m">−1,000</i><i class="m">−100</i><em>· bKash</em></div></div><div class="amt pos num"><span class="taka">৳</span>2,530<small>owes you</small></div><button class="iconbtn addbtn" aria-label="Add to Humayen"><i data-lucide="plus"></i></button><button class="btn btn-secondary btn-sm">Settle</button></div><div class="person"><span class="pav">N</span><div class="t"><b>Naif</b><div class="bk"><i class="p">+70</i><i class="p">+90</i><i class="p">+500</i><em>· kayes</em></div></div><div class="amt pos num"><span class="taka">৳</span>660<small>owes you</small></div><button class="iconbtn addbtn" aria-label="Add to Naif"><i data-lucide="plus"></i></button><button class="btn btn-secondary btn-sm">Settle</button></div><div class="person"><span class="pav">S</span><div class="t"><b>Saimun</b><div class="bk"><i class="p">+100</i><i class="p">+75</i><i class="p">+300</i><i class="p">+95</i><em>· canteen</em></div></div><div class="amt pos num"><span class="taka">৳</span>570<small>owes you</small></div><button class="iconbtn addbtn" aria-label="Add to Saimun"><i data-lucide="plus"></i></button><button class="btn btn-secondary btn-sm">Settle</button></div><div class="person"><span class="pav">M</span><div class="t"><b>Majharul</b><div class="bk"><i class="m">−454</i></div></div><div class="amt neg num"><span class="taka">৳</span>454<small>you owe</small></div><button class="iconbtn addbtn" aria-label="Add to Majharul"><i data-lucide="plus"></i></button><button class="btn btn-secondary btn-sm">Settle</button></div><div class="divider">Settled (1)</div><div class="person"><span class="pav">T</span><div class="t"><b>Tanvir</b><span>Last entry Tue 20 Oct</span></div><div class="amt num muted">settled</div></div></section>
+      <section class="card" style="overflow:hidden"><div class="ledger-head"><span class="pav" style="width:36px;height:36px">H</span><div class="who"><b style="font-size:var(--text-md)">Humayen</b><div class="pos num" style="font-size:var(--text-sm);font-weight:600">Humayen owes you <span class="taka">৳</span>2,530</div></div><div class="acts"><button class="btn btn-primary btn-sm"><i data-lucide="plus"></i>Add</button><button class="btn btn-secondary btn-sm"><i data-lucide="message-square-text"></i>Copy reminder</button><button class="btn btn-secondary btn-sm"><i data-lucide="calendar-plus"></i>Remind me<i data-lucide="chevron-down"></i></button><button class="iconbtn" aria-label="Person menu"><i data-lucide="more-horizontal"></i></button></div></div><div class="lrow2"><span class="k neg"><i data-lucide="arrow-down-left"></i></span><div class="t"><b>Humayen paid you <span class="taka">৳</span>100</b><span class="d">Wed 4 Nov</span><span class="n">bKash</span></div><div class="v"><b class="neg">−100</b><small>bal <span class="taka">৳</span>2,530</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div class="lrow2"><span class="k neg"><i data-lucide="arrow-down-left"></i></span><div class="t"><b>Humayen paid you <span class="taka">৳</span>1,000</b><span class="d">Sun 1 Nov</span></div><div class="v"><b class="neg">−1,000</b><small>bal <span class="taka">৳</span>2,630</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div class="lrow2"><span class="k pos"><i data-lucide="arrow-up-right"></i></span><div class="t"><b>You lent <span class="taka">৳</span>1,000</b><span class="d">Fri 30 Oct</span><span class="n">laptop repair</span></div><div class="v"><b class="pos">+1,000</b><small>bal <span class="taka">৳</span>3,630</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div class="lrow2"><span class="k pos"><i data-lucide="arrow-up-right"></i></span><div class="t"><b>You lent <span class="taka">৳</span>430</b><span class="d">Mon 26 Oct <span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></span><span class="n">rickshaw + lunch</span></div><div class="v"><b class="pos">+430</b><small>bal <span class="taka">৳</span>2,630</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div class="lrow2"><span class="k pos"><i data-lucide="arrow-up-right"></i></span><div class="t"><b>You lent <span class="taka">৳</span>2,200</b><span class="d">Thu 22 Oct</span><span class="n">semester fee help</span></div><div class="v"><b class="pos">+2,200</b><small>bal <span class="taka">৳</span>2,200</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div class="settled-line"><i data-lucide="check" class="sm"></i>Settled · Tue 20 Oct</div><div class="lrow2"><span class="k neg"><i data-lucide="arrow-down-left"></i></span><div class="t"><b>Humayen paid you <span class="taka">৳</span>2,100</b><span class="d">Tue 20 Oct</span><span class="n">all of September</span></div><div class="v"><b class="neg">−2,100</b><small>bal <span class="taka">৳</span>0</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div style="padding:10px 16px 14px"><button class="btn btn-ghost btn-sm">Show 5 older entries</button></div></section>
+    </div>
+  </main>
+  <div class="toast-pos"><div class="toast"><i data-lucide="message-square-text"></i>Reminder copied. Paste it in WhatsApp or Messenger.</div></div>
+</div>
+</body>
+</html>

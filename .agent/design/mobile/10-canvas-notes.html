@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=390">
-<title>M10 · Canvas (Notes)</title>
+<title>M10 · Canvas (Pages)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
@@ -18,14 +18,26 @@
     <h1>Canvas</h1>
   </header>
   <div class="m-body">
-    <div class="seg block" style="margin-bottom:14px"><button>Scratch</button><button class="on">Notes <span class="c">6</span></button></div>
-    <div class="input" style="height:44px;margin-bottom:12px"><i data-lucide="search" class="sm" style="color:var(--ink-3)"></i><span class="ph" style="color:var(--ink-3)">Search notes</span></div>
-    <nav class="nlist" aria-label="Saved notes">
-      <a class="nrow" href="#"><b>CN questions · week 9</b><p>Why does TCP need a 3-way handshake? What is MSS and who picks it?</p><span class="meta">Yesterday</span></a>
-          <a class="nrow" href="#"><b>Docker networking notes</b><p>bridge vs host networks, publishing ports with -p 8080:80, why containers can't see localhost…</p><span class="meta">Sun 1 Nov</span></a>
-          <a class="nrow" href="#"><b>Upwork proposal: Next.js dashboard</b><p>Hi! I build fast Next.js + Supabase dashboards with auth, charts and a clean admin…</p><span class="meta">Fri 30 Oct</span></a>
-          <a class="nrow" href="#"><b>NeetCode: sliding window patterns</b><p>Fixed window vs. variable window. Template: expand right, shrink left while invalid…</p><span class="meta">Thu 29 Oct<span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></span></a>
-          <a class="nrow" href="#"><b>Prompts that worked</b><p>Review this diff like a senior engineer. List only bugs that change behaviour…</p><span class="meta">Mon 26 Oct</span></a>
+    <div class="seg block" style="margin-bottom:14px"><button>Scratch</button><button class="on">Pages <span class="c">9</span></button></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <div class="input" style="height:44px;flex:1"><i data-lucide="search" class="sm" style="color:var(--ink-3)"></i><span class="ph" style="color:var(--ink-3)">Search pages</span></div>
+      <button class="btn btn-secondary" style="height:44px" aria-label="New page"><i data-lucide="file-plus"></i></button>
+    </div>
+    <div class="npane-head" style="margin-bottom:6px">Pinned</div>
+    <nav class="tree" aria-label="Pinned pages" style="margin-bottom:14px">
+      <a class="trow" href="#" style="--lvl:0;height:44px"><span class="chev none"></span><i data-lucide="pin" class="pin"></i><span class="t">DevTools</span></a>
+      <a class="trow" href="#" style="--lvl:0;height:44px"><span class="chev none"></span><i data-lucide="pin" class="pin"></i><span class="t">CN questions · week 9</span></a>
+    </nav>
+    <div class="npane-head" style="margin-bottom:6px">Pages <span class="c">9</span></div>
+    <nav class="tree" aria-label="All pages">
+      <a class="trow" href="#" style="--lvl:0;height:44px"><span class="chev none"></span><span class="t">CN questions · week 9</span></a>
+      <a class="trow" href="#" style="--lvl:0;height:44px"><span class="chev"><i data-lucide="chevron-down"></i></span><span class="t">DevTools</span></a>
+      <a class="trow" href="#" style="--lvl:1;height:44px"><span class="chev"><i data-lucide="chevron-right"></i></span><span class="t">Backend tips</span></a>
+      <a class="trow" href="#" style="--lvl:1;height:44px"><span class="chev none"></span><span class="t">Shortcut commands</span></a>
+      <a class="trow" href="#" style="--lvl:1;height:44px"><span class="chev none"></span><span class="t">UI-UX tips</span></a>
+      <a class="trow" href="#" style="--lvl:0;height:44px"><span class="chev none"></span><span class="t">Docker networking notes</span></a>
+      <a class="trow" href="#" style="--lvl:0;height:44px"><span class="chev none"></span><span class="t">How to run deep tutor?</span></a>
+      <a class="trow" href="#" style="--lvl:0;height:44px"><span class="chev none"></span><span class="t">NeetCode: sliding window</span><span class="badge b-agent"><i data-lucide="bot"></i>Muse</span></a>
     </nav>
   </div>
   <nav class="tabbar">

@@ -55,13 +55,13 @@ POST /api/mcp
 | `tasks:write` | `add_task`, `update_task`, `complete_task`, `reopen_task`, `move_task`, `create_list`, `add_list_item`, `move_to_list` | ☐ |
 | `trackers:read` | `list_trackers`, `get_tracker` | ✅ |
 | `trackers:write` | `create_tracker`, `add_tracker_items`, `set_item_status`, `schedule_item` | ☐ |
-| `money:read` | `get_balances`, `get_person_history`, `get_spending` | ✅ |
-| `money:write` | `add_money_entry`, `add_expense` | ☐ |
+| `money:read` | `get_balances`, `get_person_history`, `get_spending`, `list_payment_todos` | ✅ |
+| `money:write` | `add_money_entry`, `add_expense`, `add_payment_todo`, `mark_payment_paid` | ☐ |
 | `renewals:read` | `list_renewals` | ✅ |
 | `renewals:write` | `add_renewal`, `update_renewal`, `mark_renewed`, `mark_ended` | ☐ |
 | `links:read` | `list_links` | ✅ |
 | `notes:read` | `list_notes`, `get_note` | ✅ |
-| `notes:write` | `create_note` | ☐ |
+| `notes:write` | `create_note`, `append_to_note`, `replace_note_section`, `update_note` | ☐ |
 | (none) | `whoami` | always |
 
 Write scopes are opt-in. **No scope allows deleting anything**: there are no delete tools.
@@ -93,21 +93,29 @@ Agents may write to today or any later date; past dates → error `past_date`.
 | `set_item_status` | trackers:write | "Sets a tracker item to todo, done or skipped. A linked board task follows." | `{ itemId, status }` | `TrackerItem` |
 | `schedule_item` | trackers:write | "Puts a tracker item on the board for a day (creates or moves its linked task)." | `{ itemId, day: DayRef }` | `{ task: Task }` |
 | `get_balances` | money:read | "Gets who owes whom. Positive balance = the person owes Rony; negative = Rony owes them. Amounts in taka." | `{}` | `GET /api/money` output |
-| `get_person_history` | money:read | "Gets every money entry with one person." | `{ personName }` | `{ person, entries: Entry[] }` |
+| `get_person_history` | money:read | "Gets every money entry with one person, newest first, with the balance after each entry." | `{ personName }` | `{ person, entries: Entry[] }` |
 | `add_money_entry` | money:write | "Records money between Rony and a person. kind: lent (Rony gave money), borrowed (Rony received money), received (person paid Rony back), paid (Rony paid the person back). Amount in whole taka. Creates the person if new." | `{ personName, kind, amount, note?, occurredOn? }` | `{ entry, person }` |
 | `get_spending` | money:read | "Gets how much Rony spent today, this week (Saturday to Friday) and this month, the monthly budget left, and this month's totals per category. Amounts in taka." | `{}` | `SpendingSummary` (04) |
 | `add_expense` | money:write | "Logs money Rony spent (not lending or paying people back; use add_money_entry for that). category: food, transport, study, bills, health, shopping, fun or other. Amount in whole taka." | `{ amount, category, note?, spentOn? }` | `{ expense, summary }` |
+| `list_payment_todos` | money:read | "Lists the payments Rony has promised to make (donations, giveaways, money for home) that are still open, with the total, and the ones paid in the last 90 days." | `{}` | `GET /api/payment-todos` output |
+| `add_payment_todo` | money:write | "Adds a payment Rony has promised to make but not paid yet (not a debt to a person; use add_money_entry for that). category defaults to giving. Amount in whole taka." | `{ title, amount, category?, dueOn?: DayRef, repeat?: "none"\|"monthly", note? }` | `PaymentTodo` |
+| `mark_payment_paid` | money:write | "Marks a promised payment as paid after Rony says he paid it, found by id or title (case-insensitive). This logs it as spending." | `{ todo: string }` | `{ todo, expense, next }` |
 | `list_renewals` | renewals:read | "Lists subscriptions, hosting, domains and credits with their next renewal or end date." | `{ status?: "active"\|"ended", withinDays?: int 0–365 }` | `GET /api/renewals` output (filtered to `daysLeft ≤ withinDays` when given) |
 | `add_renewal` | renewals:write | "Adds a subscription, hosting plan, domain or credit. renewsOn is the next charge or end date (required unless cycle is free)." | `POST /api/renewals` body | `Renewal` |
 | `update_renewal` | renewals:write | "Changes fields of a renewal, e.g. its date or price." | `{ renewalId, …fields }` | `Renewal` |
 | `mark_renewed` | renewals:write | "Moves a monthly or yearly renewal's date forward by one cycle after it was paid." | `{ renewalId }` | `Renewal` |
 | `mark_ended` | renewals:write | "Marks a renewal as ended (cancelled or expired)." | `{ renewalId }` | `Renewal` |
 | `list_links` | links:read | "Lists Rony's quick links (his other apps and profiles)." | `{}` | `{ links: Link[] }` |
-| `list_notes` | notes:read | "Lists Rony's saved Canvas notes, newest first, with a short snippet. His Scratch page is private to his browser and is never listed." | `{ query?: string (1–100) }` | `{ notes: NoteSummary[] }` |
-| `get_note` | notes:read | "Gets one saved note as Markdown, found by id or by title (case-insensitive). Images appear as [image]." | `{ note: string }` | `{ id, title, markdown, createdBy, updatedAt }` |
-| `create_note` | notes:write | "Saves Markdown as a new note in Rony's Canvas, e.g. a summary or a list of questions. Only do this when Rony asks." | `{ title (1–120), markdown (1–200000) }` | `NoteSummary` |
+| `list_notes` | notes:read | "Lists all of Rony's Canvas pages as a tree: each page's id, title, path (e.g. 'DevTools / Backend tips'), depth and section headings, so you can pick the right page and section before editing. His Scratch page is private to his browser and is never listed." | `{ query?: string (1–100) }` | `{ pages: { id, title, path, parentId, depth, pinned, headings: string[] /* H1–H3, max 30 */, createdBy, updatedAt }[] }` (tree order) |
+| `get_note` | notes:read | "Gets one page as Markdown, found by id, path ('DevTools / Backend tips') or title (case-insensitive). Keep image lines like ![](sb:…) unchanged when you write the page back. Pass updatedAt as expectedUpdatedAt when you replace a section or rewrite the page." | `{ note: string }` | `{ id, title, path, markdown, headings, children: {id, title}[], createdBy, updatedAt }` |
+| `create_note` | notes:write | "Creates a new page in Rony's Canvas from Markdown (headings, lists, checklists, links, code blocks, tables). Give parent (id, path or title) to make it a sub-page; max 3 levels. Only do this when Rony asks." | `{ title (1–120), markdown (0–200000), parent?: string }` | `NoteSummary` + `path` |
+| `append_to_note` | notes:write | "Adds Markdown to a page without changing what is there: at the end of the section under underHeading (H1–H3, case-insensitive), or at the end of the page. Use this to add an item to a list on a page." | `{ note: string, markdown (1–50000), underHeading?: string }` | `{ id, title, path, updatedAt }` |
+| `replace_note_section` | notes:write | "Replaces the content under one heading of a page (up to the next heading of the same or a higher level). The heading line itself stays. Rony can undo your last edit." | `{ note: string, heading: string, markdown (0–200000), expectedUpdatedAt }` | `{ id, title, path, updatedAt }` |
+| `update_note` | notes:write | "Renames a page and/or rewrites its whole Markdown. Prefer append_to_note or replace_note_section for small changes. Rony can undo your last edit." | `{ note: string, title?, markdown? (0–200000), expectedUpdatedAt }` (at least one of title/markdown) | `{ id, title, path, updatedAt }` |
 
-Every agent write stamps `created_by = <key name>` (tasks, trackers, entries, renewals, notes), and the UI shows it as "via Muse".
+Page tools: `note` is resolved by id, then exact path, then title (case-insensitive). Two pages with that title → `conflict: ambiguous (paths: DevTools / Tips, Study / Tips)`. A heading that isn't on the page → `not_found: heading "Libs" (headings: Libraries, Tips, PowerShell)`. `expectedUpdatedAt` ≠ the row → `conflict: stale (call get_note again)`. Agent writes keep `created_by`, store the one-step snapshot (03 "Canvas pages") and set `doc = null`. Agents can't delete, move or pin pages.
+
+Every agent write stamps `created_by = <key name>` (tasks, trackers, entries, expenses, payment todos, renewals, notes), and the UI shows it as "via Muse".
 
 ## 5. Results and errors
 - Success: `{ content: [{ type: "text", text: JSON.stringify(result) }], structuredContent: result }`.
@@ -147,7 +155,7 @@ claude mcp add --transport http life-dashboard https://life.rhrony05.me/api/mcp 
 Suggested scopes (pre-filled when the name typed is one of these; Rony can change them):
 | Name | Scopes |
 |---|---|
-| Muse | tasks:read+write, trackers:read+write, money:read+write, renewals:read, links:read |
+| Muse | tasks:read+write, trackers:read+write, money:read+write, renewals:read, links:read, notes:read+write |
 | Antigravity | tasks:read+write, trackers:read+write, renewals:read+write, money:read, links:read |
 | Claude Code | same as Antigravity |
 

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D08b · Canvas v2 (pages + tabs)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-d tall">
+  <header class="topbar">
+    <div class="brand"><span class="logo"><i data-lucide="layout-dashboard"></i></span>Life Dashboard</div>
+    <nav class="nav">
+      <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+      <a class="on" href="#" aria-current="page"><i data-lucide="clipboard-paste"></i>Canvas</a>
+      <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+      <a href="#"><i data-lucide="wallet"></i>Money</a>
+      <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="nbadge">1</span></a>
+      <a href="#"><i data-lucide="settings"></i>Settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="today-chip">Wed 4 Nov</span>
+      <button class="iconbtn" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button>
+      <button class="avatar" aria-label="Account">R</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="canvas-wrap">
+      <aside class="npane" aria-label="Canvas pages">
+        <a class="scratch-card" href="#"><span class="ic"><i data-lucide="clipboard-paste"></i></span><span><b>Scratch</b><span>Only in this browser</span></span></a>
+        <button class="btn btn-secondary" style="justify-content:center"><i data-lucide="file-plus"></i>New page<kbd>Ctrl Alt N</kbd></button>
+        <div class="input"><i data-lucide="search" class="sm" style="color:var(--ink-3)"></i><span class="ph" style="color:var(--ink-3)">Search pages</span></div>
+
+        <div class="npane-head">Pinned</div>
+        <nav class="tree" aria-label="Pinned pages">
+          <a class="trow on" href="#" style="--lvl:0"><span class="chev none"></span><i data-lucide="pin" class="pin"></i><span class="t">DevTools</span></a>
+          <a class="trow" href="#" style="--lvl:0"><span class="chev none"></span><i data-lucide="pin" class="pin"></i><span class="t">CN questions · week 9</span></a>
+        </nav>
+
+        <div class="npane-head">Pages <span class="c">9</span></div>
+        <nav class="tree" aria-label="All pages">
+          <a class="trow" href="#" style="--lvl:0"><span class="chev none"></span><span class="t">CN questions · week 9</span></a>
+          <a class="trow on" href="#" style="--lvl:0"><span class="chev"><i data-lucide="chevron-down"></i></span><span class="t">DevTools</span></a>
+          <a class="trow" href="#" style="--lvl:1"><span class="chev"><i data-lucide="chevron-right"></i></span><span class="t">Backend tips</span></a>
+          <a class="trow hover" href="#" style="--lvl:1"><span class="chev none"></span><span class="t">Shortcut commands</span><span class="acts"><span title="New sub-page"><i data-lucide="plus"></i></span><span title="More"><i data-lucide="more-horizontal"></i></span></span></a>
+          <a class="trow" href="#" style="--lvl:1"><span class="chev none"></span><span class="t">UI-UX tips</span></a>
+          <a class="trow" href="#" style="--lvl:0"><span class="chev none"></span><span class="t">Docker networking notes</span></a>
+          <a class="trow" href="#" style="--lvl:0"><span class="chev none"></span><span class="t">How to run deep tutor?</span></a>
+          <a class="trow" href="#" style="--lvl:0"><span class="chev none"></span><span class="t">NeetCode: sliding window</span><span class="badge b-agent"><i data-lucide="bot"></i>Muse</span></a>
+          <a class="trow" href="#" style="--lvl:0"><span class="chev none"></span><span class="t">Ranggashimulia Youth Foundation</span></a>
+        </nav>
+      </aside>
+
+      <div class="canvas-main">
+        <div class="ptabs" role="tablist" aria-label="Open pages">
+          <a class="ptab scratch" role="tab" href="#"><i data-lucide="clipboard-paste"></i><span>Scratch</span></a>
+          <a class="ptab on" role="tab" aria-selected="true" href="#"><i data-lucide="file-text"></i><span>DevTools</span><button class="x" aria-label="Close DevTools"><i data-lucide="x"></i></button></a>
+          <a class="ptab" role="tab" href="#"><i data-lucide="file-text"></i><span>Backend tips</span><button class="x" aria-label="Close Backend tips"><i data-lucide="x"></i></button></a>
+          <a class="ptab" role="tab" href="#"><i data-lucide="file-text"></i><span>How to run deep tutor?</span><button class="x" aria-label="Close"><i data-lucide="x"></i></button></a>
+          <span class="count">3 / 8 · <kbd>Alt 1–9</kbd></span>
+        </div>
+
+        <section class="ecard" aria-label="DevTools">
+          <div class="ecard-head">
+            <div class="title-col">
+              <span class="ntitle">DevTools</span>
+            </div>
+            <span class="save-status"><span class="dot"></span>Saved</span>
+            <span class="spacer"></span>
+            <button class="btn btn-primary"><i data-lucide="copy"></i>Copy as Markdown</button>
+            <button class="iconbtn" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+          </div>
+          <div class="agent-line"><i data-lucide="bot"></i>Edited by <b>Muse</b> · 5m ago · <button>Undo</button></div>
+          <div class="etoolbar" role="toolbar" aria-label="Formatting">
+            <button class="tb" aria-label="Heading 1">H1</button><button class="tb" aria-label="Heading 2">H2</button><button class="tb" aria-label="Heading 3">H3</button>
+            <span class="tb-sep"></span>
+            <button class="tb" aria-label="Bold"><i data-lucide="bold"></i></button><button class="tb" aria-label="Italic"><i data-lucide="italic"></i></button><button class="tb" aria-label="Strikethrough"><i data-lucide="strikethrough"></i></button><button class="tb" aria-label="Inline code"><i data-lucide="code"></i></button>
+            <span class="tb-sep"></span>
+            <button class="tb on" aria-label="Bullet list"><i data-lucide="list"></i></button><button class="tb" aria-label="Numbered list"><i data-lucide="list-ordered"></i></button><button class="tb" aria-label="Checklist"><i data-lucide="list-todo"></i></button>
+            <span class="tb-sep"></span>
+            <button class="tb" aria-label="Quote"><i data-lucide="text-quote"></i></button><button class="tb" aria-label="Code block"><i data-lucide="square-code"></i></button>
+            <span class="tb-sep"></span>
+            <button class="tb" aria-label="Link"><i data-lucide="link"></i></button><button class="tb" aria-label="Image"><i data-lucide="image"></i></button>
+            <span class="hint"><kbd>Ctrl C</kbd> plain text · <kbd>Ctrl Shift C</kbd> Markdown</span>
+          </div>
+          <div class="prose">
+            <h2 class="fh"><span class="fold"><i data-lucide="chevron-down"></i></span>Libraries</h2>
+            <ul>
+              <li><strong>WeasyPrint</strong>: when AI should generate PDFs with Bengali, Arabic or any complex script.</li>
+              <li><strong>FFmpeg</strong>: the standard CLI for converting, compressing, trimming and streaming audio and video. Use for upload pipelines, thumbnails, audio prep for AI models and HLS.</li>
+              <li><strong>Spline</strong>: <a href="#">https://spline.design/</a>, create 3D with AI.</li>
+              <li>Skills for AI agents: <a href="#">https://www.skills.sh/</a></li>
+            </ul>
+            <h2 class="fh"><span class="fold"><i data-lucide="chevron-down"></i></span>Design inspiration</h2>
+            <ul>
+              <li><a href="#">https://godly.design/websites/</a></li>
+              <li><a href="#">https://bentogrids.com/</a></li>
+              <li><a href="#">https://www.behance.net/for_you</a>: browse design</li>
+            </ul>
+            <h2 class="fh folded" data-folded="3 items folded"><span class="fold"><i data-lucide="chevron-right"></i></span>Tips</h2>
+            <h2 class="fh"><span class="fold"><i data-lucide="chevron-down"></i></span>PowerShell</h2>
+            <p>Download a YouTube playlist (run it in the folder you want):</p>
+            <pre><span class="lang">powershell</span><code>yt-dlp -f "bv*[height&lt;=1080]+ba/b" -o "%(playlist_title)s/%(playlist_index)s - %(title)s.%(ext)s" "URL"</code></pre>
+            <h2 class="fh"><span class="fold"><i data-lucide="chevron-down"></i></span>GitHub tricks</h2>
+            <ol>
+              <li><code>gitmcp.io/&lt;user&gt;/&lt;repo&gt;</code>: GitMCP for the repo</li>
+              <li><code>github.dev/&lt;user&gt;/&lt;repo&gt;</code>: open the repo in VS Code online<span class="caret"></span></li>
+            </ol>
+            <div class="subpages">
+              <div class="lbl">Sub-pages</div>
+              <a href="#"><i data-lucide="file-text"></i>Backend tips<span class="d">2 sub-pages · Mon 2 Nov</span></a>
+              <a href="#"><i data-lucide="file-text"></i>Shortcut commands<span class="d">Sun 1 Nov</span></a>
+              <a href="#"><i data-lucide="file-text"></i>UI-UX tips<span class="d">Sat 31 Oct</span></a>
+              <a href="#" class="add"><i data-lucide="plus"></i>New sub-page</a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <div class="toast-pos"><div class="toast"><i data-lucide="bot"></i>DevTools was updated by Muse</div></div>
+</div>
+</body>
+</html>

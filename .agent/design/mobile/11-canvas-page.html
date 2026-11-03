@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>M11 · Canvas (open page)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-m">
+  <header class="m-header">
+    <button class="iconbtn" aria-label="Back to pages"><i data-lucide="arrow-left"></i></button>
+    <h1><button class="tabswitch" aria-label="Switch open page">DevTools<i data-lucide="chevron-down"></i><span class="n">4</span></button></h1>
+    <button class="iconbtn" aria-label="Copy as Markdown"><i data-lucide="copy"></i></button>
+    <button class="iconbtn" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+  </header>
+  <div class="m-crumbs">DevTools<i data-lucide="chevron-right"></i><b style="color:var(--ink-2)">Backend tips</b></div>
+  <div class="agent-line" style="padding:8px 16px"><i data-lucide="bot"></i>Edited by <b>Muse</b> · 5m ago · <button>Undo</button></div>
+  <div class="etoolbar" role="toolbar" aria-label="Formatting">
+    <button class="tb">H1</button><button class="tb">H2</button><button class="tb">H3</button><span class="tb-sep"></span>
+    <button class="tb" aria-label="Bold"><i data-lucide="bold"></i></button><button class="tb" aria-label="Italic"><i data-lucide="italic"></i></button><button class="tb" aria-label="Inline code"><i data-lucide="code"></i></button><span class="tb-sep"></span>
+    <button class="tb on" aria-label="Bullet list"><i data-lucide="list"></i></button><button class="tb" aria-label="Numbered list"><i data-lucide="list-ordered"></i></button><button class="tb" aria-label="Checklist"><i data-lucide="list-todo"></i></button><span class="tb-sep"></span>
+    <button class="tb" aria-label="Code block"><i data-lucide="square-code"></i></button><button class="tb" aria-label="Link"><i data-lucide="link"></i></button>
+  </div>
+  <div class="m-body" style="padding:0">
+    <div class="prose" style="padding:18px 16px 32px 30px">
+      <h2 class="fh"><span class="fold" style="opacity:1"><i data-lucide="chevron-down"></i></span>Postgres</h2>
+      <ul>
+        <li>Index every foreign key; Supabase's advisor flags the missing ones.</li>
+        <li>Use <code>(select auth.uid())</code> in RLS so it runs once per query.</li>
+      </ul>
+      <h2 class="fh folded" data-folded="4 items folded"><span class="fold"><i data-lucide="chevron-right"></i></span>Docker</h2>
+      <h2 class="fh"><span class="fold" style="opacity:1"><i data-lucide="chevron-down"></i></span>Commands</h2>
+      <ul>
+        <li>docker run -d --rm --name deeptutor -p 127.0.0.1:3782:3782 -v deeptutor-data:/app/data ghcr.io/hkuds/deeptutor:latest</li>
+        <li>docker stop deeptutor</li>
+      </ul>
+      <div class="subpages">
+        <div class="lbl">Sub-pages</div>
+        <a href="#"><i data-lucide="file-text"></i>Postgres RLS cheatsheet<span class="d">Mon 2 Nov</span></a>
+        <a href="#" class="add"><i data-lucide="plus"></i>New sub-page</a>
+      </div>
+    </div>
+  </div>
+  <nav class="tabbar">
+    <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+    <a href="#" class="on" aria-current="page"><i data-lucide="clipboard-paste"></i>Canvas</a>
+    <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+    <a href="#"><i data-lucide="wallet"></i>Money</a>
+    <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="dot">1</span></a>
+    <a href="#"><i data-lucide="settings"></i>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

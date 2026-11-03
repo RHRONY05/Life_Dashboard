@@ -86,7 +86,7 @@ src/
     (app)/trackers/page.tsx        tracker list (+ detail pane ≥ 1024 px, via ?id=)
     (app)/trackers/[id]/page.tsx   tracker detail (mobile, direct links)
     (app)/money/page.tsx           Spending (default) and IOUs (?tab=ious)
-    (app)/canvas/page.tsx          Scratch + saved notes (?note=<id>); editor via next/dynamic
+    (app)/canvas/page.tsx          Scratch + pages tree + tabs (?note=<id> opens that page's tab); editor via next/dynamic
     (app)/renewals/page.tsx
     (app)/settings/page.tsx        Agents & keys · Activity · Quick links · Email
     login/page.tsx
@@ -141,9 +141,12 @@ src/
     domain/spending.ts             week/month ranges, totals, budget, category bars (pure)
     domain/renewals.ts             days left, state, next date, monthly equivalent, reminder stage (pure)
     domain/keys.ts                 key generate/format/prefix/hash, scope list + checks (pure except randomness, injected)
-    domain/canvas.ts               fitWithin, looksLikeMarkdown, titleFromText, imageRefs, unreferencedPaths (pure; 07 §8)
+    domain/csv.ts                  csvCell, toCsv (07 §3e)
+    domain/canvas.ts               fitWithin, looksLikeMarkdown, titleFromText, imageRefs, unreferencedPaths, buildTree, canMove,
+                                   resolveNote, headingsOf, appendToSection, replaceSection (pure; 07 §8)
     domain/audit.ts                sanitise tool args for the log (pure)
-    canvas/                        editor.ts (shared extensions), paste.ts, markdown.ts, images.ts, scratch-store.ts, CanvasImage node
+    canvas/                        editor.ts (shared extensions), paste.ts, markdown.ts (docToMarkdown, markdownToDoc, docToPlainText),
+                                   images.ts, scratch-store.ts, save-queue.ts (07 §8.9), folding.ts (decorations), CanvasImage node
     services/tasks.ts  lists.ts  notes.ts  trackers.ts  spending.ts  money.ts  renewals.ts  links.ts  keys.ts  audit.ts
     agent/auth.ts                  requireAgent(), rate limit check
     agent/tools.ts                 MCP tool definitions → services (05)
@@ -154,6 +157,8 @@ src/
 proxy.ts
 scripts/check-owner.ts             prints the owner + e2e user ids (no secrets) for PROGRESS.md
 scripts/seed.ts                    seeds quick links (V9)
+scripts/backfill-body-md.ts        one-off (V3c): rewrites notes.body_md from doc with sb: image refs
+scripts/dev-agent-edit.ts          local only (V3d): an agent-ctx page edit, to test refresh and Undo before V8
 supabase/migrations/
 tests/                             unit (*.test.ts), integration (*.int.test.ts), e2e/, helpers/, fixtures/
 docs/agents.md                     how to connect each agent (V9)

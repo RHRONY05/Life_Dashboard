@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>M07b · Money v2 (IOU ledger)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-m">
+  <header class="m-header">
+    <h1>Money</h1>
+    <button class="iconbtn" aria-label="Money menu"><i data-lucide="more-horizontal"></i></button>
+  </header>
+  <div class="m-body">
+    <div class="seg block" style="margin-bottom:12px"><button>Spending</button><button class="on">IOUs</button><button>To pay <span class="c">3</span></button></div>
+    <div class="row2" style="margin-bottom:12px">
+      <div class="tile" style="padding:12px 14px"><div class="tile-k">Others owe you</div><div class="tile-v pos" style="font-size:var(--text-xl);line-height:var(--leading-xl)"><span class="taka">৳</span>6,710</div></div>
+      <div class="tile" style="padding:12px 14px"><div class="tile-k">You owe</div><div class="tile-v neg" style="font-size:var(--text-xl);line-height:var(--leading-xl)"><span class="taka">৳</span>454</div></div>
+    </div>
+    <div class="m-card" style="overflow:hidden"><div class="person on"><span class="pav">H</span><div class="t"><b>Humayen</b><div class="bk"><i class="p">+2,200</i><i class="p">+430</i><i class="p">+1,000</i><i class="m">−1,000</i><i class="m">−100</i><em>· bKash</em></div></div><div class="amt pos num"><span class="taka">৳</span>2,530<small>owes you</small></div><button class="iconbtn addbtn" aria-label="Add to Humayen"><i data-lucide="plus"></i></button></div><div style="background:var(--surface-2);border-top:1px solid var(--line)"><div style="display:flex;gap:6px;padding:10px 16px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" style="height:40px"><i data-lucide="plus"></i>Add</button><button class="btn btn-secondary btn-sm" style="height:40px"><i data-lucide="message-square-text"></i>Reminder</button><button class="btn btn-secondary btn-sm" style="height:40px"><i data-lucide="calendar-plus"></i>Remind me</button><button class="btn btn-secondary btn-sm" style="height:40px">Settle</button></div><div class="lrow2"><span class="k neg"><i data-lucide="arrow-down-left"></i></span><div class="t"><b>Paid you <span class="taka">৳</span>100</b><span class="d">Wed 4 Nov</span><span class="n">bKash</span></div><div class="v"><b class="neg">−100</b><small>bal <span class="taka">৳</span>2,530</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div class="lrow2"><span class="k neg"><i data-lucide="arrow-down-left"></i></span><div class="t"><b>Paid you <span class="taka">৳</span>1,000</b><span class="d">Sun 1 Nov</span></div><div class="v"><b class="neg">−1,000</b><small>bal <span class="taka">৳</span>2,630</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div class="lrow2"><span class="k pos"><i data-lucide="arrow-up-right"></i></span><div class="t"><b>You lent <span class="taka">৳</span>1,000</b><span class="d">Fri 30 Oct</span><span class="n">laptop repair</span></div><div class="v"><b class="pos">+1,000</b><small>bal <span class="taka">৳</span>3,630</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div class="lrow2"><span class="k pos"><i data-lucide="arrow-up-right"></i></span><div class="t"><b>You lent <span class="taka">৳</span>430</b><span class="d">Mon 26 Oct</span><span class="n">rickshaw + lunch</span></div><div class="v"><b class="pos">+430</b><small>bal <span class="taka">৳</span>2,630</small></div><button class="iconbtn sm" aria-label="Entry menu"><i data-lucide="more-horizontal"></i></button></div><div style="padding:8px 16px 12px"><button class="btn btn-ghost btn-sm">All 11 entries</button></div></div><div class="person"><span class="pav">N</span><div class="t"><b>Naif</b><div class="bk"><i class="p">+70</i><i class="p">+90</i><i class="p">+500</i><em>· kayes</em></div></div><div class="amt pos num"><span class="taka">৳</span>660<small>owes you</small></div><button class="iconbtn addbtn" aria-label="Add to Naif"><i data-lucide="plus"></i></button></div><div class="person"><span class="pav">S</span><div class="t"><b>Saimun</b><div class="bk"><i class="p">+100</i><i class="p">+75</i><i class="p">+300</i><i class="p">+95</i></div></div><div class="amt pos num"><span class="taka">৳</span>570<small>owes you</small></div><button class="iconbtn addbtn" aria-label="Add to Saimun"><i data-lucide="plus"></i></button></div></div>
+  </div>
+  <button class="fab"><i data-lucide="plus"></i>Add entry</button>
+<nav class="tabbar">
+    <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+    <a href="#"><i data-lucide="clipboard-paste"></i>Canvas</a>
+    <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+    <a href="#" class="on" aria-current="page"><i data-lucide="wallet"></i>Money</a>
+    <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="dot">1</span></a>
+    <a href="#"><i data-lucide="settings"></i>Settings</a>
+  </nav>
+</div>
+</body>
+</html>

@@ -301,3 +301,65 @@ Rules:
 - Images: uploaded through the owner route only (owner session client, so the policies above apply). Deleting a note deletes `<user_id>/<note_id>/` from the bucket. After each save, files in the note's folder that the doc no longer references and that are older than 10 minutes are deleted (07 §8.5).
 - `reset.ts` also deletes the e2e user's `notes` rows and every object under `<e2e user id>/` in `life-notes`.
 
+## Money v2 (fourth migration, V5a–V5b)
+`supabase/migrations/<timestamp>_life_money_v2.sql`. One new table (15 in total) and one more spending category.
+
+```sql
+alter table public.expenses drop constraint expenses_category_check;   -- check the real name with \d first
+alter table public.expenses add constraint expenses_category_check check (category in
+  ('food','transport','study','bills','health','shopping','fun','giving','other'));
+
+create table public.payment_todos (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  title       text not null check (length(title) between 1 and 80),
+  amount_bdt  int not null check (amount_bdt between 1 and 10000000),
+  category    text not null default 'giving' check (category in
+                ('food','transport','study','bills','health','shopping','fun','giving','other')),
+  due_on      date,
+  repeat      text not null default 'none' check (repeat in ('none','monthly')),
+  note        text check (length(note) <= 200),
+  paid_on     date,                                                   -- null = still to pay
+  expense_id  uuid references public.expenses(id) on delete set null, -- the spend Mark paid created
+  next_id     uuid references public.payment_todos(id) on delete set null, -- the copy a monthly item created
+  created_by  text not null default 'owner' check (length(created_by) between 1 and 40),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+create index payment_todos_user_open on public.payment_todos (user_id, paid_on, due_on);
+create index payment_todos_expense on public.payment_todos (expense_id);
+create index payment_todos_next on public.payment_todos (next_id);
+create trigger payment_todos_updated_at before update on public.payment_todos for each row execute function public.life_set_updated_at();
+alter table public.payment_todos enable row level security;
+create policy "own payment todos" on public.payment_todos for all to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+```
+
+Rules:
+- **Mark paid** (one service call): insert the expense (`amount_bdt`, `category`, `note = title`, `spent_on = today`), set `paid_on = today` and `expense_id`. If `repeat = 'monthly'`: insert the next open copy with `due_on` = `nextMonthly(due_on, today)` (07 §3d) and set `next_id`.
+- **Undo paid**: delete the expense, delete the `next_id` copy if it is still open and unchanged, clear `paid_on`, `expense_id`, `next_id`.
+- Max **100 open** items (101st → 409 `limit_reached`). Paid items older than 90 days are hidden in the UI (not deleted).
+- IOU entries get an edit route (`PATCH`, 04). No column changes; `iou_entries` keeps `created_by` of the first writer.
+- `reset.ts` also deletes the e2e user's `payment_todos` (before `expenses`).
+
+## Canvas pages (third migration, V3c)
+`supabase/migrations/<timestamp>_life_canvas_pages.sql`. Only adds columns to `notes` (still 14 tables).
+
+```sql
+alter table public.notes
+  add column parent_id     uuid references public.notes(id) on delete cascade,   -- null = top level
+  add column pinned        boolean not null default false,
+  add column prev_doc      jsonb check (prev_doc is null or octet_length(prev_doc::text) <= 1000000),  -- page before the last agent edit
+  add column prev_body_md  text check (prev_body_md is null or length(prev_body_md) <= 200000),
+  add column prev_by       text check (prev_by is null or length(prev_by) between 1 and 40),         -- agent key name
+  add column prev_at       timestamptz;
+create index notes_user_parent on public.notes (user_id, parent_id);
+```
+
+Rules:
+- **Tree:** depth ≤ 3 (a top-level page is depth 1). Create/move deeper → 409 `too_deep`. Moving a page under itself or one of its sub-pages → 409 `cycle`. A parent must belong to the same user. Siblings are sorted by title A–Z (pinned pages are also shown in the Pinned group). The 300 limit counts every page at every level.
+- **Delete** cascades to sub-pages; the service first lists the whole subtree and deletes each page's image folder.
+- **Pinned:** max 5 (6th → 409 `limit_reached`).
+- **`body_md` is lossless** for everything the editor can hold, so a page can be rebuilt from it: stored images are written as `![alt](sb:<path>)` (07 §8.3). Existing rows: a one-off script `scripts/backfill-body-md.ts` rewrites `body_md` from `doc` for every note (pure serialiser, run once in V3c, logged in PROGRESS).
+- **Agent edits** (`append_to_note`, `replace_note_section`, `update_note`) change `body_md`, set `doc = null` (the editor rebuilds it from the Markdown, as for agent-created pages) and first copy the old `doc`/`body_md` into `prev_*` with `prev_by = <key name>`, `prev_at = now()`. Only the latest agent edit is kept. The owner's **Undo** restores `prev_doc`/`prev_body_md` and clears `prev_*`. `prev_*` older than 7 days is cleared on the next save.
+- Image clean-up (07 §8.5) keeps files referenced by `doc`, `body_md` **or** `prev_doc`/`prev_body_md`.
+

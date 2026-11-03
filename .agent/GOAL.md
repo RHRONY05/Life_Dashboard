@@ -1,6 +1,6 @@
 # Goal commands (paste into Antigravity, one milestone at a time)
 
-Rony builds Life Dashboard in **5 goals**. Start the next one only after using the previous one.
+Rony builds Life Dashboard in **6 goals** (Goal 3b was added after M3). Start the next one only after using the previous one.
 Each goal stops by itself at the end of its milestone and gives a milestone report
 (`workflows/next-task.md` step 9). The milestones are listed in `08-TASKS.md`.
 
@@ -25,6 +25,11 @@ Read AGENTS.md and .agent/PROGRESS.md. Run /next-task for milestone M2 (V3a, V3b
 ## Goal 3: Trackers + Money page (V4 → V5)
 ```
 Read AGENTS.md and .agent/PROGRESS.md. Run /next-task for milestone M3 (V4, V5): build Trackers and the Money page (Spending with budget, and IOUs). Stop after V5 and give me the milestone report.
+```
+
+## Goal 3b: Canvas v2 + Money v2 (V3c → V3d → V5a → V5b), after Goal 3, before Goal 4
+```
+Read AGENTS.md and .agent/PROGRESS.md. Run /next-task for milestone M3b (V3c, V3d, V5a, V5b): first run /sync-docs, then upgrade Canvas (fix the save warning and copy, pages inside pages, tabs, folding, pins, agent-ready pages with Undo) and Money (IOU ledger with add-to-person, edit, running balance, reminders and import from my notes; a To pay list; past months, search and CSV export). Write and run every test each task names, desktop and mobile. Stop after V5b and give me the milestone report.
 ```
 
 ## Goal 4: Renewals + Settings (V6 → V7)

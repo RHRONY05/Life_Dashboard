@@ -14,6 +14,7 @@ End with the milestone report described in `workflows/next-task.md`.
 | **M1 Foundation + Today** | V0, V1, V2, V3 | Login, the Yesterday · Today · Tomorrow board and his own Lists, live on `life.rhrony05.me` |
 | **M2 Canvas** | V3a, V3b | `/canvas`: the Scratch page for copy-paste (kept in this browser), saved notes with images, Copy as Markdown |
 | **M3 Trackers + Money** | V4, V5 | Trackers (NeetCode-style lists, "Add to today"), Spending with budget, IOUs |
+| **M3b Canvas v2 + Money v2** | V3c, V3d, V5a, V5b | Canvas without false "changed somewhere else" warnings, plain-text copy, pages inside pages, tabs, folding, pins, agent-ready pages with Undo. Money with a real IOU ledger (add to a person, edit entries, running balance, reminders, import from notes), a **To pay** list, past months, search and CSV export. Built after M3, before M4, all fully tested. |
 | **M4 Renewals + Settings** | V6, V7 | Renewals with morning reminder emails, quick links, API keys and the activity log |
 | **M5 Agents + Final** | V8, V9, V10 | The MCP server, Muse / Antigravity / Claude Code connected, final Lighthouse, learning notes |
 **From V2 on, every task ends with a production deploy** and the task's "Prod check", so Rony can use each module as soon as it is done.
@@ -100,6 +101,47 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 <!-- ─── end of M3: stop here and give the milestone report ─── -->
 
+M3b (Canvas v2 + Money v2) is done after M3 and before V6, in the order V3c → V3d → V5a → V5b. The numbers say which module a task belongs to, not the build order.
+
+- [ ] **V3c Canvas v2: fixes, pages tree, tabs**
+  - **First run `/sync-docs`** (`workflows/sync-docs.md`) and commit its `docs:` fixes, so this task starts from docs that match the code (the M2–M3 fixes changed Canvas, navigation and dialogs).
+  - Read 01 (CV3, CV6, CV9–CV12), 03 "Canvas pages", 04 Notes, 06 `/canvas` incl. "Canvas v2", 07 §8.3, 8.3b, 8.8, 8.9, 10-STATES Canvas, and design `desktop/08b-canvas-pages.html`, `mobile/10-canvas-notes.html`, `states.html` → "Canvas v2".
+  - **Fixes first, each with a test that failed before:** (1) the save queue, 07 §8.9 rules 1–6 (`lib/canvas/save-queue.ts`); the e2e "type 10 s with a 1.5 s delayed PATCH" case must show no conflict. (2) Plain-text copy, 07 §8.3b (`docToPlainText` as the `clipboardTextSerializer`) and `Ctrl+Shift+C`. (3) Autolink only for `http(s)://` and `www.` (07 §8.3b). (4) Pages with `doc = null` load with `contentType: "markdown"` (06). Deploy these on their own (`fix(canvas): …`) before the rest.
+  - Migration `<ts>_life_canvas_pages.sql` = 03 "Canvas pages" → `apply_migration` on `vocab` → regenerate types → `get_advisors`. `docToMarkdown(…, {images})` per 07 §8.3, `markdownToDoc` + the round-trip test, then run `scripts/backfill-body-md.ts` once on `vocab` (owner and e2e rows; log the count in PROGRESS).
+  - `domain/canvas.ts`: `buildTree`, `canMove`, `resolveNote` (07 §8.8). `services/notes.ts`: `parentId` on create, move (cycle / too_deep), pin (max 5), subtree delete with every image folder, `since` → 204, clean-up that also keeps `prev_*` refs. Routes and Zod schemas per 04.
+  - UI per 06 "Canvas v2": pages tree with Pinned, New page, row `+` / `⋯`, Move to… dialog, delete confirm with the sub-page count; tab bar (8 tabs, LRU, `localStorage`, `Alt+1…9`, `Alt+W`, middle-click); breadcrumb; Sub-pages list; folding (decorations + `localStorage`); "Save as note" becomes **Save as page** and the labels say Pages; mobile Scratch · Pages, tree, tab switcher in the header; shortcut rows in the dialog.
+  - **Tests:** unit `canvas.test.ts` (8.3b, round trip, 8.8); integration "Pages" (09); e2e `canvas.spec.ts` v2 part, except the agent-edit cases (V3d).
+  - **AC (browser):** with DevTools throttling on Slow 4G, type in a page for 30 s → never a conflict message; paste `docker run -d --rm --name deeptutor -p 127.0.0.1:3782:3782 -v deeptutor-data:/app/data ghcr.io/hkuds/deeptutor:latest` as a bullet → no link appears; select the bullet, `Ctrl+C`, paste into Notepad/PowerShell → the command exactly; build the DevTools page from Rony's Notion page text (pasted) with sub-pages "Backend tips" and "UI-UX tips" → breadcrumb, Sub-pages list and tree match D08b; open 4 pages, reload → same tabs; fold "Tips", reload → folded; move "Backend tips" to the top level and back; try to move "DevTools" under its own child → refused; pin DevTools → Pinned group. Compare with D08b / M10 at 1440×900 and 390×844, light and dark.
+  - **Prod check:** deploy; on production, edit the existing "How to run deep tutor?" page for a minute → no warning; copy its docker line into a terminal → it runs as written.
+
+- [ ] **V3d Canvas v2: agent-ready pages**
+  - Read 01 (CV8, CV13, CV14), 03 "Canvas pages" (agent edits), 05 §3–4 (the 6 page tools and the rules under the tool table), 07 §6 (summaries), 8.9 rule 7, 8.10, 10-STATES Canvas v2.
+  - `domain/canvas.ts`: `headingsOf`, `appendToSection`, `replaceSection` (07 §8.10). `services/notes.ts` (ctx-based, so V8 only wires them): `listNotesTree` (paths, depth, headings), `getNoteForAgent` (by id/path/title, `ambiguous`, children), `createNote` with `parent`, `appendToNote`, `replaceNoteSection`, `updateNote` (all three snapshot into `prev_*`, set `doc = null`, keep `created_by`, `expectedUpdatedAt` where 05 says), `undoAgentEdit`. Zod schemas for the 6 tools in `schemas.ts`, descriptions exactly as in 05. No delete, move or pin on the agent path.
+  - Route `POST /api/notes/[id]/undo-agent-edit`. UI: "Edited by Muse · 5m ago · Undo" line + confirm; refresh on focus / tab switch / 60 s with `?since=` (07 §8.9 rule 7); the silent reload + toast, and the conflict line with See theirs / Keep mine (06). Remove the old full-width 409 banner.
+  - **Tests:** unit 8.10 examples; integration "Pages" agent cases (09); e2e `canvas.spec.ts` agent-edit cases (an edit made through the service with an agent ctx, as V8 isn't built yet).
+  - **AC (browser):** with DevTools open in a tab, run a small script (`scripts/dev-agent-edit.ts`, local only, uses an agent ctx named "Muse") that appends "- WeasyPrint" under "Libraries" → within 60 s the page shows it formatted as a bullet in the right section, toast "DevTools was updated by Muse", line "Edited by Muse"; Undo → gone; repeat while typing → the conflict line, Keep mine keeps your text; the tree and paths from `listNotesTree` match the pane.
+  - **Prod check:** deploy; no visible change besides V3c (agents connect in V8/V9). Note in PROGRESS that V8 must register the 6 page tools.
+
+- [ ] **V5a Money v2: IOU ledger**
+  - Read 01 (M4–M8), 04 Money (IOUs) incl. the new routes and `Person.recent`, 06 IOUs tab, 07 §3c, 10-STATES "Money v2", design `desktop/07b-money-ious-ledger.html`, `mobile/07b-money-ious-ledger.html`, `states.html` → "Money v2".
+  - **Fix first:** the `via …` badge in `HistoryPane` and `SpendList` compares with `"human"`; the stored owner value is `"owner"` (03), so every entry shows "via owner". Compare with `"owner"` everywhere and add a test. Deploy on its own.
+  - `domain/money.ts`: `withBalances`, `sinceSettled`, `reminderText`, `reminderTask`, `parseIouText` (07 §3c). `services/money.ts`: `updateEntry`, `recent`/`lastNote` on `Person`, `balanceAfter` on entries, `getReminder`, `importIous` (preview + one transaction). Routes per 04. Zod schemas.
+  - UI per 06: `PersonRow` breakdown + note + `+`; `EntryDialog` with the person filled, the default kind and the live "will owe" line, also as Edit; `EntryLedger` (desktop pane, and the full in-place expansion below 1024 px) with balance after, notes, "Settled" dividers and the row `⋯`; Copy reminder; Remind me (Today / Tomorrow, through the tasks service); `ImportDialog` (2 steps).
+  - **Tests:** unit 07 §3c; integration "Money v2" (09); e2e `money.spec.ts` v2 part.
+  - **AC (browser):** with Rony's current people already in the list, click `+` on Humayen → the dialog says Humayen; add "They paid me 350" → the row shows the new balance and "−350" at the end of its breakdown; open the ledger at 1440 px **and at 955 px** (the width Rony uses) → every entry with its date, note and "bal ৳…"; edit an entry's amount → balance updates; Copy reminder on Saimun → paste into a textarea → the 07 §3c sentence; import the 10 lines from 07 §3c → people that already exist are marked "Already in your list" and skipped; the new ones get their entries. No "via owner" anywhere. Compare with D07b / M07b at 1440×900 and 390×844, light and dark.
+  - **Prod check:** deploy; on production add one real payback to an existing person with `+` and check the ledger shows it with its note.
+
+- [ ] **V5b Money v2: To pay, past months, search, export**
+  - Read 01 (P1–P3, S7–S9), 03 "Money v2", 04 Spending (`month`, `q`), "To pay", "Export", 05 (the 3 new money tools), 06 Spending additions + To pay tab + rail line, 07 §3b `summarise(…, month)`, 3d, 3e, 10-STATES "Money v2", design `desktop/09-money-topay.html`, `mobile/12-money-topay.html`, `desktop/04b-money-spending-v2.html`.
+  - Migration `<ts>_life_money_v2.sql` = 03 "Money v2" (check the real name of the category constraint first) → `apply_migration` on `vocab` → regenerate types → `get_advisors`. `CATEGORIES` gets `giving`; the `topay-empty` illustration is in the sprite.
+  - `domain/money.ts` (3d), `domain/csv.ts` (3e), `domain/spending.ts` month option. `services/payment-todos.ts` (list, create with the 100 limit, update, delete, paid with the monthly copy, unpaid) in one transaction each; `services/spending.ts` month + search; export routes. Zod schemas for `list_payment_todos`, `add_payment_todo`, `mark_payment_paid` (V8 registers them).
+  - UI per 06: the third tab with its count, `TodoDialog`, `TodoRow`, Paid group, Undo toast; month switcher; search; `⋯` exports; the Today rail "To pay" line; Giving chip.
+  - **Tests:** unit 3d, 3e, month summary; integration "To pay" and "Spending v2" (09); e2e `money.spec.ts` To pay + Spending v2 parts, `spending.spec.ts` still green; add `/money?tab=topay` to `a11y.spec.ts` and the Lighthouse pages (09).
+  - **AC (browser):** add "Mahfil LED lights ৳500 due Fri", "Home ৳3,000 every month" and "Ranggashimulia foundation ৳200" → "Still to pay ৳3,700 · 3 items" and the rail line on Today; Mark paid on Home → Spending shows ৳3,000 Giving today and To pay shows Home again for next month; Undo → both changes gone; switch Spending to last month and back; search a note word; export both CSVs and open them in Excel → ৳ and Bengali notes look right. Compare with D09 / M12 / D04b, light and dark.
+  - **Prod check:** deploy; Rony adds his real promised payments on production (human step in PROGRESS); export his spending CSV once.
+
+<!-- ─── end of M3b: stop here and give the milestone report ─── -->
+
 - [ ] **V6 Renewals + daily email**
   - `domain/renewals.ts` (07 §4), `services/renewals.ts`, routes (04 Renewals), `/renewals` per design `05-renewals` (groups, overdue banner, Renewed + Undo, `RenewalDialog`), nav badge, "Coming up" rail block.
   - `src/lib/email.ts` (nodemailer Gmail SMTP; mock file transport), `src/lib/reminders.ts`, the real `GET /api/cron/daily` (04), `POST /api/email/test`.
@@ -117,10 +159,10 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 <!-- ─── end of M4: stop here and give the milestone report ─── -->
 
 - [ ] **V8 MCP server + local Lighthouse**
-  - `src/lib/agent/auth.ts` (`requireAgent`, rate limit), `agent/tools.ts` (all 32 tools of 05 §4, exact descriptions, schemas from `schemas.ts`), `agent/run-tool.ts` (05 §2 steps 3–4 and the error table), `src/app/api/mcp/route.ts` (stateless, JSON, Node runtime). Per-request tool registration by scope.
+  - `src/lib/agent/auth.ts` (`requireAgent`, rate limit), `agent/tools.ts` (all 38 tools of 05 §4, exact descriptions, schemas from `schemas.ts`), `agent/run-tool.ts` (05 §2 steps 3–4 and the error table), `src/app/api/mcp/route.ts` (stateless, JSON, Node runtime). Per-request tool registration by scope.
   - Write the code for learning: a short header comment in each of these 4 files explaining its job in the request flow (05 §2), no more.
   - **Tests:** e2e `mcp.spec.ts` (all 7 cases), `states.spec.ts` (10-STATES §6), `a11y.spec.ts`, `visual.spec.ts` (baselines after comparing with the design by eye).
-  - Local production build → Lighthouse mobile + desktop on the 8 pages (09). Fix misses.
+  - Local production build → Lighthouse mobile + desktop on the 9 pages (09). Fix misses.
   - **AC:** `npm run test:all` green; Claude Code locally: `claude mcp add --transport http life-local http://localhost:3000/api/mcp --header "Authorization: Bearer <a test key>"` → `get_board` works (or the MCP Inspector, if Claude Code isn't available); Lighthouse table in PROGRESS.md meets the targets.
   - **Prod check:** deploy; `mcp.spec.ts` cases 1–3 against the production URL with a temporary key (`PLAYWRIGHT_BASE_URL`), then revoke that key.
 
@@ -133,13 +175,16 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 - [ ] **V10 Final check, production Lighthouse, handoff**
   - `npm run test:all` and `npm run build` green.
-  - Lighthouse on the **production URL**, mobile + desktop, 8 pages. Fix, redeploy, re-run. Final table in PROGRESS.md.
+  - Lighthouse on the **production URL**, mobile + desktop, 9 pages. Fix, redeploy, re-run. Final table in PROGRESS.md.
   - `README.md`: what it is, local setup, env vars, scripts, tests, deploy, MCP connection (link docs/agents.md).
   - `docs/learn/mcp-and-api-keys.md` in Rony's 4-question format (Personal_Context `02_how_i_learn_and_work_with_ai.md` §2): the core problem (why agents need their own keys + why naive "give it my password" fails), the mental model (a diagram of the two front doors and the request flow), the production code breakdown (the real code from `agent/auth.ts`, `run-tool.ts`, `tools.ts`, `domain/keys.ts`, trimmed), production gotchas (service role bypasses RLS, scopes in code, show-once keys, hashing choice, rate limits, stateless on serverless, tool descriptions as contract). Rony copies it into his vault.
   - Final message to Rony: what was built, the production URL, the Lighthouse table, and a **code-flow walkthrough** (request in → response out, which files) for: (1) ticking a task on Today, (2) an agent's `add_task` call through `/api/mcp`, (3) the daily reminder email; plus what's left for him.
   - **AC:** everything green; targets met (or each miss explained); learning note and walkthrough delivered.
 
 ---
+
+## Changes outside tasks
+Fixes and changes Rony asks for in chat, outside a task above. One line each, newest last: date · what changed · which docs were updated (`06`, `07 §8.3`…) or "no doc change: <why>".
 
 ## Questions for the human
 (Agents add questions here; the human answers inline.)

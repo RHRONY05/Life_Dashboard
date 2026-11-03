@@ -248,13 +248,13 @@ Toolformer | https://arxiv.org/abs/2302.04761
       </table>
     </div>
     <div class="card empty">
-      <svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#spend-empty"/></svg>
+      <svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#spend-empty"/></svg>
       <h3>Nothing spent yet</h3>
       <p>Track where your money goes. One line per spend.</p>
       <button class="btn btn-primary"><i data-lucide="plus"></i>Add a spend</button>
     </div>
     <div class="card empty">
-      <svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#trackers-empty"/></svg>
+      <svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#trackers-empty"/></svg>
       <h3>No trackers yet</h3>
       <p>Make a list you want to work through: a problem set, a reading list, a course.</p>
       <button class="btn btn-primary"><i data-lucide="plus"></i>New tracker</button>
@@ -265,7 +265,7 @@ Toolformer | https://arxiv.org/abs/2302.04761
   <h2 class="sh">Lists (Today)</h2>
   <div class="grid2">
     <div class="card lists-empty">
-      <svg class="illus" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#lists-empty"/></svg>
+      <svg class="illus" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#lists-empty"/></svg>
       <div>
         <p>Keep things that don't belong to a day here.</p>
         <div class="sugg"><span class="chip"><i data-lucide="plus"></i>To do later</span><span class="chip"><i data-lucide="plus"></i>This week's targets</span><span class="chip"><i data-lucide="plus"></i>This month's targets</span><button class="btn btn-secondary btn-sm"><i data-lucide="list-plus"></i>New list</button></div>
@@ -299,7 +299,7 @@ Toolformer | https://arxiv.org/abs/2302.04761
       <div class="lab">Scratch · Nothing</div>
       <section class="ecard">
         <div class="ecard-head"><h2>Scratch</h2><span class="save-status"><span class="dot"></span>Saved · this browser</span><span class="spacer"></span><button class="btn btn-primary btn-sm"><i data-lucide="copy"></i>Copy as Markdown</button></div>
-        <div class="canvas-empty"><svg class="illus md" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#canvas-empty"/></svg><p>Paste anything here: AI chats, links, screenshots, code.<br>It stays in this browser.</p></div>
+        <div class="canvas-empty"><svg class="illus md" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#canvas-empty"/></svg><p>Paste anything here: AI chats, links, screenshots, code.<br>It stays in this browser.</p></div>
         <div class="prose" style="padding-top:16px"><p><span class="caret"></span></p></div>
       </section>
     </div>
@@ -328,7 +328,6 @@ Toolformer | https://arxiv.org/abs/2302.04761
     <div style="display:flex;flex-direction:column;gap:8px">
       <div class="lab">Banners (above the editor)</div>
       <div class="banner banner-accent"><i data-lucide="app-window"></i><span class="grow">Scratch is open in another tab.</span><button class="btn btn-secondary">Use here</button></div>
-      <div class="banner banner-warn"><i data-lucide="git-compare"></i><span class="grow">This note changed somewhere else.</span><button class="btn btn-secondary">Load latest</button><button class="btn btn-secondary">Keep mine</button></div>
       <div class="banner banner-warn"><i data-lucide="eye-off"></i><span class="grow">This browser won't keep Scratch. It's lost when you close the tab.</span></div>
       <div class="banner banner-danger"><i data-lucide="hard-drive"></i><span class="grow">Browser storage is full. Save Scratch as a note or clear it.</span></div>
     </div>
@@ -378,14 +377,120 @@ Toolformer | https://arxiv.org/abs/2302.04761
     </div>
   </div>
 
+  <h2 class="sh">Money v2 (10-STATES "Money v2"; V5a–V5b)</h2>
+  <div class="grid2">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="lab">Entry dialog from a person's + (person filled, live balance line)</div>
+      <div class="dialog">
+        <h2>Add to Saimun</h2>
+        <p class="lead">Saimun owes you <span class="taka">৳</span>570 now.</p>
+        <div class="field"><label>Person</label><div class="input" style="background:var(--surface-2)"><b>Saimun</b><span class="spacer" style="flex:1"></span><a href="#" style="font-size:var(--text-xs)">change</a></div></div>
+        <div class="seg block" style="margin:6px 0 12px"><button class="on">I lent</button><button>I borrowed</button><button>They paid me</button><button>I paid them</button></div>
+        <div class="field"><label>Amount</label><div class="input focus"><span class="pre taka">৳</span><span class="num">100</span></div><div class="after-line">Saimun will owe you <span class="taka">৳</span>670</div></div>
+        <div class="field"><label>Note</label><div class="input">canteen, Thursday</div></div>
+        <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-primary">Save</button></div>
+      </div>
+      <div class="lab">Money ⋯ menu</div>
+      <div class="menu" style="position:static;width:260px"><a href="#"><i data-lucide="download"></i>Export spending (CSV)</a><a href="#"><i data-lucide="download"></i>Export IOUs (CSV)</a><hr><a href="#"><i data-lucide="clipboard-paste"></i>Import IOUs from notes</a></div>
+      <div class="lab">Toasts</div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+        <div class="toast"><i data-lucide="calendar-plus"></i>Added to Today: Ask Saimun for ৳570<button class="btn">Open</button></div>
+        <div class="toast"><i data-lucide="users"></i>Imported 7 people and 23 entries.</div>
+        <div class="toast"><i data-lucide="check-check"></i>Paid ৳3,000 · logged in Spending<button class="btn">Undo</button></div>
+      </div>
+      <div class="lab">To pay · Nothing</div>
+      <div class="card"><div class="empty"><svg class="illus md" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#topay-empty"/></svg><p>Promised to pay someone, give somewhere or send money home?<br>List it here so you don't forget.</p><button class="btn btn-primary"><i data-lucide="plus"></i>Add payment</button></div></div>
+    </div>
+    <div>
+      <div class="lab">Import IOUs from notes · step 2 (preview)</div>
+      <div class="dialog wide" style="width:auto">
+        <h2>Import from your notes</h2>
+        <p class="lead">dibe = they owe you · pabe = you owe them · − = paid back. Entries are dated today.</p>
+        <table class="imp-table"><thead><tr><th></th><th>Person</th><th>Who owes</th><th>Entries</th><th style="text-align:right">Balance</th></tr></thead><tbody><tr class=""><td><span class="check on"><i data-lucide="check"></i></span></td><td><b>Juman</b></td><td><span class="minseg"><span class="on">Owes you</span><span>You owe</span></span></td><td><div class="chips"><i>+280</i></div></td><td class="num" style="text-align:right;font-weight:650">+280</td></tr><tr class=""><td><span class="check on"><i data-lucide="check"></i></span></td><td><b>Majharul</b></td><td><span class="minseg"><span>Owes you</span><span class="on">You owe</span></span></td><td><div class="chips"><i>+454</i></div></td><td class="num" style="text-align:right;font-weight:650">−454</td></tr><tr class=""><td><span class="check on"><i data-lucide="check"></i></span></td><td><b>Rafi</b></td><td><span class="minseg"><span class="on">Owes you</span><span>You owe</span></span></td><td><div class="chips"><i>+45</i><i>+22</i></div></td><td class="num" style="text-align:right;font-weight:650">+67</td></tr><tr class="ask"><td><span class="check on"><i data-lucide="check"></i></span></td><td><b>Humayen</b></td><td><span class="minseg"><span>Owes you</span><span>You owe</span></span> <b style="font-size:var(--text-2xs)">Choose</b></td><td><div class="chips"><i>+2,200</i><i>+200</i><i>+430</i><i>−600</i><i>−350</i><i>+500</i><i>+50</i><i>+300</i><i>+1,000</i><i>−1,000</i><i>−200</i></div></td><td class="num" style="text-align:right;font-weight:650">+2,530</td></tr><tr class=""><td><span class="check on"><i data-lucide="check"></i></span></td><td><b>Saimun</b></td><td><span class="minseg"><span class="on">Owes you</span><span>You owe</span></span></td><td><div class="chips"><i>+100</i><i>+75</i><i>+300</i><i>+95</i></div></td><td class="num" style="text-align:right;font-weight:650">+570</td></tr><tr class="skip"><td><span class="check"></span></td><td><b>Yousuf mama</b><div style="font-size:var(--text-2xs)">Already in your list (৳2,950), skipped</div></td><td><span class="minseg"><span class="on">Owes you</span><span>You owe</span></span></td><td><div class="chips"><i>+2,950</i></div></td><td class="num" style="text-align:right;font-weight:650">+2,950</td></tr><tr class=""><td><span class="check on"><i data-lucide="check"></i></span></td><td><b>Naif</b></td><td><span class="minseg"><span class="on">Owes you</span><span>You owe</span></span></td><td><div class="chips"><i>+70</i><i>+90</i><i>+500</i></div></td><td class="num" style="text-align:right;font-weight:650">+660</td></tr><tr class="bad"><td><span class="check"></span></td><td><b>—</b><div style="font-size:var(--text-2xs)">line 11 “hello”: no amount</div></td><td></td><td><div class="chips"></div></td><td class="num" style="text-align:right;font-weight:650"></td></tr></tbody></table>
+        <div class="dialog-foot"><button class="btn btn-ghost">Back</button><button class="btn btn-primary" disabled style="opacity:.55">Import 6 people</button></div>
+        <p style="margin:8px 0 0;font-size:var(--text-xs);color:var(--warn-text)">Choose who owes for Humayen first.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sh">Canvas v2 (10-STATES "Canvas v2"; V3c–V3d)</h2>
+  <div class="grid2">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="lab">Sub-page head · breadcrumb · conflict line (replaces the old banner)</div>
+      <section class="ecard">
+        <div class="ecard-head">
+          <div class="title-col">
+            <span class="crumbs"><a href="#">DevTools</a><i data-lucide="chevron-right"></i><a href="#">Backend tips</a><i data-lucide="chevron-right"></i></span>
+            <span class="ntitle">Postgres RLS cheatsheet</span>
+          </div>
+          <span class="save-status busy"><i data-lucide="loader-2" class="spin sm"></i>Saving…</span>
+          <span class="spacer"></span>
+          <button class="btn btn-primary btn-sm"><i data-lucide="copy"></i>Copy as Markdown</button>
+          <button class="iconbtn" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="conflict-line"><i data-lucide="git-compare"></i><span>Muse changed this page while you were typing.</span><button>See theirs</button><button>Keep mine</button></div>
+        <div class="prose" style="padding:16px 24px 20px"><p>Use <code>(select auth.uid())</code> so the policy runs once per query.<span class="caret"></span></p></div>
+      </section>
+      <div class="lab">Agent edit line</div>
+      <section class="ecard"><div class="agent-line" style="border:0;border-radius:var(--radius-lg)"><i data-lucide="bot"></i>Edited by <b>Muse</b> · 5m ago · <button>Undo</button></div></section>
+      <div class="lab">Tab bar · 8 of 8 (opening a 9th closes the least recently used)</div>
+      <div class="ptabs" style="max-width:660px">
+        <a class="ptab scratch" href="#"><i data-lucide="clipboard-paste"></i><span>Scratch</span></a>
+        <a class="ptab" href="#"><i data-lucide="file-text"></i><span>DevTools</span><button class="x"><i data-lucide="x"></i></button></a>
+        <a class="ptab on" href="#"><i data-lucide="file-text"></i><span>Ranggashimulia Youth Fo…</span><button class="x"><i data-lucide="x"></i></button></a>
+        <a class="ptab" href="#"><i data-lucide="file-text"></i><span>Backend tips</span><button class="x"><i data-lucide="x"></i></button></a>
+        <a class="ptab" href="#"><i data-lucide="file-text"></i><span>CN questions</span><button class="x"><i data-lucide="x"></i></button></a>
+        <span class="count">8 / 8</span>
+      </div>
+      <div class="lab">Pages tree · Nothing</div>
+      <div class="tree" style="max-width:280px"><div class="npane-empty">No pages yet. <b>New page</b>, or <b>Save as page</b> from Scratch.</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="lab">Move to…</div>
+      <div class="dialog">
+        <h2>Move “Backend tips”</h2>
+        <p class="lead">Pick where it goes. Its 2 sub-pages move with it.</p>
+        <div class="tree" style="box-shadow:none">
+          <a class="trow" href="#" style="--lvl:0"><span class="chev none"></span><i data-lucide="corner-left-up" class="pin"></i><span class="t">Top level</span></a>
+          <a class="trow on" href="#" style="--lvl:0"><span class="chev"><i data-lucide="chevron-down"></i></span><span class="t">Study</span></a>
+          <a class="trow" href="#" style="--lvl:1;color:var(--ink-3)"><span class="chev none"></span><span class="t">Networking</span><span style="font-size:var(--text-2xs)">Max 3 levels</span></a>
+          <a class="trow" href="#" style="--lvl:0"><span class="chev none"></span><span class="t">CN questions · week 9</span></a>
+          <a class="trow" href="#" style="--lvl:0;color:var(--ink-3)"><span class="chev none"></span><span class="t">DevTools (current)</span></a>
+        </div>
+        <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-primary">Move here</button></div>
+      </div>
+      <div class="dialog">
+        <h2>Delete “DevTools”?</h2>
+        <p class="lead" style="margin-bottom:0">Its 3 sub-pages and all their images are deleted too. This can't be undone.</p>
+        <div class="dialog-foot"><button class="btn btn-ghost">Cancel</button><button class="btn btn-danger">Delete</button></div>
+      </div>
+      <div class="lab">Page row menu</div>
+      <div class="menu" style="position:static;width:220px">
+        <a href="#"><i data-lucide="file-plus"></i>New sub-page</a>
+        <a href="#"><i data-lucide="pin"></i>Pin</a>
+        <a href="#"><i data-lucide="folder-input"></i>Move to…</a>
+        <hr>
+        <a href="#" class="danger"><i data-lucide="trash-2"></i>Delete</a>
+      </div>
+      <div class="lab">Toasts</div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+        <div class="toast"><i data-lucide="bot"></i>DevTools was updated by Muse</div>
+        <div class="toast"><i data-lucide="undo-2"></i>Muse's edit undone</div>
+        <div class="toast"><i data-lucide="copy-check"></i>Copied as Markdown</div>
+        <div class="toast"><i data-lucide="pin-off"></i>You can pin 5 pages.</div>
+        <div class="toast"><i data-lucide="file-x"></i>That page was deleted.</div>
+      </div>
+    </div>
+  </div>
+
   <h2 class="sh">Empty states (Nothing) — every page</h2>
   <div class="grid3">
-    <div class="card empty"><svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#ious-empty"/></svg><h3>No IOUs yet</h3><p>Write down who owes whom. It takes five seconds.</p><button class="btn btn-primary"><i data-lucide="plus"></i>Add entry</button></div>
-    <div class="card empty"><svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#renewals-empty"/></svg><h3>No renewals yet</h3><p>Add the things that end or charge you: subscriptions, hosting, domains, student credits.</p><button class="btn btn-primary"><i data-lucide="plus"></i>Add renewal</button></div>
-    <div class="card empty"><svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#agents-empty"/></svg><h3>No agents yet</h3><p>Make a key to connect Muse, Antigravity or Claude Code.</p><button class="btn btn-primary"><i data-lucide="key-round"></i>New key</button></div>
+    <div class="card empty"><svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#ious-empty"/></svg><h3>No IOUs yet</h3><p>Write down who owes whom. It takes five seconds.</p><button class="btn btn-primary"><i data-lucide="plus"></i>Add entry</button></div>
+    <div class="card empty"><svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#renewals-empty"/></svg><h3>No renewals yet</h3><p>Add the things that end or charge you: subscriptions, hosting, domains, student credits.</p><button class="btn btn-primary"><i data-lucide="plus"></i>Add renewal</button></div>
+    <div class="card empty"><svg class="illus md" style="margin:0 auto 10px" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#agents-empty"/></svg><h3>No agents yet</h3><p>Make a key to connect Muse, Antigravity or Claude Code.</p><button class="btn btn-primary"><i data-lucide="key-round"></i>New key</button></div>
     <div class="card" style="padding:8px">
       <div class="lab" style="padding:4px 8px 0">Today column, nothing planned</div>
-      <div class="col-empty"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#today-empty"/></svg><div>Nothing planned yet. Add the first task above.</div></div>
+      <div class="col-empty"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#today-empty"/></svg><div>Nothing planned yet. Add the first task above.</div></div>
     </div>
     <div class="card" style="padding:8px">
       <div class="lab" style="padding:4px 8px 0">None (filter shows nothing)</div>
@@ -402,10 +507,10 @@ Toolformer | https://arxiv.org/abs/2302.04761
   <div class="grid3">
     <div class="card" style="padding:8px">
       <div class="lab" style="padding:4px 8px 0">Today, everything ticked</div>
-      <div class="done-strip"><svg class="illus" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#all-done"/></svg><span>All 6 done. Tomorrow has 2 waiting.</span></div>
+      <div class="done-strip"><svg class="illus" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#all-done"/></svg><span>All 6 done. Tomorrow has 2 waiting.</span></div>
     </div>
     <div class="card" style="padding:16px 20px;display:flex;gap:16px;align-items:center">
-      <svg class="illus sm" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#tracker-done"/></svg>
+      <svg class="illus sm" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#tracker-done"/></svg>
       <div><div class="lab">Tracker finished</div><b style="font-family:var(--font-display);font-size:var(--text-lg)">NeetCode 150 · 150 / 150</b><div class="muted" style="font-size:var(--text-sm)">Finished on Thu 14 Jan</div></div>
     </div>
     <div class="card" style="padding:16px 20px">
@@ -444,14 +549,14 @@ Toolformer | https://arxiv.org/abs/2302.04761
       <div class="field" style="max-width:320px"><label>Amount</label><div class="input" style="border-color:var(--danger)"><span class="pre taka">৳</span></div><span class="hint" style="color:var(--danger-text)">Enter an amount</span></div>
     </div>
     <div class="grid2" style="gap:12px">
-      <div class="card empty" style="padding:28px 16px"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#error"/></svg><h3>Couldn't load this page</h3><p>Something went wrong on our side.</p><button class="btn btn-secondary"><i data-lucide="rotate-cw"></i>Reload</button></div>
-      <div class="card empty" style="padding:28px 16px"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#lost"/></svg><h3>This page doesn't exist</h3><p>The link may be old.</p><button class="btn btn-primary">Go to Today</button></div>
-      <div class="card empty" style="padding:28px 16px"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#offline"/></svg><h3>You're offline</h3><p>Connect to load this page.</p><button class="btn btn-secondary">Try again</button></div>
+      <div class="card empty" style="padding:28px 16px"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#error"/></svg><h3>Couldn't load this page</h3><p>Something went wrong on our side.</p><button class="btn btn-secondary"><i data-lucide="rotate-cw"></i>Reload</button></div>
+      <div class="card empty" style="padding:28px 16px"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#lost"/></svg><h3>This page doesn't exist</h3><p>The link may be old.</p><button class="btn btn-primary">Go to Today</button></div>
+      <div class="card empty" style="padding:28px 16px"><svg class="illus sm" style="margin:0 auto 8px" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#offline"/></svg><h3>You're offline</h3><p>Connect to load this page.</p><button class="btn btn-secondary">Try again</button></div>
       <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;justify-content:center">
         <div class="lab">Day glyphs (column headers)</div>
-        <div class="rowx"><svg class="day-glyph" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#day-yesterday"/></svg>Yesterday</div>
-        <div class="rowx"><svg class="day-glyph" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#day-today"/></svg>Today</div>
-        <div class="rowx"><svg class="day-glyph" aria-hidden="true"><use href="illustrations/sprite.svg?v=4#day-tomorrow"/></svg>Tomorrow</div>
+        <div class="rowx"><svg class="day-glyph" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#day-yesterday"/></svg>Yesterday</div>
+        <div class="rowx"><svg class="day-glyph" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#day-today"/></svg>Today</div>
+        <div class="rowx"><svg class="day-glyph" aria-hidden="true"><use href="illustrations/sprite.svg?v=5#day-tomorrow"/></svg>Tomorrow</div>
       </div>
     </div>
   </div>

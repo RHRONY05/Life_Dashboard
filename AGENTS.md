@@ -51,9 +51,10 @@ the finished app and reads the code-flow walkthrough; he doesn't write code.
 | AI | The app calls no LLM. The agents are the AI. |
 | Design | Done by the planner in `.agent/design/`. The builder implements it exactly and makes **no** design decisions. Tokens come from `design/tokens.css` only. Illustrations come from `design/illustrations/sprite.svg` as inline SVG components. Direction: **Swiss Ink** (soft neo-brutalism), final. |
 | Builder setup | Before Goal 1, Rony runs **`/project-config`** once: the builder enables every MCP server the project needs, writes wildcard grants and URL grants **in this project's config only** (never global), checks each tool answers, and reports what Rony must still do. Turning servers off later is Rony's call. |
-| Build rhythm | **5 milestones, one goal command each** (`.agent/GOAL.md`, table in `08-TASKS.md`): M1 Foundation + Today, M2 Canvas, M3 Trackers + Money, M4 Renewals + Settings, M5 Agents + final. The builder stops at the end of each milestone with a milestone report. |
+| Build rhythm | **6 milestones, one goal command each** (`.agent/GOAL.md`, table in `08-TASKS.md`): M1 Foundation + Today, M2 Canvas, M3 Trackers + Money, M3b Canvas v2 + Money v2, M4 Renewals + Settings, M5 Agents + final. The builder stops at the end of each milestone with a milestone report. |
 | Lists | Rony's own undated lists on Today ("To do later", "This week's targets"…), created and managed by him, never auto-updated. A task lives on a day **or** in a list and can move between them. |
-| Canvas | `/canvas` = one editor (TipTap) with two homes. **Scratch**: Rony's copy-paste page, stored in this browser only (IndexedDB), never sent to the server or agents. **Notes**: saved in the `notes` table, images in the private Storage bucket `life-notes`. Paste keeps structure; copy gives Markdown. Added 2026-11-03 as M2. |
+| Canvas | `/canvas` = one editor (TipTap) with two homes. **Scratch**: Rony's copy-paste page, stored in this browser only (IndexedDB), never sent to the server or agents. **Notes**: saved in the `notes` table, images in the private Storage bucket `life-notes`. Paste keeps structure; `Ctrl+C` gives plain text, Copy as Markdown gives Markdown. Added 2026-11-03 as M2. **v2 (M3b):** saved notes are shown as **pages**: a tree up to 3 levels, tabs (Scratch + 8), folding, 5 pins; agents can list, create and edit pages (append / replace a section / rewrite) but never delete or move them, and Rony can undo the last agent edit. |
+| Docs follow code | The `.agent/` pack must always describe the app as it is. Any change to behaviour, data, API, tools, UI or shortcuts updates the doc that owns it **in the same commit** (map in `rules/life-dashboard.md`), including fixes Rony asks for in chat (logged under "Changes outside tasks" in `08-TASKS.md`). `/sync-docs` audits and repairs drift. |
 | States | Every screen implements every state in `10-STATES.md` (nothing, loading, none, one, some, too many, incorrect, correct, done, plus offline, timeout, 5xx, 401, 404, 409). |
 | Testing | Unit + integration (Vitest), e2e on desktop and mobile (Playwright), an MCP client test, accessibility (axe), and Lighthouse on mobile and desktop with targets in `09-TESTING.md`. Tests use the separate e2e user and a mocked email transport. |
 | Release | **Ship each module.** From V2 on, every task ends with a production deploy and a check on the live URL. |
@@ -64,7 +65,8 @@ the finished app and reads the code-flow walkthrough; he doesn't write code.
 - [x] Planning + design (2026-11-02)
 - [x] M1 Foundation + Today (V0–V3)
 - [x] M2 Canvas (V3a–V3b)
-- [ ] M3 Trackers + Money (V4–V5)
+- [x] M3 Trackers + Money (V4–V5)
+- [ ] M3b Canvas v2 + Money v2 (V3c, V3d, V5a, V5b)
 - [ ] M4 Renewals + Settings (V6–V7)
 - [ ] M5 Agents + final (V8–V10)
 

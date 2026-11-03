@@ -42,7 +42,9 @@ directly. `?theme=dark` or `?theme=light` forces a theme on one screen.
 | Money · Spending | `desktop/04-money-spending.html` (tiles + budget, quick add, day groups, category bars) | `mobile/04-money-spending.html` (category chips scroll sideways) |
 | Money · IOUs | `desktop/07-money-ious.html` (totals, people, Karim's history pane) | `mobile/07-money-ious.html` (Karim expanded in place, FAB) |
 | Renewals | `desktop/05-renewals.html` (Next 30 days / Later / No date) | `mobile/05-renewals.html` |
-| Canvas | `desktop/08-canvas.html` (Scratch open with a pasted AI answer, code block, table, a screenshot selected, his own checklist; notes pane; "Copied" toast) | `mobile/09-canvas.html` (Scratch) · `mobile/10-canvas-notes.html` (Notes segment) |
+| Canvas | `desktop/08-canvas.html` (Scratch open with a pasted AI answer, code block, table, a screenshot selected, his own checklist; notes pane; "Copied" toast) | `mobile/09-canvas.html` (Scratch) |
+| Money v2 (V5a–V5b) | `desktop/07b-money-ious-ledger.html` (rows with breakdown chips, note, `+`; Humayen's ledger with balance after, notes, a Settled divider; Copy reminder toast) · `desktop/09-money-topay.html` (To pay list, Paid group, the Add payment dialog beside it, Undo toast) · `desktop/04b-money-spending-v2.html` (month switcher in the month tile, Giving chip, search results). They **replace** D07 and extend D04. | `mobile/07b-money-ious-ledger.html` (expanded row: actions + full ledger) · `mobile/12-money-topay.html` |
+| Canvas v2 (V3c–V3d) | `desktop/08b-canvas-pages.html` (DevTools page open: Pinned + pages tree, tab bar, agent edit line, a folded section, Sub-pages list; "updated by Muse" toast). Its pane **replaces** D08's notes list. | `mobile/10-canvas-notes.html` (Pages segment: Pinned + tree) · `mobile/11-canvas-page.html` (open sub-page: tab switcher in the header, breadcrumb, folding, Sub-pages) |
 | Settings | `desktop/06-settings.html` (Agents, Activity, Quick links, Email) | `mobile/06-settings.html` |
 
 ## Component map (ui.css class → React component)
@@ -92,6 +94,20 @@ directly. `?theme=dark` or `?theme=light` forces a theme on one screen.
 | `.prose` (+ `ul.tasks`, `pre .lang`, `table`, `.caret`) | TipTap content styles | Apply to `.ProseMirror`. Headings in the document are **not** uppercase. Links: ink with a `--signal` underline. |
 | `.cimg` (`.sel`, `.uploading`), `.upill`, `.size` | `CanvasImage` node view | `.shot` in the mockups only stands for a pasted image. |
 | `.canvas-empty` | `ScratchEmpty` | `canvas-empty` illustration + placeholder copy (10-STATES). |
+| `.person .bk` (`i.p`, `i.m`, `i.more`, `em`), `.addbtn` | `PersonRow` breakdown | Signed chips since the last 0, then the latest note. |
+| `.ledger-head`, `.lrow2`, `.settled-line` | `EntryLedger`, `LedgerRow` | Signed amount + "bal ৳…" right-aligned; note as a small chip under the date. |
+| `.after-line` | `EntryDialog` live balance | Success colour when they owe you after, danger when you owe. |
+| `.imp-table` (`tr.ask`, `tr.skip`, `tr.bad`), `.minseg` | `ImportDialog` preview | Rows needing a direction are highlighted warn. |
+| `.todo` (`.paid`), `.cic` | `TodoRow` | Due badge uses `.b-danger` / `.b-warn` / `.b-neutral`; `repeat` icon after the title for monthly. |
+| `.month-sw` | `MonthSwitcher` | In the month tile's head. |
+| `.spend-search`, `.results-head` | `SpendSearch` | Above the spend list; results header with count and total. |
+| `.ptabs`, `.ptab` (`.on`, `.scratch`, `.x`) | `PageTabs` | Scratch first, then up to 8 pages; the active tab has the hard frame + offset shadow. |
+| `.tree`, `.trow` (`--lvl`, `.chev`, `.acts`, `.pin`) | `PageTree`, `PageRow` | 16 px indent per level; `+` and `⋯` on hover. Also used in the Move to… dialog. |
+| `.crumbs`, `.m-crumbs`, `.title-col` | `Breadcrumb` | Above the title for sub-pages only. |
+| `.agent-line`, `.conflict-line` | `AgentEditLine`, `ConflictLine` | Quiet lines under the editor head; the conflict line replaces the old full-width banner. |
+| `.subpages` | `SubPagesList` | Under the page text, UI only (not in the doc). |
+| `.prose .fh`, `.fold`, `.folded[data-folded]` | `FoldChevron` (decoration) | Chevron in the left gutter; a folded heading shows "3 items folded". |
+| `.m-header .tabswitch` | `MobileTabSwitcher` | Page title + chevron + open-tab count; opens a menu of open tabs. |
 | `.done-strip` | `AllDoneStrip` | Today all ticked (10-STATES §1). |
 | `.offline-bar` (`.back`), `.progress-line` | `OfflineBar`, `RefetchLine` | 10-STATES §2. |
 

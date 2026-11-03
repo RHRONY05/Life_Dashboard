@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D04b · Money v2 (Spending: month, search, Giving)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-d tall">
+  <header class="topbar">
+    <div class="brand"><span class="logo"><i data-lucide="layout-dashboard"></i></span>Life Dashboard</div>
+    <nav class="nav">
+      <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+      <a href="#"><i data-lucide="clipboard-paste"></i>Canvas</a>
+      <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+      <a class="on" href="#"><i data-lucide="wallet"></i>Money</a>
+      <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="nbadge">1</span></a>
+      <a href="#"><i data-lucide="settings"></i>Settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="today-chip">Mon 2 Nov</span>
+      <button class="iconbtn" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button>
+      <button class="avatar" aria-label="Account">R</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-head">
+      <h1>Money</h1>
+      <div class="seg"><button class="on">Spending</button><button>IOUs</button><button>To pay <span class="c">4</span></button></div>
+      <span class="sub">What you spend, in taka</span>
+      <span class="spacer"></span>
+      <button class="iconbtn" aria-label="Money menu"><i data-lucide="more-horizontal"></i></button>
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><div class="tile-k"><i data-lucide="sun"></i>Today</div><div class="tile-v num"><span class="taka">৳</span>160</div><div class="tile-s">2 spends</div></div>
+      <div class="tile"><div class="tile-k"><i data-lucide="calendar-range"></i>This week</div><div class="tile-v num"><span class="taka">৳</span>940</div><div class="tile-s">Sat 31 Oct – Fri 6 Nov</div></div>
+      <div class="tile"><div class="tile-k"><i data-lucide="calendar"></i>October 2026<span class="spacer" style="flex:1"></span><span class="month-sw"><button aria-label="Previous month"><i data-lucide="chevron-left"></i></button><button aria-label="Next month"><i data-lucide="chevron-right"></i></button></span></div><div class="tile-v num"><span class="taka">৳</span>730</div>
+        <div class="budget"><div class="bar"><i style="width:9%"></i></div><small><span class="num">of <span class="taka">৳</span>8,000 budget</span><span class="num"><span class="taka">৳</span>7,270 left</span></small></div>
+      </div>
+    </div>
+
+    <div class="spend-grid">
+      <section class="card" style="overflow:hidden">
+        <div class="quick">
+          <div class="quick-row">
+            <div class="input focus amount-in"><span class="pre taka">৳</span><span class="num">120</span></div>
+            <div class="input ph" style="flex:1;height:44px">Note (optional): lunch, rickshaw, book…</div>
+            <div class="input" style="height:44px;width:120px;font-size:var(--text-sm)"><i data-lucide="calendar" class="sm"></i>Today</div>
+            <button class="btn btn-primary" style="height:44px"><i data-lucide="plus"></i>Add<kbd style="margin-left:4px;background:transparent;color:inherit;border-color:currentColor;opacity:.7">↵</kbd></button>
+          </div>
+          <div class="cats">
+            <span class="cat on"><i data-lucide="utensils"></i>Food</span>
+            <span class="cat"><i data-lucide="bus"></i>Transport</span>
+            <span class="cat"><i data-lucide="book-open"></i>Study</span>
+            <span class="cat"><i data-lucide="receipt"></i>Bills</span>
+            <span class="cat"><i data-lucide="heart-pulse"></i>Health</span>
+            <span class="cat"><i data-lucide="shopping-bag"></i>Shopping</span>
+            <span class="cat"><i data-lucide="gamepad-2"></i>Fun</span>
+            <span class="cat"><i data-lucide="hand-heart"></i>Giving</span>
+            <span class="cat"><i data-lucide="circle-dot"></i>Other</span>
+          </div>
+        </div>
+
+        <div class="spend-search"><div class="input focus"><i data-lucide="search" class="sm" style="color:var(--ink-3)"></i>lunch<span class="spacer" style="flex:1"></span><i data-lucide="x" class="sm" style="color:var(--ink-3)"></i></div><kbd>/</kbd></div><div class="results-head"><span>12 results · all time</span><span class="num"><span class="taka">৳</span>1,450</span></div><div class="day-head"><span>Wed 4 Nov</span><b class="num"><span class="taka">৳</span>120</b></div><div class="spend"><span class="cic"><i data-lucide="utensils"></i></span><div class="t">Lunch at the canteen<span>Food</span></div><span class="amt num"><span class="taka">৳</span>120</span><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div><div class="day-head"><span>Thu 29 Oct</span><b class="num"><span class="taka">৳</span>140</b></div><div class="spend"><span class="cic"><i data-lucide="utensils"></i></span><div class="t">Lunch with Rafi<span>Food</span></div><span class="amt num"><span class="taka">৳</span>140</span><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div><div class="day-head"><span>Mon 12 Oct</span><b class="num"><span class="taka">৳</span>110</b></div><div class="spend"><span class="cic"><i data-lucide="utensils"></i></span><div class="t">Lunch, exam day<span>Food</span></div><span class="amt num"><span class="taka">৳</span>110</span><button class="iconbtn sm" aria-label="More"><i data-lucide="more-horizontal"></i></button></div><div style="padding:10px 16px 14px"><button class="btn btn-ghost btn-sm">Load more</button></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h3>Where it went · October 2026</h3></div>
+        <div class="card-body">
+          <div class="catbar"><div class="top"><i data-lucide="book-open"></i><span class="grow">Study</span><span class="num"><span class="taka">৳</span>350</span><small class="num">48%</small></div><div class="bar"><i style="width:48%"></i></div></div>
+          <div class="catbar"><div class="top"><i data-lucide="utensils"></i><span class="grow">Food</span><span class="num"><span class="taka">৳</span>340</span><small class="num">47%</small></div><div class="bar"><i style="width:47%"></i></div></div>
+          <div class="catbar"><div class="top"><i data-lucide="bus"></i><span class="grow">Transport</span><span class="num"><span class="taka">৳</span>40</span><small class="num">5%</small></div><div class="bar"><i style="width:5%"></i></div></div>
+          <p style="margin:12px 0 0;font-size:var(--text-xs);color:var(--ink-3)">Lending and paying people back are in IOUs, not here.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

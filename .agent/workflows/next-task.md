@@ -8,7 +8,7 @@ description: Resume work — pick and complete the next unticked task, then keep
 4. Implement it and write the tests it names.
 5. Run `npm run test:all` (and `npm run build` when routes changed). Check the task's AC in a real browser. Fix until everything passes.
 6. From V2 on: deploy to production (Vercel MCP) and run the task's **Prod check**.
-7. Tick the task with a one-line note, update PROGRESS.md ("Now" + a session-log entry), commit, push.
+7. Check "Docs follow code" (`rules/life-dashboard.md`): every doc that describes what you changed matches the code. Then tick the task with a one-line note, update PROGRESS.md ("Now" + a session-log entry), commit, push.
 8. Continue with the next task **only if it belongs to the same milestone** (`08-TASKS.md` → Milestones) and you are not blocked on a human step.
 9. When the milestone's last task is done, **stop** and give Rony the **milestone report** (and save it to `docs/milestones/M<n>.md`):
    - What is now live (production URL + the pages/features), and how to use them in 3–5 lines.

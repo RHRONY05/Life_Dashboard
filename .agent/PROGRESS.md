@@ -8,8 +8,8 @@
 ## Now
 | | |
 |---|---|
-| **Phase** | M3 Trackers + Money (Complete — V4 & V5 shipped) |
-| **Next task** | V6 Renewals + daily email (M4) |
+| **Phase** | M3 Trackers + Money (Complete — V4 & V5 shipped) · Next: M3b Canvas v2 + Money v2 |
+| **Next task** | V3c Canvas v2 (paste Goal 3b from `GOAL.md`; it starts with `/sync-docs`), then V3d, V5a, V5b |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
 | **Last updated** | 2026-11-03 by Antigravity (V5 Money complete, M3 reached) |
@@ -21,7 +21,8 @@ Things only the human can do. Agents add to this list; the human ticks them.
 - [x] Gmail app password: provided in `.env.local`, verified 16 characters (2026-11-02 Antigravity).
 - [ ] After V9: in production Settings → Agents, create keys for **Muse** and **Claude Code** and paste the configs from `docs/agents.md`. Give Muse the NeetCode routine text from `docs/agents.md`.
 - [ ] After V6: add your renewals (Azure for Students credit end date, Antigravity Pro student offer end, GitHub Student Pack renewal, domain rhrony05.me renewal, any paid subscriptions), or ask an agent to add them.
-- [ ] After V5: copy the debts from your notes app into Money, or paste the note to an agent and ask it to add them.
+- [ ] After V5a: anything from your notes app not yet in Money → **IOUs → ⋯ → Import IOUs from notes** (paste the note as it is).
+- [ ] After V5b: add your promised payments (donations, giveaways, money for home) in **Money → To pay**.
 - [ ] When the English tutor exists: add it in Settings → Quick links.
 - [ ] When the build is done: open the production URL, log in (same login as Vocab), and use it for a day.
 
@@ -76,6 +77,7 @@ Agents append one line per choice the docs didn't cover (newest last). If it cha
 - 2026-11-03: Planning v3. Added **Lists** on Today (user-made undated lists; a task lives on a day or in a list) and split the build into **4 milestones**, one goal command each (`GOAL.md`).
 - 2026-11-03: Added `/project-config` (one-time builder setup before Goal 1: MCP servers, project-only grants, URLs, report).
 - 2026-11-03: Planning v4 (after M1). Added **Canvas** (`/canvas`: Scratch in IndexedDB + saved notes with images, TipTap) as the new **M2** (V3a, V3b). Old M2–M4 are now M3–M5; task numbers V4–V10 are unchanged. MCP gets `notes:read` / `notes:write` (32 tools).
+- 2026-11-04: Planning v5 (after M3, from Rony using Canvas). Added **M3b Canvas v2** (V3c, V3d), built before M4: save-queue fix for the false "changed somewhere else" warning (overlapping saves sent an old `baseUpdatedAt`), plain-text `Ctrl+C` and http(s)/www-only autolink (copied commands turned into Markdown links), pages tree (3 levels), tabs, folding, pins, and agent page tools `append_to_note`, `replace_note_section`, `update_note` with a one-step Undo (35 tools). Added the **Docs follow code** rule, the "Changes outside tasks" list and `/sync-docs`. Same day: added **Money v2** (V5a IOU ledger: `+` per person, edit entry, running balance, breakdown chips, copy reminder, Remind me, import from notes; V5b To pay tab with `payment_todos`, Giving category, past months, search, CSV export; 3 more MCP tools → 38) to the same milestone, now **M3b Canvas v2 + Money v2**, one goal. Found while planning: the IOU/spending "via" badge compares with `"human"` instead of `"owner"`, and per-person add and entry edit were missing (no `PATCH /api/money/entries/[id]`).
 - 2026-11-02: Planning. The Supabase org already has 2 active free projects (`vocab`, `brew-bari-demo`), so this app shares `vocab` instead of creating a third.
 
 ## Session log
