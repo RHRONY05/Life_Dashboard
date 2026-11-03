@@ -51,6 +51,7 @@ export const QuickSpend = forwardRef<QuickSpendRef, QuickSpendProps>(
     const [saving, setSaving] = useState(false);
 
     const amountInputRef = useRef<HTMLInputElement>(null);
+    const dateInputRef = useRef<HTMLInputElement>(null);
 
     useImperativeHandle(ref, () => ({
       focusAmount: () => {
@@ -164,14 +165,18 @@ export const QuickSpend = forwardRef<QuickSpendRef, QuickSpendProps>(
           </div>
 
           {/* Date picker */}
-          <div className="input flex items-center gap-1.5 h-11 px-2.5 w-[140px] flex-none text-[var(--text-sm)]">
-            <Calendar className="w-4 h-4 text-[var(--ink-3)] flex-none" />
+          <div
+            onClick={() => dateInputRef.current?.showPicker?.()}
+            className="input relative flex items-center gap-1.5 h-11 px-3 w-[148px] flex-none text-[var(--text-sm)] cursor-pointer overflow-hidden"
+          >
+            <Calendar className="w-4 h-4 text-[var(--ink-3)] flex-none pointer-events-none" />
             <input
+              ref={dateInputRef}
               type="date"
               value={spentOn}
               max={todayIn(new Date(), "Asia/Dhaka")}
               onChange={(e) => setSpentOn(e.target.value)}
-              className="bg-transparent border-0 outline-none text-[var(--text-xs)] font-mono w-full cursor-pointer"
+              className="bg-transparent border-0 outline-none text-[var(--text-xs)] font-mono w-full cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
               disabled={disabled || saving}
               aria-label="Date of expense"
             />
