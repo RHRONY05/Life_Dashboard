@@ -314,3 +314,12 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--ink-4);
 }
+
+/* ==========================================================================
+   Theme-adaptive Text Caret
+   ========================================================================== */
+input,
+textarea,
+[contenteditable="true"] {
+  caret-color: var(--ink);
+}

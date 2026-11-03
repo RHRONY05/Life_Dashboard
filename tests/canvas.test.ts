@@ -9,7 +9,7 @@ import {
   unreferencedPaths,
 } from "@/lib/domain/canvas";
 import { docToMarkdown } from "@/lib/canvas/markdown";
-import { cleanPastedHtml } from "@/lib/canvas/paste";
+import { cleanPastedHtml, analyzePaste } from "@/lib/canvas/paste";
 
 describe("Canvas domain logic (07 §8)", () => {
   describe("8.1 fitWithin", () => {
@@ -132,6 +132,73 @@ describe("Canvas domain logic (07 §8)", () => {
       expect(cleaned).not.toContain("style=");
       expect(cleaned).not.toContain("class=");
       expect(cleaned).not.toContain("<!--");
+    });
+  });
+
+  describe("8.2 analyzePaste", () => {
+    function createMockClipboardEvent(types: Record<string, string>, files: File[] = []) {
+      return {
+        clipboardData: {
+          items: files.map((f) => ({
+            kind: "file",
+            type: f.type,
+            getAsFile: () => f,
+          })),
+          files,
+          getData: (type: string) => types[type] || "",
+        },
+      } as unknown as ClipboardEvent;
+    }
+
+    it("treats VS Code markdown file copy as markdown rather than codeBlock", () => {
+      const event = createMockClipboardEvent({
+        "vscode-editor-data": JSON.stringify({ mode: "markdown" }),
+        "text/plain": "# Milestone 1 Report — Foundation + Today (V0-V3)",
+      });
+      const res = analyzePaste(event);
+      expect(res.kind).toBe("markdown");
+      expect(res.data).toBe("# Milestone 1 Report — Foundation + Today (V0-V3)");
+    });
+
+    it("treats VS Code copy looking like markdown as markdown even if mode is custom", () => {
+      const event = createMockClipboardEvent({
+        "vscode-editor-data": JSON.stringify({ mode: "custom-ext" }),
+        "text/plain": "## Heading 2\n- list item 1\n- list item 2",
+      });
+      const res = analyzePaste(event);
+      expect(res.kind).toBe("markdown");
+    });
+
+    it("treats VS Code plaintext copy as plain", () => {
+      const event = createMockClipboardEvent({
+        "vscode-editor-data": JSON.stringify({ mode: "plaintext" }),
+        "text/plain": "Just a normal note line",
+      });
+      const res = analyzePaste(event);
+      expect(res.kind).toBe("plain");
+      expect(res.data).toBe("Just a normal note line");
+    });
+
+    it("treats VS Code programming language copy as vscode code block", () => {
+      const event = createMockClipboardEvent({
+        "vscode-editor-data": JSON.stringify({ mode: "typescript" }),
+        "text/plain": "const x: number = 42;",
+      });
+      const res = analyzePaste(event);
+      expect(res.kind).toBe("vscode");
+      expect(res.data).toEqual({
+        language: "typescript",
+        text: "const x: number = 42;",
+      });
+    });
+
+    it("identifies standalone URL", () => {
+      const event = createMockClipboardEvent({
+        "text/plain": "https://example.com/docs",
+      });
+      const res = analyzePaste(event);
+      expect(res.kind).toBe("url");
+      expect(res.data).toBe("https://example.com/docs");
     });
   });
 });

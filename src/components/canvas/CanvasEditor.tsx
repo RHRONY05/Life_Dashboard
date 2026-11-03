@@ -96,6 +96,22 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       retryAttempt: number
     ) => void
   >(() => {});
+  const shiftDownRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Shift") shiftDownRef.current = true;
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Shift") shiftDownRef.current = false;
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   useEffect(() => {
     activeNoteRef.current = activeNote;
@@ -447,15 +463,19 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
   // Tiptap Editor instance
   const editor = useEditor({
     extensions: getCanvasExtensions(),
-    autofocus: true,
+    autofocus: "end",
     immediatelyRender: false,
     editable: !isReadOnly,
     editorProps: {
+      attributes: {
+        class: "focus:outline-none outline-none min-h-[500px] cursor-text",
+      },
       clipboardTextSerializer: (slice) => {
         return docToMarkdown({ content: slice.content.toJSON() });
       },
       handlePaste: (view, event) => {
         if (isReadOnly) return true;
+        if (shiftDownRef.current) return false; // Ctrl+Shift+V plain text paste
         const analysis = analyzePaste(event);
 
         if (analysis.kind === "images") {
@@ -508,15 +528,37 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
           return true;
         }
 
+        if (analysis.kind === "markdown") {
+          event.preventDefault();
+          const md = analysis.data as string;
+          editorRef.current
+            ?.chain()
+            .focus()
+            .insertContent(md, { contentType: "markdown" })
+            .run();
+          return true;
+        }
+
+        if (analysis.kind === "html") {
+          event.preventDefault();
+          const html = analysis.data as string;
+          editorRef.current
+            ?.chain()
+            .focus()
+            .insertContent(html, { contentType: "html" })
+            .run();
+          return true;
+        }
+
         if (analysis.kind === "vscode") {
           event.preventDefault();
-          const data = analysis.data as { mode: string; text: string };
+          const data = analysis.data as { language: string; text: string };
           editorRef.current
             ?.chain()
             .focus()
             .insertContent({
               type: "codeBlock",
-              attrs: { language: data.mode },
+              attrs: { language: data.language || "" },
               content: [{ type: "text", text: data.text }],
             })
             .run();
@@ -1345,8 +1387,21 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
             />
 
             {/* Prose Editor Content Area */}
-            <div className="prose min-h-[500px] w-full max-w-[840px] mx-auto p-4 md:p-8 focus:outline-none">
-              <EditorContent editor={editor} />
+            <div
+              className="canvas-writing-surface flex-1 min-h-[550px] w-full max-w-[840px] mx-auto p-4 md:p-8 cursor-text focus:outline-none"
+              onClick={(e) => {
+                if (
+                  e.target === e.currentTarget ||
+                  (e.target as HTMLElement).classList.contains("canvas-writing-surface") ||
+                  (e.target as HTMLElement).classList.contains("prose")
+                ) {
+                  editorRef.current?.commands.focus("end");
+                }
+              }}
+            >
+              <div className="prose w-full cursor-text focus:outline-none">
+                <EditorContent editor={editor} className="min-h-[500px] cursor-text focus:outline-none" />
+              </div>
             </div>
           </section>
         </div>

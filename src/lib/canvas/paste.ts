@@ -110,7 +110,17 @@ export function analyzePaste(event: ClipboardEvent): PasteAnalysis {
   if (vscodeData) {
     try {
       const parsed = JSON.parse(vscodeData);
-      const text = clipboardData.getData("text/plain");
+      const text = clipboardData.getData("text/plain") || "";
+      const mode = (parsed.mode || "").toLowerCase();
+
+      // If copying markdown from VS Code or text that looks like markdown, treat as markdown
+      if (mode === "markdown" || looksLikeMarkdown(text)) {
+        return { kind: "markdown", data: text };
+      }
+      if (mode === "plaintext") {
+        return { kind: "plain", data: text };
+      }
+
       return {
         kind: "vscode",
         data: {
