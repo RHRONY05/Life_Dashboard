@@ -37,6 +37,14 @@ scoped keys.
 | LS2 | add, tick, edit, reorder and delete items in a list | Same row as a board task (title + optional note). Done items stay, ticked, under a collapsed "Done · N" until I "Clear done". Reorder with the menu or `Alt+↑/↓`. |
 | LS3 | move things between my lists and my days | List item → "Plan for today / tomorrow" puts it on the board. Board task → "Move to list → To do later" takes it off the board. It's the same item, just moved. |
 | LS4 | collapse a list I'm not looking at | Collapsed state remembered per list in `localStorage`. |
+| CV1 | keep one always-open **Scratch** page where I paste anything: AI chat answers, links, code, screenshots, emoji | `/canvas`. The cursor is in the page when it opens. Pasted content keeps its structure (headings, lists, checklists, code blocks, tables, links, images) but loses foreign colours and fonts. Replaces my empty Notion page. |
+| CV2 | trust that Scratch never leaves my browser | Scratch is stored in this browser only (IndexedDB) and saves as I type. It is never sent to the server, so it isn't on my phone and agents can't see it. The page says so: "Saved · this browser". |
+| CV3 | write my own questions while I study and send them to an agent in one go | **Copy as Markdown** copies the whole page as clean Markdown (`Ctrl+Alt+M`). Copying a selection with `Ctrl+C` also puts Markdown in the plain-text clipboard, so pasting into an agent's chat box comes out clean. |
+| CV4 | empty Scratch when I'm done, without fear | **Clear** empties it; a toast offers **Undo** for 10 s. |
+| CV5 | keep something worth keeping | **Save as note** copies Scratch into a new saved note (database), with its images. The title comes from the first line. Scratch stays as it is; the toast offers **Clear Scratch**. |
+| CV6 | find, open, edit and delete my saved notes, on any device | Notes pane: newest first, search by title and text. A note autosaves as I type. Delete with confirmation (its images go too). Max 300 notes. |
+| CV7 | paste screenshots without worrying about size | Images are shrunk in the browser (longest side 1600 px, WebP) before they're stored. Max 1 MB each after that. |
+| CV8 | let my agents read my saved notes, and save notes for me when I ask | MCP tools `list_notes`, `get_note` (Markdown) and `create_note` (05). Never Scratch. |
 | T1 | create a tracker (a named list) and add items, one at a time or pasted as many lines | Paste: one item per line; a line `## Group` starts a group. |
 | T2 | tick items done / skip them, and see progress | Progress "52 / 150 · 35%". Items grouped by `group_name`. |
 | T3 | put a tracker item on the board for a day | "Add to today / tomorrow". Creates a linked task; ticking either one ticks both. |
@@ -66,8 +74,13 @@ scoped keys.
 Multiple users, sign-up, password reset, a public REST API for agents (agents use MCP only), OAuth
 for MCP, delete tools for agents, an approval queue for agent actions, drag-and-drop reordering (lists use menu / `Alt+↑/↓`), nested lists, dates or reminders inside lists, list templates,
 recurring tasks, priorities/labels/subtasks, a calendar or history view beyond Yesterday + "Older
-unfinished", habits, goals, notes, per-category budgets, custom spending categories, income tracking, recurring
+unfinished", habits, goals, per-category budgets, custom spending categories, income tracking, recurring
 expenses, importing from bKash/bank, linking spending to IOUs, currency conversion, receipts or
-file upload, push/Telegram/SMS notifications, a PWA or offline mode, embedding the Vocab app or
+file upload (only images pasted into Canvas), push/Telegram/SMS notifications, a PWA or offline mode, embedding the Vocab app or
 English tutor (links only), charts/analytics, an in-app theme switch, an LLM inside the app,
 importing from the notes app (an agent can do it through MCP), UI translation.
+Canvas: a `/` slash menu, drag handles or block reordering, syntax highlighting in code blocks, more
+than one Scratch page, folders/tags/favourites for notes, sharing or public links, version history,
+syncing Scratch between devices, attachments other than images, downloading images from pasted
+web URLs (they stay linked), inserting tables from the toolbar (tables come in by pasting), agents
+editing or deleting existing notes.

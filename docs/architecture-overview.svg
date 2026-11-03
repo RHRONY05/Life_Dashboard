@@ -62,19 +62,19 @@
 
   <!-- Core Pillars Label -->
   <rect x="375" y="194" width="250" height="22" rx="4" fill="#141414"/>
-  <text x="500" y="209" font-size="11" font-weight="800" fill="#FFE45C" text-anchor="middle" letter-spacing="0.5">5 CORE FUNCTIONAL PILLARS</text>
+  <text x="500" y="209" font-size="11" font-weight="800" fill="#FFE45C" text-anchor="middle" letter-spacing="0.5">6 CORE FUNCTIONAL PILLARS</text>
 
-  <!-- 5 Core Pillars Grid -->
+  <!-- 6 Core Pillars Grid -->
   <!-- Pillar 1: Today Board -->
   <g transform="translate(30, 230)">
-    <rect x="0" y="0" width="175" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+    <rect x="0" y="0" width="144" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
     <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
     <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">📅</text>
     
     <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Today Board</text>
     <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">Daily Flow</text>
 
-    <line x1="12" y1="48" x2="163" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+    <line x1="12" y1="48" x2="132" y2="48" stroke="#E6E4DD" stroke-width="1"/>
 
     <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Yest · Today · Tmrw</text>
     <text x="14" y="82" font-size="10" fill="#6B6A65">Calendar in Asia/Dhaka</text>
@@ -89,16 +89,40 @@
     <text x="14" y="196" font-size="10" fill="#6B6A65">N (new), E (edit), ? (help)</text>
   </g>
 
-  <!-- Pillar 2: Trackers -->
-  <g transform="translate(225, 230)">
-    <rect x="0" y="0" width="175" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+  <!-- Pillar 2: Canvas -->
+  <g transform="translate(189, 230)">
+    <rect x="0" y="0" width="144" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+    <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
+    <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">📋</text>
+
+    <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Canvas</text>
+    <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">Copy-Paste Pad</text>
+
+    <line x1="12" y1="48" x2="132" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+
+    <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Scratch Page</text>
+    <text x="14" y="82" font-size="10" fill="#6B6A65">Stays in this browser</text>
+
+    <text x="14" y="104" font-size="11" font-weight="700" fill="#141414">• Smart Paste</text>
+    <text x="14" y="120" font-size="10" fill="#6B6A65">AI chats, code, images</text>
+
+    <text x="14" y="142" font-size="11" font-weight="700" fill="#141414">• Copy as Markdown</text>
+    <text x="14" y="158" font-size="10" fill="#6B6A65">Straight into an agent</text>
+
+    <text x="14" y="180" font-size="11" font-weight="700" fill="#141414">• Saved Notes</text>
+    <text x="14" y="196" font-size="10" fill="#6B6A65">Synced, with images</text>
+  </g>
+
+  <!-- Pillar 3: Trackers -->
+  <g transform="translate(348, 230)">
+    <rect x="0" y="0" width="144" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
     <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
     <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">🎯</text>
 
     <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Trackers</text>
     <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">Goal Checklists</text>
 
-    <line x1="12" y1="48" x2="163" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+    <line x1="12" y1="48" x2="132" y2="48" stroke="#E6E4DD" stroke-width="1"/>
 
     <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Fixed List Tracking</text>
     <text x="14" y="82" font-size="10" fill="#6B6A65">e.g. NeetCode 150</text>
@@ -113,16 +137,16 @@
     <text x="14" y="196" font-size="10" fill="#6B6A65">Pinned to main board</text>
   </g>
 
-  <!-- Pillar 3: Money -->
-  <g transform="translate(420, 230)">
-    <rect x="0" y="0" width="175" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+  <!-- Pillar 4: Money -->
+  <g transform="translate(508, 230)">
+    <rect x="0" y="0" width="144" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
     <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
     <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">৳</text>
 
     <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Money</text>
     <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">Budget &amp; IOUs</text>
 
-    <line x1="12" y1="48" x2="163" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+    <line x1="12" y1="48" x2="132" y2="48" stroke="#E6E4DD" stroke-width="1"/>
 
     <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Daily Expenses</text>
     <text x="14" y="82" font-size="10" fill="#6B6A65">Logged in whole BDT (৳)</text>
@@ -137,16 +161,16 @@
     <text x="14" y="196" font-size="10" fill="#6B6A65">IOUs with 1-click settle</text>
   </g>
 
-  <!-- Pillar 4: Renewals -->
-  <g transform="translate(615, 230)">
-    <rect x="0" y="0" width="175" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+  <!-- Pillar 5: Renewals -->
+  <g transform="translate(667, 230)">
+    <rect x="0" y="0" width="144" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
     <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
     <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">🔄</text>
 
     <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Renewals</text>
     <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">Subscriptions</text>
 
-    <line x1="12" y1="48" x2="163" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+    <line x1="12" y1="48" x2="132" y2="48" stroke="#E6E4DD" stroke-width="1"/>
 
     <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Services &amp; Hosting</text>
     <text x="14" y="82" font-size="10" fill="#6B6A65">Domains, credits, tools</text>
@@ -161,22 +185,22 @@
     <text x="14" y="196" font-size="10" fill="#6B6A65">Daily reminders to email</text>
   </g>
 
-  <!-- Pillar 5: Agent Hub -->
-  <g transform="translate(810, 230)">
-    <rect x="0" y="0" width="160" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
+  <!-- Pillar 6: Agent Hub -->
+  <g transform="translate(826, 230)">
+    <rect x="0" y="0" width="144" height="220" rx="10" fill="#FFFFFF" stroke="#141414" stroke-width="2" filter="url(#card-shadow)" />
     <rect x="12" y="12" width="28" height="28" rx="6" fill="#FFE45C" stroke="#141414" stroke-width="1.5" />
     <text x="26" y="31" font-size="14" font-weight="800" fill="#141414" text-anchor="middle">⚡</text>
 
     <text x="48" y="26" font-size="13" font-weight="800" fill="#141414">Agent Hub</text>
     <text x="48" y="38" font-size="10" font-weight="600" fill="#6B6A65">MCP &amp; Keys</text>
 
-    <line x1="12" y1="48" x2="148" y2="48" stroke="#E6E4DD" stroke-width="1"/>
+    <line x1="12" y1="48" x2="132" y2="48" stroke="#E6E4DD" stroke-width="1"/>
 
     <text x="14" y="66" font-size="11" font-weight="700" fill="#141414">• Remote MCP</text>
     <text x="14" y="82" font-size="10" fill="#6B6A65">HTTP endpoint at /api/mcp</text>
     
     <text x="14" y="104" font-size="11" font-weight="700" fill="#141414">• Scoped Keys</text>
-    <text x="14" y="120" font-size="10" fill="#6B6A65">tasks:read, write, money…</text>
+    <text x="14" y="120" font-size="10" fill="#6B6A65">tasks, money, notes…</text>
 
     <text x="14" y="142" font-size="11" font-weight="700" fill="#141414">• Guardrails</text>
     <text x="14" y="158" font-size="10" fill="#6B6A65">No delete tools for agents</text>
@@ -194,7 +218,7 @@
 
     <!-- Sub-blocks inside foundation -->
     <rect x="24" y="64" width="280" height="34" rx="6" fill="#262626" stroke="#404040" stroke-width="1"/>
-    <text x="36" y="85" font-size="11" font-weight="700" fill="#FBFAF6">PostgreSQL (Supabase) + RLS</text>
+    <text x="36" y="85" font-size="11" font-weight="700" fill="#FBFAF6">Supabase Postgres + Storage + RLS</text>
 
     <rect x="320" y="64" width="310" height="34" rx="6" fill="#262626" stroke="#404040" stroke-width="1"/>
     <text x="332" y="85" font-size="11" font-weight="700" fill="#FBFAF6">Vercel Cron (Daily 02:00 UTC / 08:00 BST)</text>

@@ -8,8 +8,8 @@
 ## Now
 | | |
 |---|---|
-| **Phase** | M1 complete · Ready for M2 (Trackers + Money) |
-| **Next task** | V4 Trackers |
+| **Phase** | M1 complete · Next: M2 Canvas (added by the planner 2026-11-03) |
+| **Next task** | V3a Canvas: editor + Scratch (paste Goal 2 from `GOAL.md`) |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
 | **Last updated** | 2026-11-02 by Antigravity (M1 Foundation + Today complete) |
@@ -74,6 +74,7 @@ Agents append one line per choice the docs didn't cover (newest last). If it cha
 - 2026-11-02: Rony chose **Swiss Ink** (soft neo-brutalism); merged into `design/tokens.css` + `ui.css`. Light/dark follow the system.
 - 2026-11-03: Planning v3. Added **Lists** on Today (user-made undated lists; a task lives on a day or in a list) and split the build into **4 milestones**, one goal command each (`GOAL.md`).
 - 2026-11-03: Added `/project-config` (one-time builder setup before Goal 1: MCP servers, project-only grants, URLs, report).
+- 2026-11-03: Planning v4 (after M1). Added **Canvas** (`/canvas`: Scratch in IndexedDB + saved notes with images, TipTap) as the new **M2** (V3a, V3b). Old M2–M4 are now M3–M5; task numbers V4–V10 are unchanged. MCP gets `notes:read` / `notes:write` (32 tools).
 - 2026-11-02: Planning. The Supabase org already has 2 active free projects (`vocab`, `brew-bari-demo`), so this app shares `vocab` instead of creating a third.
 
 ## Session log

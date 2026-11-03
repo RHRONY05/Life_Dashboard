@@ -31,6 +31,8 @@ If a rule conflicts with a task description, the rule wins. Stop and flag it in 
 - Every service function that changes or reads data calls `assertScope(ctx, …)` with its scope, even when the route is owner-only.
 - No delete capability is ever exposed to agents.
 
+- **Scratch never leaves the browser.** No request, log, analytics event or error report may contain Scratch content. Only **Save as note** sends it, because Rony asked for that.
+
 ## Code style
 - TypeScript strict. Server Components by default; `"use client"` only where interaction needs it.
 - Validate every input crossing a boundary (request bodies, query params, MCP tool input) with Zod. Routes and tools share the schemas in `src/lib/schemas.ts`.

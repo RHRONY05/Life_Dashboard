@@ -32,7 +32,7 @@ directly. `?theme=dark` or `?theme=light` forces a theme on one screen.
 | `index.html` | Gallery of all screens. |
 | `states.html` | Components and states: buttons + async states, badges, banners, toasts, task-row states, skeleton, empty states, overdue renewal row, and **all dialogs** (New key, Key created/show-once, Add entry, Add renewal, New tracker, confirmations, shortcuts). |
 | `mock.js` | Mockup helper only (theme param, icons). Not app code. |
-| `illustrations/sprite.svg` | 16 line illustrations as `<symbol>`s, coloured only by `--illus-line`, `--illus-paper`, `--illus-a`, `--illus-b`, `--illus-c`. In the app each becomes an **inline** SVG React component in `src/components/illustrations/` (no external `<use>`; `aria-hidden`), so it follows the theme and dark mode. |
+| `illustrations/sprite.svg` | 17 line illustrations as `<symbol>`s, coloured only by `--illus-line`, `--illus-paper`, `--illus-a`, `--illus-b`, `--illus-c`. In the app each becomes an **inline** SVG React component in `src/components/illustrations/` (no external `<use>`; `aria-hidden`), so it follows the theme and dark mode. |
 
 | Screen | Desktop (1440) | Mobile (390) |
 |---|---|---|
@@ -42,6 +42,7 @@ directly. `?theme=dark` or `?theme=light` forces a theme on one screen.
 | Money · Spending | `desktop/04-money-spending.html` (tiles + budget, quick add, day groups, category bars) | `mobile/04-money-spending.html` (category chips scroll sideways) |
 | Money · IOUs | `desktop/07-money-ious.html` (totals, people, Karim's history pane) | `mobile/07-money-ious.html` (Karim expanded in place, FAB) |
 | Renewals | `desktop/05-renewals.html` (Next 30 days / Later / No date) | `mobile/05-renewals.html` |
+| Canvas | `desktop/08-canvas.html` (Scratch open with a pasted AI answer, code block, table, a screenshot selected, his own checklist; notes pane; "Copied" toast) | `mobile/09-canvas.html` (Scratch) · `mobile/10-canvas-notes.html` (Notes segment) |
 | Settings | `desktop/06-settings.html` (Agents, Activity, Quick links, Email) | `mobile/06-settings.html` |
 
 ## Component map (ui.css class → React component)
@@ -84,6 +85,13 @@ directly. `?theme=dark` or `?theme=light` forces a theme on one screen.
 | `.today-main`, `.lists-head`, `.lists-grid` | `ListsSection` | Under the day columns; grid uses the same 3 columns. Mobile: the "Lists" DaySwitcher segment, cards stacked. |
 | `.lcard`, `.lcount`, `.done-toggle` | `ListCard`, `DoneToggle` | Rows are the normal `TaskRow`. Collapsed state in `localStorage`. |
 | `.lists-empty`, `.sugg` | `ListsEmpty` | `lists-empty` illustration + three suggestion chips (never auto-created). |
+| `.canvas-wrap`, `.npane` | `CanvasPage`, `NotesPane` | 280 px pane + editor ≥ 1024 px; below that a "Scratch · Notes" `Segmented`. |
+| `.scratch-card` (`.on`), `.nrow` (`.on`), `.nlist`, `.npane-empty` | `ScratchCard`, `NoteRow`, `NoteList` | "via Muse" = `.badge.b-agent`. |
+| `.ecard`, `.ecard-head`, `.ntitle`, `.save-status` (`.busy`, `.err`, `.off`) | `EditorCard`, `NoteTitle`, `SaveStatus` | |
+| `.etoolbar`, `.tb` (`.on`), `.tb-sep` | `EditorToolbar` | Active format = ink fill (not yellow). Scrolls sideways on mobile. |
+| `.prose` (+ `ul.tasks`, `pre .lang`, `table`, `.caret`) | TipTap content styles | Apply to `.ProseMirror`. Headings in the document are **not** uppercase. Links: ink with a `--signal` underline. |
+| `.cimg` (`.sel`, `.uploading`), `.upill`, `.size` | `CanvasImage` node view | `.shot` in the mockups only stands for a pasted image. |
+| `.canvas-empty` | `ScratchEmpty` | `canvas-empty` illustration + placeholder copy (10-STATES). |
 | `.done-strip` | `AllDoneStrip` | Today all ticked (10-STATES §1). |
 | `.offline-bar` (`.back`), `.progress-line` | `OfflineBar`, `RefetchLine` | 10-STATES §2. |
 
@@ -98,3 +106,4 @@ directly. `?theme=dark` or `?theme=light` forces a theme on one screen.
 - Not drawn but required: hover states (in `ui.css`), the edit dialogs (same as the add dialogs with values filled and a **Delete** text button bottom-left), the Ended renewals tab (same rows, muted, no actions except `⋯`), the archived trackers list, the mobile trackers list (`TrackerCard`s full width), the mobile Yesterday view (same column content incl. Older unfinished and the Move-all button), dialogs as mobile bottom sheets.
 - The sample names, amounts and dates are examples, not seed data. The only seed data is the quick links in V9.
 - Before ticking a UI task, compare the built page side by side with the matching file here at 1440×900 and 390×844, in light and dark.
+- Nav order everywhere: Today · **Canvas** · Trackers · Money · Renewals · Settings. The mobile tab bar has 6 columns (labels 10.5 px).

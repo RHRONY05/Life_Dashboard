@@ -12,14 +12,15 @@ End with the milestone report described in `workflows/next-task.md`.
 | Milestone | Tasks | What Rony can use when it's done |
 |---|---|---|
 | **M1 Foundation + Today** | V0, V1, V2, V3 | Login, the Yesterday · Today · Tomorrow board and his own Lists, live on `life.rhrony05.me` |
-| **M2 Trackers + Money** | V4, V5 | Trackers (NeetCode-style lists, "Add to today"), Spending with budget, IOUs |
-| **M3 Renewals + Settings** | V6, V7 | Renewals with morning reminder emails, quick links, API keys and the activity log |
-| **M4 Agents + Final** | V8, V9, V10 | The MCP server, Muse / Antigravity / Claude Code connected, final Lighthouse, learning notes |
+| **M2 Canvas** | V3a, V3b | `/canvas`: the Scratch page for copy-paste (kept in this browser), saved notes with images, Copy as Markdown |
+| **M3 Trackers + Money** | V4, V5 | Trackers (NeetCode-style lists, "Add to today"), Spending with budget, IOUs |
+| **M4 Renewals + Settings** | V6, V7 | Renewals with morning reminder emails, quick links, API keys and the activity log |
+| **M5 Agents + Final** | V8, V9, V10 | The MCP server, Muse / Antigravity / Claude Code connected, final Lighthouse, learning notes |
 **From V2 on, every task ends with a production deploy** and the task's "Prod check", so Rony can use each module as soon as it is done.
 
 ```
-V0 Preflight ─▶ V1 Scaffold + design system ─▶ V2 Data, auth, first deploy ─▶ V3 Today board ─▶ V4 Trackers
-                                                                                                    │
+V0 Preflight ─▶ V1 Scaffold + design system ─▶ V2 Data, auth, first deploy ─▶ V3 Today board ─▶ V3a–b Canvas ─▶ V4 Trackers
+                                                                                                                    │
 V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP server ◀─ V7 Keys + Settings ◀─ V6 Renewals + email ◀─ V5 Money
                                               (local Lighthouse in V8)
 ```
@@ -63,6 +64,26 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 <!-- ─── end of M1: stop here and give the milestone report ─── -->
 
+- [ ] **V3a Canvas: editor + Scratch**
+  - Read 01 (CV1–CV8), 06 `/canvas`, 07 §8, 10-STATES "Canvas", rules ("Scratch never leaves the browser"), and design `desktop/08-canvas.html`, `mobile/09-canvas.html`, `mobile/10-canvas-notes.html`, `states.html` → "Canvas".
+  - Install the TipTap v3 packages and `idb` (02 Stack). Check the current v3 docs for each package name, the Markdown extension (parse on paste, serialise on copy) and the clipboard hooks; record the versions in PROGRESS.md.
+  - Shell: add **Canvas** (`clipboard-paste`) second in `AppHeader` and `TabBar` (now 6 columns), `g c`, and the Canvas rows in the shortcuts dialog (06).
+  - `src/lib/domain/canvas.ts` (07 §8.1, 8.2 `looksLikeMarkdown`, 8.4, 8.5) + `canvas.test.ts`. `src/lib/canvas/`: `editor.ts` (the extension list used by Scratch and notes; `CanvasImage` node with `ref`), `paste.ts` (07 §8.2 incl. `cleanPastedHtml`), `markdown.ts` (07 §8.3, also the `clipboardTextSerializer`), `images.ts` (07 §8.1), `scratch-store.ts` (07 §8.6). Fixtures `tests/fixtures/ai-chat.html` (an AI answer with h2, bullet list, code block, table, inline colours and a `<script>`) and `tests/fixtures/canvas-doc.json` (07 §8.3).
+  - `/canvas` page with the editor loaded by `next/dynamic` (`ssr: false`): Scratch card + toolbar + status + **Copy as Markdown** + **Clear Scratch** (Undo), the tab lock, and every Canvas state in 10-STATES that doesn't need notes. The notes pane shows its empty state; **Save as note** is not rendered yet (V3b).
+  - **Tests:** unit `canvas.test.ts`; e2e `canvas.spec.ts` (the Scratch part, desktop + mobile).
+  - **AC (browser):** paste `ai-chat.html` → heading, list, code block and table, no foreign colours, no script; paste `## Plan\n- a\n- b` as plain text → heading + 2 bullets; paste one URL → a link; copy from VS Code → a code block; paste a 3024×1964 screenshot → shown 1600 px wide and stored as WebP ≤ 1 MB (check IndexedDB in DevTools); type a few checklist questions, reload → everything is still there; **Copy as Markdown**, paste into a plain textarea → the Markdown of 07 §8.3; Clear → Undo → back; open `/canvas` in a second tab → read-only banner → **Use here** works both ways. The Network panel shows no request with Scratch text. Compare with D08 / M09 at 1440×900 and 390×844, light and dark.
+  - **Prod check:** deploy; on the production URL paste an AI answer and a screenshot, reload → still there.
+
+- [ ] **V3b Canvas: saved notes + images**
+  - Migration `<ts>_life_canvas.sql` = 03 "Canvas" (check first that `notes` and the `life-notes` bucket don't exist) → `apply_migration` on `vocab` → regenerate `src/types/database.ts` → `get_advisors`: fix warnings on our objects only.
+  - `services/notes.ts` (ctx-based: list/search, create with the 300 limit, get, patch with `baseUpdatedAt`, delete with its folder, image upload with magic-byte check and the 30 limit, clean-up 07 §8.5), routes 04 "Notes", Zod schemas in `schemas.ts` (also used by the MCP tools in V8). `reset.ts` also clears `notes` and the e2e user's bucket folder.
+  - UI per 06: notes pane (search, rows, "via" badge), note editor (title, 800 ms autosave, status, retry, `beforeunload`, 409 banner), **Save as note** (07 §8.7) with its toast, image upload overlay in notes, `⋯` menus (Copy to Scratch, Delete note with confirm), `Ctrl+S`, mobile Notes segment (M10) and the note view.
+  - **Tests:** integration "Notes" (09); e2e `canvas.spec.ts` notes part (desktop + mobile).
+  - **AC (browser):** a Scratch with "## CN questions", 2 checklist items and a screenshot → **Save as note** → the note is at the top of the list titled "CN questions"; Scratch is unchanged; open the note → the image loads through `/api/notes/images/…`; change the title and add a line → reload → kept; edit the same note in two tabs → the second save shows "This note changed somewhere else." → **Keep mine** wins; delete it → gone, and its folder in `life-notes` is empty; `Ctrl+S` never opens the browser's save dialog. Vocab still works (`vocab.rhrony05.me`, log in, open Words).
+  - **Prod check:** deploy; save a note with a screenshot on the production URL, then open it on the phone (390 px) → text and image are there.
+
+<!-- ─── end of M2: stop here and give the milestone report ─── -->
+
 - [ ] **V4 Trackers**
   - `domain/trackers.ts` (07 §5), `services/trackers.ts` (incl. linked-task sync both ways and `schedule`), routes (04 Trackers). Pages `/trackers` (two panes ≥ 1024) and `/trackers/[id]` per design `03-trackers`. Rail block "Trackers" on Today. Tracker chip on linked `TaskRow`s.
   - **Tests:** unit `trackers.test.ts`; integration trackers + linked items (09); e2e `trackers.spec.ts`.
@@ -77,7 +98,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
   - **AC:** entering the 07 §3b example (with past dates) shows today ৳160, week ৳940, month ৳730, "৳7,270 left" and the three category bars with 48/47/5 %; adding 3 spends in a row works with only the keyboard (amount → Enter); the 07 §3 IOU example shows exactly the three sentences and totals from the table; `৳12,34,567` grouping shows for a 1,234,567 entry; settle Karim → "Settled (2)" (with Tanvir).
   - **Prod check:** deploy; Rony can now log spending daily and copy his notes-app debts in (human step, or an agent in V9).
 
-<!-- ─── end of M2: stop here and give the milestone report ─── -->
+<!-- ─── end of M3: stop here and give the milestone report ─── -->
 
 - [ ] **V6 Renewals + daily email**
   - `domain/renewals.ts` (07 §4), `services/renewals.ts`, routes (04 Renewals), `/renewals` per design `05-renewals` (groups, overdue banner, Renewed + Undo, `RenewalDialog`), nav badge, "Coming up" rail block.
@@ -93,13 +114,13 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
   - **AC:** creating a key shows it once with three working copy snippets containing the key and `APP_URL`; the DB row has only the hash (check with `execute_sql`: no column contains the key); revoke greys the row; adding a link shows it on Today.
   - **Prod check:** deploy; send the test email from production Settings and confirm it arrives.
 
-<!-- ─── end of M3: stop here and give the milestone report ─── -->
+<!-- ─── end of M4: stop here and give the milestone report ─── -->
 
 - [ ] **V8 MCP server + local Lighthouse**
-  - `src/lib/agent/auth.ts` (`requireAgent`, rate limit), `agent/tools.ts` (all 29 tools of 05 §4, exact descriptions, schemas from `schemas.ts`), `agent/run-tool.ts` (05 §2 steps 3–4 and the error table), `src/app/api/mcp/route.ts` (stateless, JSON, Node runtime). Per-request tool registration by scope.
+  - `src/lib/agent/auth.ts` (`requireAgent`, rate limit), `agent/tools.ts` (all 32 tools of 05 §4, exact descriptions, schemas from `schemas.ts`), `agent/run-tool.ts` (05 §2 steps 3–4 and the error table), `src/app/api/mcp/route.ts` (stateless, JSON, Node runtime). Per-request tool registration by scope.
   - Write the code for learning: a short header comment in each of these 4 files explaining its job in the request flow (05 §2), no more.
-  - **Tests:** e2e `mcp.spec.ts` (all 6 cases), `states.spec.ts` (10-STATES §6), `a11y.spec.ts`, `visual.spec.ts` (baselines after comparing with the design by eye).
-  - Local production build → Lighthouse mobile + desktop on the 7 pages (09). Fix misses.
+  - **Tests:** e2e `mcp.spec.ts` (all 7 cases), `states.spec.ts` (10-STATES §6), `a11y.spec.ts`, `visual.spec.ts` (baselines after comparing with the design by eye).
+  - Local production build → Lighthouse mobile + desktop on the 8 pages (09). Fix misses.
   - **AC:** `npm run test:all` green; Claude Code locally: `claude mcp add --transport http life-local http://localhost:3000/api/mcp --header "Authorization: Bearer <a test key>"` → `get_board` works (or the MCP Inspector, if Claude Code isn't available); Lighthouse table in PROGRESS.md meets the targets.
   - **Prod check:** deploy; `mcp.spec.ts` cases 1–3 against the production URL with a temporary key (`PLAYWRIGHT_BASE_URL`), then revoke that key.
 
@@ -112,7 +133,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 - [ ] **V10 Final check, production Lighthouse, handoff**
   - `npm run test:all` and `npm run build` green.
-  - Lighthouse on the **production URL**, mobile + desktop, 7 pages. Fix, redeploy, re-run. Final table in PROGRESS.md.
+  - Lighthouse on the **production URL**, mobile + desktop, 8 pages. Fix, redeploy, re-run. Final table in PROGRESS.md.
   - `README.md`: what it is, local setup, env vars, scripts, tests, deploy, MCP connection (link docs/agents.md).
   - `docs/learn/mcp-and-api-keys.md` in Rony's 4-question format (Personal_Context `02_how_i_learn_and_work_with_ai.md` §2): the core problem (why agents need their own keys + why naive "give it my password" fails), the mental model (a diagram of the two front doors and the request flow), the production code breakdown (the real code from `agent/auth.ts`, `run-tool.ts`, `tools.ts`, `domain/keys.ts`, trimmed), production gotchas (service role bypasses RLS, scopes in code, show-once keys, hashing choice, rate limits, stateless on serverless, tool descriptions as contract). Rony copies it into his vault.
   - Final message to Rony: what was built, the production URL, the Lighthouse table, and a **code-flow walkthrough** (request in → response out, which files) for: (1) ticking a task on Today, (2) an agent's `add_task` call through `/api/mcp`, (3) the daily reminder email; plus what's left for him.

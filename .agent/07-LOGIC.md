@@ -212,7 +212,7 @@ Parse `itemsText` line by line: trim; skip empty lines; `## <text>` sets the cur
 - `generateKey(bytes: Uint8Array /* 32 */)` = `"ld_" + base64url(bytes)` with no padding → 46 chars.
 - `keyPrefix(key)` = first 11 chars. `hashKey(key)` = SHA-256 hex (`node:crypto`).
 - `looksLikeKey(s)` = `/^ld_[A-Za-z0-9_-]{43}$/`.
-- `SCOPES` = the 9 scopes in 05 §3 (29 tools), and `TOOL_SCOPE: Record<ToolName, Scope | null>`.
+- `SCOPES` = the 11 scopes in 05 §3 (32 tools), and `TOOL_SCOPE: Record<ToolName, Scope | null>`.
 - `rateLimit(timestamps: Date[] /* counted rows, last 24 h */, now)` → `{ ok: true } | { ok: false, retryAfterS }`: block when `count(last 60 s) ≥ 30` (retry = 60 − age of the oldest of those, rounded up) or `count(last 24 h) ≥ 1000` (retry = time until the oldest leaves the 24 h window).
 
 Worked examples (exact, for the tests):
@@ -224,3 +224,93 @@ Worked examples (exact, for the tests):
 Rate limit: 30 calls in the last 60 s, the oldest 50 s ago → `{ ok: false, retryAfterS: 10 }`. 29 calls → ok.
 
 **Tests (`keys.test.ts`):** both table rows; `looksLikeKey` with 45/47 chars and a `+` char → false; the two rate-limit cases plus the 1000/day case; every tool has a scope entry (or null for `whoami`).
+
+## 8. Canvas (`domain/canvas.ts` pure; `lib/canvas/*` browser)
+
+### 8.1 Images (`fitWithin`, `lib/canvas/images.ts`)
+- Accepted: PNG, JPEG, WebP, GIF. Anything else → toast "Only images can be pasted here."
+- `fitWithin(w, h, max = 1600)` → scale = min(1, max / max(w, h)); `{ w: round(w × scale), h: round(h × scale) }`. Never upscales.
+- Non-GIF: `createImageBitmap` → canvas at `fitWithin` size → `toBlob("image/webp", 0.82)`. Over 1 MB → again at 0.6. Still over → reject: toast "That image is too big, even after shrinking (max 1 MB)."
+- GIF: kept as is (so it still animates) when ≤ 1 MB, otherwise rejected with the same toast.
+- Limits: Scratch ≤ 40 images and ≤ 50 MB of images; a note ≤ 30 images. Over → toast "Scratch is full. Save it as a note or clear it." / "A note can hold 30 images."
+
+| Input | `fitWithin` |
+|---|---|
+| 3024 × 1964 (laptop screenshot) | 1600 × 1039 |
+| 1170 × 2532 (phone screenshot) | 739 × 1600 |
+| 800 × 600 | 800 × 600 |
+
+### 8.2 Paste (`lib/canvas/paste.ts`, in TipTap's `handlePaste` / `transformPastedHTML`)
+Checked in this order; the first match wins:
+1. **Files** in the clipboard (`image/*`) → one image node each, in order (8.1); any text is ignored.
+2. **`vscode-editor-data`** present (copied from VS Code) → one code block; language = its `mode`; text = `text/plain`.
+3. **`text/html`** present → `cleanPastedHtml` then the editor's schema parser. Cleaning removes `style`, `class`, `id`, colours, fonts, `<meta>`, `<style>`, `<script>`, comments and event attributes; `h4–h6` → `h3`; links keep only `http(s):` and `mailto:` hrefs; `<img>` with an `https:` src → image node with that URL as ref (not downloaded); `data:` image → converted to a file and handled by 8.1. Exception: when the HTML has no block structure (only `<span>`/`<div>`/`<br>` around text) and the `text/plain` part `looksLikeMarkdown` → rule 5.
+4. **`text/plain` that is one URL** (`^https?://\S+$`) → a link; with text selected, the selection becomes the link text.
+5. **`text/plain` that `looksLikeMarkdown`** → parsed as Markdown (`@tiptap/markdown`).
+6. Otherwise plain text: one paragraph per line.
+
+`looksLikeMarkdown(text)` is true when **any** of: a line matches `^#{1,3} `; a line starts with ```` ``` ````; at least 2 lines match `^(\s*[-*] |\s*\d+\. )`; a line matches `^\|?\s*:?-{3,}` (table separator); the text contains `**…**` or `[…](http…)`.
+
+| Text | `looksLikeMarkdown` |
+|---|---|
+| `## Plan\n- a\n- b` | true |
+| `see [docs](https://nextjs.org)` | true |
+| `hello world` | false |
+| `Price: 5 * 3 = 15` | false |
+| `- just one dash line` | false |
+
+### 8.3 Markdown out (`lib/canvas/markdown.ts`)
+Used by **Copy as Markdown**, the selection's `text/plain` (TipTap `clipboardTextSerializer`), `body_md`, and `get_note`.
+Headings `#`–`###`; bullets `- `; numbers `1. `; checklist `- [ ] ` / `- [x] `; code fences with the language; GFM tables; links `[text](url)`;
+images with an `https:` ref → `![alt](url)`; local (`idb:`) or stored (`sb:`) images → `[image]`. Blocks separated by one blank line; one trailing newline.
+
+Worked example (the fixture doc in `tests/fixtures/canvas-doc.json`):
+heading 2 "CN questions" · checklist [open "Why does TCP need a 3-way handshake?", done "What is MSS?"] · code block `bash` "ping -c 3 1.1.1.1" · paragraph "See " + link "RFC 9293" → `https://www.rfc-editor.org/rfc/rfc9293` + "." · a local image →
+
+~~~markdown
+## CN questions
+
+- [ ] Why does TCP need a 3-way handshake?
+- [x] What is MSS?
+
+```bash
+ping -c 3 1.1.1.1
+```
+
+See [RFC 9293](https://www.rfc-editor.org/rfc/rfc9293).
+
+[image]
+~~~
+
+### 8.4 Note title (`titleFromText(md, today)`)
+First non-empty line of the Markdown; strip leading `#`, `>`, `- [ ]`, `- [x]`, `- `, `* `, `1. ` and `**`/`_`/`` ` `` marks; trim. Longer than 60 chars → cut at the last space at or before char 60 and add `…`. Nothing left (empty, or only images) → `Note · <today as "Tue 3 Nov">`.
+
+| Markdown | Title |
+|---|---|
+| `## CN questions\n- [ ] Why…` | `CN questions` |
+| `- [ ] Why does TCP need a 3-way handshake?` | `Why does TCP need a 3-way handshake?` |
+| `Explain the difference between distance-vector and link-state routing protocols with examples` | `Explain the difference between distance-vector and…` |
+| `[image]` (today Tue 3 Nov) | `Note · Tue 3 Nov` |
+
+### 8.5 Image refs and clean-up (`imageRefs(doc)`, `unreferencedPaths(refs, files, now)`)
+- An image node has `attrs = { ref, alt, width, height }`; `ref` is `idb:<uuid>` (Scratch), `sb:<user>/<note>/<file>` (note) or an `https:` URL.
+- `imageRefs(doc)` walks the doc and returns every `ref` (duplicates once).
+- `unreferencedPaths(refs, files, now)` → paths of `files` (`{ path, createdAt }`) that are not in `refs` **and** are older than 10 minutes (an image uploaded but not saved yet is kept).
+
+Example: refs = {`u/n/a.webp`}; files = a.webp (1 h old), b.webp (1 h old), c.webp (2 min old) → [`u/n/b.webp`].
+
+### 8.6 Scratch store (`lib/canvas/scratch-store.ts`, IndexedDB via `idb`)
+- Database `life-canvas-<userId>`, version 1, stores `scratch` (key `"main"` → `{ doc, updatedAt }`) and `images` (key uuid → `{ blob, type, width, height, createdAt }`).
+- The editor resolves `idb:` refs to object URLs (revoked on unmount).
+- On load and after a Clear's Undo window: delete `images` entries the doc doesn't reference.
+- Errors: IndexedDB missing or blocked → banner (10-STATES) and the editor keeps working in memory. `QuotaExceededError` → danger banner.
+- One owner tab: `navigator.locks.request("life-scratch", { ifAvailable: true })`. Not granted → read-only + "Use here", which requests the lock with `steal: true`; the tab that loses it saves first if it can, then goes read-only with the same banner.
+
+### 8.7 Save as note
+1. `POST /api/notes { title: titleFromText(md), bodyMd: md, doc }` where `doc` still has its `idb:` refs.
+2. For each `idb:` image: `POST /api/notes/[id]/images` with the stored blob → `sb:` ref.
+3. `PATCH /api/notes/[id]` with the doc whose refs are swapped and `bodyMd` again.
+4. An image that fails to upload is left out of the note; toast "Saved, but 1 image couldn't be uploaded." Scratch is never changed by saving.
+
+**Tests (`canvas.test.ts`):** every table row above; `imageRefs` on the fixture doc; the 8.3 example (serialise `tests/fixtures/canvas-doc.json`); `cleanPastedHtml` on `tests/fixtures/ai-chat.html` keeps h2/ul/pre/table and drops every `style`/`class`/`<script>`.
+

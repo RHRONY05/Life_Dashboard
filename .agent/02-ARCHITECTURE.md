@@ -13,8 +13,11 @@
 | Tests | Vitest (unit + integration), Playwright (e2e desktop + mobile + an `api` project for MCP), `@axe-core/playwright` | See `09-TESTING.md`. |
 | Fonts + icons | `next/font/google` (Schibsted Grotesk, IBM Plex Sans, IBM Plex Mono, Hind Siliguri for the `৳` glyph only), `lucide-react` | See `design/README.md`. |
 | Hosting | Vercel (Hobby) via Vercel MCP | One daily cron. |
+| Canvas editor | TipTap v3 (`@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit`, `@tiptap/extension-list` (task lists), `@tiptap/extension-table`, `@tiptap/extensions` (Placeholder), `@tiptap/markdown`) | Headless (ProseMirror), so the look stays Swiss Ink. Loaded with `next/dynamic` (`ssr: false`) on `/canvas` only. In V3a, read the current v3 docs, check the package names above and record the versions. |
+| Scratch storage | IndexedDB through `idb` | Browser only. Never sent to the server. 07 §8.6. |
+| Note images | Supabase Storage, private bucket `life-notes` | Same `vocab` project. 03 "Canvas". Served through `/api/notes/images/…` as short signed URLs. |
 
-Allowed dependencies: the ones above plus `clsx`, `tailwind-merge`, `sonner`, `date-fns` + `@date-fns/tz` (date math in `Asia/Dhaka`), `@playwright/test`, `@axe-core/playwright`, `@types/nodemailer`. Ask before adding anything else.
+Allowed dependencies: the ones above (including the TipTap packages and `idb`) plus `clsx`, `tailwind-merge`, `sonner`, `date-fns` + `@date-fns/tz` (date math in `Asia/Dhaka`), `@playwright/test`, `@axe-core/playwright`, `@types/nodemailer`. Ask before adding anything else.
 Package manager: npm. Node 20+.
 
 ## Environment variables
@@ -83,6 +86,7 @@ src/
     (app)/trackers/page.tsx        tracker list (+ detail pane ≥ 1024 px, via ?id=)
     (app)/trackers/[id]/page.tsx   tracker detail (mobile, direct links)
     (app)/money/page.tsx           Spending (default) and IOUs (?tab=ious)
+    (app)/canvas/page.tsx          Scratch + saved notes (?note=<id>); editor via next/dynamic
     (app)/renewals/page.tsx
     (app)/settings/page.tsx        Agents & keys · Activity · Quick links · Email
     login/page.tsx
@@ -93,6 +97,10 @@ src/
     api/lists/route.ts
     api/lists/[id]/route.ts
     api/lists/[id]/clear-done/route.ts
+    api/notes/route.ts
+    api/notes/[id]/route.ts
+    api/notes/[id]/images/route.ts
+    api/notes/images/[...path]/route.ts   302 → signed URL
     api/trackers/route.ts
     api/trackers/[id]/route.ts
     api/trackers/[id]/items/route.ts
@@ -133,8 +141,10 @@ src/
     domain/spending.ts             week/month ranges, totals, budget, category bars (pure)
     domain/renewals.ts             days left, state, next date, monthly equivalent, reminder stage (pure)
     domain/keys.ts                 key generate/format/prefix/hash, scope list + checks (pure except randomness, injected)
+    domain/canvas.ts               fitWithin, looksLikeMarkdown, titleFromText, imageRefs, unreferencedPaths (pure; 07 §8)
     domain/audit.ts                sanitise tool args for the log (pure)
-    services/tasks.ts  lists.ts  trackers.ts  spending.ts  money.ts  renewals.ts  links.ts  keys.ts  audit.ts
+    canvas/                        editor.ts (shared extensions), paste.ts, markdown.ts, images.ts, scratch-store.ts, CanvasImage node
+    services/tasks.ts  lists.ts  notes.ts  trackers.ts  spending.ts  money.ts  renewals.ts  links.ts  keys.ts  audit.ts
     agent/auth.ts                  requireAgent(), rate limit check
     agent/tools.ts                 MCP tool definitions → services (05)
     agent/run-tool.ts              wrapper: scope check, timing, audit row, error mapping

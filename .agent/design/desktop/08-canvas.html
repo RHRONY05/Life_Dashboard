@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>D08 · Canvas (Scratch)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500..900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../ui.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../mock.js"></script>
+</head>
+<body>
+<div class="frame-d tall">
+  <header class="topbar">
+    <div class="brand"><span class="logo"><i data-lucide="layout-dashboard"></i></span>Life Dashboard</div>
+    <nav class="nav">
+      <a href="#"><i data-lucide="calendar-check"></i>Today</a>
+      <a class="on" href="#" aria-current="page"><i data-lucide="clipboard-paste"></i>Canvas</a>
+      <a href="#"><i data-lucide="list-checks"></i>Trackers</a>
+      <a href="#"><i data-lucide="wallet"></i>Money</a>
+      <a href="#"><i data-lucide="refresh-cw"></i>Renewals<span class="nbadge">1</span></a>
+      <a href="#"><i data-lucide="settings"></i>Settings</a>
+    </nav>
+    <div class="top-right">
+      <span class="today-chip">Tue 3 Nov</span>
+      <button class="iconbtn" aria-label="Keyboard shortcuts"><i data-lucide="keyboard"></i></button>
+      <button class="avatar" aria-label="Account">R</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="canvas-wrap">
+      <aside class="npane" aria-label="Canvas pages">
+        <a class="scratch-card on" href="#" aria-current="page"><span class="ic"><i data-lucide="clipboard-paste"></i></span><span><b>Scratch</b><span>Only in this browser</span></span></a>
+        <div class="input"><i data-lucide="search" class="sm" style="color:var(--ink-3)"></i><span class="ph" style="color:var(--ink-3)">Search notes</span></div>
+        <div class="npane-head">Notes <span class="c">6</span></div>
+        <nav class="nlist" aria-label="Saved notes">
+          <a class="nrow" href="#"><b>CN questions · week 9</b><p>Why does TCP need a 3-way handshake? What is MSS and who picks it?</p><span class="meta">Yesterday</span></a>
+          <a class="nrow" href="#"><b>Docker networking notes</b><p>bridge vs host networks, publishing ports with -p 8080:80, why containers can't see localhost…</p><span class="meta">Sun 1 Nov</span></a>
+          <a class="nrow" href="#"><b>Upwork proposal: Next.js dashboard</b><p>Hi! I build fast Next.js + Supabase dashboards with auth, charts and a clean admin…</p><span class="meta">Fri 30 Oct</span></a>
+          <a class="nrow" href="#"><b>NeetCode: sliding window patterns</b><p>Fixed window vs. variable window. Template: expand right, shrink left while invalid…</p><span class="meta">Thu 29 Oct<span class="badge b-agent"><i data-lucide="bot"></i>via Muse</span></span></a>
+          <a class="nrow" href="#"><b>Prompts that worked</b><p>Review this diff like a senior engineer. List only bugs that change behaviour…</p><span class="meta">Mon 26 Oct</span></a>
+          <a class="nrow" href="#"><b>Thesis meeting points</b><p>Ask about dataset size, the draft deadline, and whether a demo video is enough…</p><span class="meta">Wed 21 Oct</span></a>
+        </nav>
+      </aside>
+
+      <section class="ecard" aria-label="Scratch">
+        <div class="ecard-head">
+          <h2>Scratch</h2>
+          <span class="save-status"><span class="dot"></span>Saved · this browser</span>
+          <span class="spacer"></span>
+          <button class="btn btn-secondary"><i data-lucide="bookmark-plus"></i>Save as note<kbd>Ctrl S</kbd></button>
+          <button class="btn btn-primary"><i data-lucide="copy"></i>Copy as Markdown</button>
+          <button class="iconbtn" aria-label="More"><i data-lucide="more-horizontal"></i></button>
+        </div>
+        <div class="etoolbar" role="toolbar" aria-label="Formatting">
+          <button class="tb" aria-label="Heading 1">H1</button><button class="tb on" aria-label="Heading 2">H2</button><button class="tb" aria-label="Heading 3">H3</button>
+          <span class="tb-sep"></span>
+          <button class="tb" aria-label="Bold"><i data-lucide="bold"></i></button><button class="tb" aria-label="Italic"><i data-lucide="italic"></i></button><button class="tb" aria-label="Strikethrough"><i data-lucide="strikethrough"></i></button><button class="tb" aria-label="Inline code"><i data-lucide="code"></i></button>
+          <span class="tb-sep"></span>
+          <button class="tb" aria-label="Bullet list"><i data-lucide="list"></i></button><button class="tb" aria-label="Numbered list"><i data-lucide="list-ordered"></i></button><button class="tb" aria-label="Checklist"><i data-lucide="list-todo"></i></button>
+          <span class="tb-sep"></span>
+          <button class="tb" aria-label="Quote"><i data-lucide="text-quote"></i></button><button class="tb" aria-label="Code block"><i data-lucide="square-code"></i></button>
+          <span class="tb-sep"></span>
+          <button class="tb" aria-label="Link"><i data-lucide="link"></i></button><button class="tb" aria-label="Image"><i data-lucide="image"></i></button>
+          <span class="hint">Paste anything · <kbd>Ctrl Shift V</kbd> plain text</span>
+        </div>
+        <div class="prose">
+          <h2>TCP three-way handshake</h2>
+          <p>TCP opens a connection with three segments, so both sides agree on their starting sequence numbers before any data flows:</p>
+          <ol>
+            <li><strong>SYN</strong>: the client picks an initial sequence number <code>x</code> and sends it.</li>
+            <li><strong>SYN-ACK</strong>: the server picks its own number <code>y</code> and acknowledges <code>x + 1</code>.</li>
+            <li><strong>ACK</strong>: the client acknowledges <code>y + 1</code>. The connection is open.</li>
+          </ol>
+          <pre><span class="lang">bash</span><code>ss -tan state syn-sent
+sudo tcpdump -i eth0 'tcp[tcpflags] &amp; tcp-syn != 0'</code></pre>
+          <table>
+            <thead><tr><th>Flag</th><th>Meaning</th><th>Used in</th></tr></thead>
+            <tbody>
+              <tr><td><code>SYN</code></td><td>Synchronise sequence numbers</td><td>Opening</td></tr>
+              <tr><td><code>ACK</code></td><td>The acknowledgment field is valid</td><td>Almost every segment</td></tr>
+              <tr><td><code>FIN</code></td><td>No more data from the sender</td><td>Closing (four-way)</td></tr>
+              <tr><td><code>RST</code></td><td>Abort the connection</td><td>Errors, closed ports</td></tr>
+            </tbody>
+          </table>
+          <span class="cimg sel"><span class="shot" style="width:640px"><span class="shot-bar"><i></i><i></i><i></i></span><span class="shot-rows">No.  Time      Source        Destination   Info
+1    0.000000  192.168.0.104 142.250.193.  54312 → 443 [SYN] Seq=0 Win=64240
+<span class="hl">2    0.031894  142.250.193.  192.168.0.104 443 → 54312 [SYN, ACK] Seq=0 Ack=1</span>3    0.032011  192.168.0.104 142.250.193.  54312 → 443 [ACK] Seq=1 Ack=1
+4    0.032455  192.168.0.104 142.250.193.  Client Hello (SNI=google.com)</span></span><span class="size">1600 × 512 · 84 KB</span></span>
+          <hr>
+          <h3>My questions</h3>
+          <ul class="tasks">
+            <li><span class="check"></span><span>Why not a two-way handshake? What breaks?</span></li>
+            <li><span class="check"></span><span>What happens if the final ACK is lost?</span></li>
+            <li class="done"><span class="check on"><i data-lucide="check"></i></span><span>What is MSS and who picks it?</span></li>
+            <li><span class="check"></span><span>Read <a href="#">RFC 9293 §3.5</a> before the quiz 🧠<span class="caret"></span></span></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+  <div class="toast-pos"><div class="toast"><i data-lucide="copy-check"></i>Copied as Markdown · 31 lines</div></div>
+</div>
+</body>
+</html>

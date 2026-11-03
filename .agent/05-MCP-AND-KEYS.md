@@ -60,6 +60,8 @@ POST /api/mcp
 | `renewals:read` | `list_renewals` | ✅ |
 | `renewals:write` | `add_renewal`, `update_renewal`, `mark_renewed`, `mark_ended` | ☐ |
 | `links:read` | `list_links` | ✅ |
+| `notes:read` | `list_notes`, `get_note` | ✅ |
+| `notes:write` | `create_note` | ☐ |
 | (none) | `whoami` | always |
 
 Write scopes are opt-in. **No scope allows deleting anything**: there are no delete tools.
@@ -101,8 +103,11 @@ Agents may write to today or any later date; past dates → error `past_date`.
 | `mark_renewed` | renewals:write | "Moves a monthly or yearly renewal's date forward by one cycle after it was paid." | `{ renewalId }` | `Renewal` |
 | `mark_ended` | renewals:write | "Marks a renewal as ended (cancelled or expired)." | `{ renewalId }` | `Renewal` |
 | `list_links` | links:read | "Lists Rony's quick links (his other apps and profiles)." | `{}` | `{ links: Link[] }` |
+| `list_notes` | notes:read | "Lists Rony's saved Canvas notes, newest first, with a short snippet. His Scratch page is private to his browser and is never listed." | `{ query?: string (1–100) }` | `{ notes: NoteSummary[] }` |
+| `get_note` | notes:read | "Gets one saved note as Markdown, found by id or by title (case-insensitive). Images appear as [image]." | `{ note: string }` | `{ id, title, markdown, createdBy, updatedAt }` |
+| `create_note` | notes:write | "Saves Markdown as a new note in Rony's Canvas, e.g. a summary or a list of questions. Only do this when Rony asks." | `{ title (1–120), markdown (1–200000) }` | `NoteSummary` |
 
-Every agent write stamps `created_by = <key name>` (tasks, trackers, entries, renewals), and the UI shows it as "via Muse".
+Every agent write stamps `created_by = <key name>` (tasks, trackers, entries, renewals, notes), and the UI shows it as "via Muse".
 
 ## 5. Results and errors
 - Success: `{ content: [{ type: "text", text: JSON.stringify(result) }], structuredContent: result }`.

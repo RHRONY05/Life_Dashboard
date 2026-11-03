@@ -8,7 +8,7 @@ Rony is in his last year at university and starting freelance work. Today his ta
 head, his debts in a phone notes app, and his renewal dates nowhere, so free credits end and
 subscriptions charge without warning. The app opens on a **Yesterday · Today · Tomorrow** board.
 A right rail shows quick links, renewals coming up, money owed, and tracker progress. Separate
-pages hold **Trackers** (any list, e.g. NeetCode 150), **Money** (daily spending against a monthly budget, plus who owes whom, in BDT) and
+pages hold **Canvas** (a copy-paste page that stays in the browser, plus saved notes), **Trackers** (any list, e.g. NeetCode 150), **Money** (daily spending against a monthly budget, plus who owes whom, in BDT) and
 **Renewals** (subscriptions, hosting, domains, credits, in BDT or USD, with email reminders).
 Agents connect through a **remote MCP server** at `/api/mcp`. Each agent has its own hashed,
 scoped, revocable API key, and every agent call is written to an activity log that Rony can see.
@@ -51,8 +51,9 @@ the finished app and reads the code-flow walkthrough; he doesn't write code.
 | AI | The app calls no LLM. The agents are the AI. |
 | Design | Done by the planner in `.agent/design/`. The builder implements it exactly and makes **no** design decisions. Tokens come from `design/tokens.css` only. Illustrations come from `design/illustrations/sprite.svg` as inline SVG components. Direction: **Swiss Ink** (soft neo-brutalism), final. |
 | Builder setup | Before Goal 1, Rony runs **`/project-config`** once: the builder enables every MCP server the project needs, writes wildcard grants and URL grants **in this project's config only** (never global), checks each tool answers, and reports what Rony must still do. Turning servers off later is Rony's call. |
-| Build rhythm | **4 milestones, one goal command each** (`.agent/GOAL.md`, table in `08-TASKS.md`): M1 Foundation + Today, M2 Trackers + Money, M3 Renewals + Settings, M4 Agents + final. The builder stops at the end of each milestone with a milestone report. |
+| Build rhythm | **5 milestones, one goal command each** (`.agent/GOAL.md`, table in `08-TASKS.md`): M1 Foundation + Today, M2 Canvas, M3 Trackers + Money, M4 Renewals + Settings, M5 Agents + final. The builder stops at the end of each milestone with a milestone report. |
 | Lists | Rony's own undated lists on Today ("To do later", "This week's targets"…), created and managed by him, never auto-updated. A task lives on a day **or** in a list and can move between them. |
+| Canvas | `/canvas` = one editor (TipTap) with two homes. **Scratch**: Rony's copy-paste page, stored in this browser only (IndexedDB), never sent to the server or agents. **Notes**: saved in the `notes` table, images in the private Storage bucket `life-notes`. Paste keeps structure; copy gives Markdown. Added 2026-11-03 as M2. |
 | States | Every screen implements every state in `10-STATES.md` (nothing, loading, none, one, some, too many, incorrect, correct, done, plus offline, timeout, 5xx, 401, 404, 409). |
 | Testing | Unit + integration (Vitest), e2e on desktop and mobile (Playwright), an MCP client test, accessibility (axe), and Lighthouse on mobile and desktop with targets in `09-TESTING.md`. Tests use the separate e2e user and a mocked email transport. |
 | Release | **Ship each module.** From V2 on, every task ends with a production deploy and a check on the live URL. |
@@ -62,9 +63,10 @@ the finished app and reads the code-flow walkthrough; he doesn't write code.
 ## Status
 - [x] Planning + design (2026-11-02)
 - [x] M1 Foundation + Today (V0–V3)
-- [ ] M2 Trackers + Money (V4–V5)
-- [ ] M3 Renewals + Settings (V6–V7)
-- [ ] M4 Agents + final (V8–V10)
+- [ ] M2 Canvas (V3a–V3b)
+- [ ] M3 Trackers + Money (V4–V5)
+- [ ] M4 Renewals + Settings (V6–V7)
+- [ ] M5 Agents + final (V8–V10)
 
 <!-- BEGIN:nextjs-agent-rules -->
 

@@ -3,7 +3,7 @@
     <img src="public/icon-192.png" width="80" height="80" alt="Life Dashboard Logo" style="border-radius: 18px;" />
   </a>
   <h1>Life Dashboard</h1>
-  <p><strong>My private command center for daily tasks, trackers, small debts, and renewals — built for me and my AI agents.</strong></p>
+  <p><strong>My private command center for daily tasks, a copy-paste canvas, trackers, small debts and renewals, built for me and my AI agents.</strong></p>
   <p>
     <a href="https://dashboard.rhrony05.me"><strong>🌐 dashboard.rhrony05.me</strong></a>
     &nbsp;•&nbsp;
@@ -23,7 +23,7 @@
 
 ---
 
-## System Architecture & Feature Map
+## 🗺️ System Architecture & Feature Map
 
 <div align="center">
   <img src="docs/architecture-overview.svg" alt="Life Dashboard Architecture & Features Overview" width="100%" />
@@ -31,172 +31,194 @@
 
 ---
 
-## Why I Built This
+## 💡 Why I Built This
 
-I am currently in my final year of university, studying computer science, picking up freelance client projects, and coding almost daily with autonomous AI agents. 
+I'm in my final year of a CS degree, taking on freelance client work, and coding almost every day with autonomous AI agents. Before **Life Dashboard**, my day ran on adrenaline and chaos:
 
-Before building **Life Dashboard**, my daily life was basically running on pure adrenaline and chaos:
-- **My daily tasks lived purely in my head:** I would tell myself *"I'll definitely remember to submit that lab report and reply to that client by 5 PM"*, only to experience a full-blown panic attack at 11:58 PM.
-- **My small debts lived in messy phone notes:** Whenever my friends and I had lunch, small borrowings and lendings (*"who owes whom"*) ended up scattered across phone notes and random WhatsApp messages. Half the time, I forgot who owed me money or felt awkward calculating it.
-- **My renewal dates lived nowhere at all:** Domains, cloud servers, software subscriptions, and student trial credits would expire silently — or worse, suddenly hit my credit card with surprise renewal charges because I forgot to cancel a trial.
-- **My AI pair-programmers were working in the dark:** I collaborate daily with autonomous coding agents (Claude Code, Antigravity, Muse). Yet none of them had any idea what I was actually supposed to work on today. I was spending half my time acting as their unpaid human secretary, manually copy-pasting tasks between chats.
+| Where things lived | What went wrong |
+|---|---|
+| **Tasks → my head** | *"I'll definitely submit that lab report by 5 PM"*, followed by a panic at **11:58 PM**. |
+| **Debts → phone notes** | Lunch splits and small loans scattered across notes and WhatsApp. I never knew **who owed whom**. |
+| **Renewal dates → nowhere** | Domains, servers and free trials expired quietly, or **charged my card** because I forgot to cancel. |
+| **Copy-paste → an empty Notion page** | One tab open all day just to hold AI answers, links and screenshots for a few minutes. |
+| **My AI agents → in the dark** | Claude Code, Antigravity and Muse had no idea what I was working on, so I was their **unpaid secretary**, copying tasks between chats. |
 
-> **The realization:**  
-> My brain simply doesn't have enough RAM to remember Dijkstra's algorithm, keep track of who owes me 200 taka for campus biryani, **and** remember which free trial is going to charge my card tomorrow morning.  
-> 
-> If AI agents are supposedly going to take over software engineering anyway, the very least they can do right now is help me do my chores and keep my day organized.
+> [!NOTE]
+> **The realization:** my brain doesn't have enough RAM to remember Dijkstra's algorithm, who owes me **৳200 for campus biryani**, *and* which free trial charges my card tomorrow.
+> If AI agents are going to take over software engineering anyway, the least they can do now is help keep my day organized.
 
-So I decided to build **Life Dashboard** as my personal daily command center.
-
----
-
-## How It Works: Two Front Doors, One Service Layer
-
-I wanted an app that is fast, beautiful, and accessible to both me and my agents without cutting corners:
-
-1. **Front Door 1 (For Me):** A responsive web app with a custom **Swiss Ink** design system (soft neo-brutalism, warm `#FFE45C` yellow accent, crisp borders, and dark mode toggle). Built with strict parity: 100% of features work identically on my desktop monitor (1440×900) and on my phone (390×844) while on the go.
-2. **Front Door 2 (For My AI Agents):** A remote, stateless Streamable HTTP **Model Context Protocol (MCP)** server running at `/api/mcp`. My agents connect using hashed, scoped API keys (`tasks:read`, `tasks:write`, `trackers:*`, `money:*`, `renewals:*`).
-3. **Unified Backend Services:** Both front doors call the exact same backend service functions in `src/lib/services/`. There is no separate or outdated public API — whenever an agent updates my board or adds an expense, it runs the exact same code my browser runs.
-4. **Zero AI Latency & Guardrails:** The web app itself doesn't call an LLM on every page load (keeping it instantaneous and free of API bill spikes). The agents connecting from outside *are* the AI. And for safety, agents are given **no delete tools** — only I can delete my data.
+So I built **Life Dashboard**: one place for my day, open to me **and** my agents.
 
 ---
 
-## What I Can Do
+## 🚪 How It Works: Two Front Doors, One Service Layer
 
-### 1. Yesterday · Today · Tomorrow Board
-My central daily workspace:
-- **Calendar Days in `Asia/Dhaka`:** Day transitions and dates are permanently anchored to my local timezone.
-- **Sticky Tasks:** Tasks stay on their assigned day until I (or one of my agents) check them off or move them. Nothing vanishes automatically overnight.
-- **Older Unfinished Tasks:** Any unfinished tasks from previous days remain clearly visible under Yesterday with a 1-click *"Move all to today"* button.
-- **Custom Lists:** I keep undated target lists ("To do later", "This week's targets", "Reading list") right beside my daily board.
-- **Keyboard Shortcuts:** Fast management with `N` (new task), `E` (edit), `X` (toggle done), `J`/`K` (navigate), and `?` (shortcuts cheat-sheet).
-- **Right Rail Widget:** Immediate glance at my quick links, upcoming renewals (next 14 days), net debt balance, and tracker progress.
+| Front door | Who uses it | How it's protected |
+|---|---|---|
+| **Web app** | Me, on desktop (1440×900) **and** phone (390×844) | Cookie session, one allowed email |
+| **Remote MCP server** at `/api/mcp` | My AI agents | Hashed, scoped API key per agent |
 
-### 2. Goal Trackers
-For structured, long-term technical learning:
-- **Fixed Checklist Tracking:** Tailored for discrete goals like completing the **NeetCode 150**, system design patterns, or books.
-- **Visual Progress:** Real-time percentage meters and ratio completion counts (e.g. `42 / 150 completed`).
-- **Instant Filtering:** Filter between all, remaining, and completed items without full page reloads.
-
-### 3. Money & IOUs (Whole BDT)
-Tracking daily expenses and personal debts in taka (`৳`) without confusing decimal noise:
-- **Monthly Budget Pacing:** A visual pacing bar showing how much I have spent versus how many days remain in the month.
-- **Saturday → Friday Cycle:** Budgeting weeks aligned with Bangladesh's working and weekend rhythm.
-- **Who Owes Whom (IOUs):** Quick logging of who lent or borrowed what, with 1-click settlement and net balance calculation.
-
-### 4. Renewals & Subscriptions (BDT & USD)
-No more surprise credit card charges:
-- **Multi-Currency:** Keeps subscriptions in their native currency (**BDT or USD**) with separate totals — no misleading daily exchange rate conversions.
-- **Expiry Warnings:** Clear visual color warnings as renewal dates approach.
-- **Automated Daily Reminder Emails:** A Vercel Cron runs daily at 08:00 BST (02:00 UTC) to check renewals and sends reminder emails directly to my Gmail inbox via **Gmail SMTP** (7 days, 3 days, and 1 day before charge).
-
-### 5. Agent Hub & Remote MCP Server
-Where I pair-program with my AI agents:
-- **Remote Streamable HTTP Endpoint:** Live at `/api/mcp`.
-- **Hashed, Scoped API Keys:** Every agent has its own key with granular permissions. Keys are SHA-256 hashed and shown only once upon creation.
-- **Immutable Audit Logging:** Every single agent tool invocation, timestamp, parameter, and response code is logged and visible in my Settings dashboard.
-- **Rate Limiting:** Built-in rate limits (30 requests/min, 1,000 requests/day) prevent rogue agent loops from exhausting database resources.
+- **One source of truth:** both doors call the same service functions in `src/lib/services/`. When an agent adds a task, it runs **exactly the code my browser runs**. There's no second API that can drift out of date.
+- **No LLM inside the app:** pages stay instant and there are no surprise AI bills. The agents connecting from outside *are* the AI.
+- **Guardrails:** agents get **no delete tools**. Only I can delete my data.
+- **Swiss Ink design:** soft neo-brutalism, hard black frames, offset shadows, and one highlighter yellow (`#FFE45C`) that only ever means *"now"*.
 
 ---
 
-## Local Setup & Deployment
+## 🧰 What I Can Do
 
-If you want to run your own instance of Life Dashboard:
+| | Module | In one line | Status |
+|---|---|---|---|
+| 📅 | [Today board](#-1-yesterday--today--tomorrow-board) | Yesterday · Today · Tomorrow, plus my own lists | ✅ **Live** |
+| 📋 | [Canvas](#-2-canvas-copy-paste-pad) | A copy-paste page that stays in my browser, plus saved notes | 🛠️ **Next** |
+| 🎯 | [Trackers](#-3-goal-trackers) | Checklists like NeetCode 150, with progress | 🗓️ Planned |
+| ৳ | [Money](#-4-money--ious-whole-bdt) | Daily spending against a budget, and who owes whom | 🗓️ Planned |
+| 🔄 | [Renewals](#-5-renewals--subscriptions-bdt--usd) | Subscriptions and hosting, with reminder emails | 🗓️ Planned |
+| ⚡ | [Agent Hub](#-6-agent-hub--remote-mcp-server) | MCP server, scoped keys, activity log | 🗓️ Planned |
+
+### 📅 1. Yesterday · Today · Tomorrow Board
+My main daily workspace.
+- **Days in `Asia/Dhaka`:** dates always follow my local timezone.
+- **Sticky tasks:** a task stays on its day until I (or an agent) tick or move it. **Nothing disappears overnight.**
+- **Older unfinished:** leftovers from earlier days stay visible under Yesterday, with a one-click **Move all to today**.
+- **My own lists:** undated lists like *To do later* or *This week's targets*, right beside the board. I create them; nothing is hard-coded.
+- **Keyboard first:** `N` new task · `E` edit · `X` done · `J`/`K` move · `?` cheat sheet.
+- **Right rail:** quick links, renewals coming up, money owed, tracker progress.
+
+### 📋 2. Canvas (copy-paste pad)
+My always-open tab for **anything I copy**: AI answers, links, code, screenshots, emoji.
+- **Scratch page:** saved **only in this browser** (IndexedDB). It never reaches the server, and agents can't see it.
+- **Smart paste:** AI chat answers keep their headings, lists, code blocks and tables. Code from VS Code becomes a code block. Screenshots are shrunk to **1600 px WebP** first.
+- **Copy as Markdown:** one click (`Ctrl+Alt+M`) gives clean Markdown, ready to paste into an agent. Great for questions I collect while studying.
+- **Clear with Undo:** empty Scratch without worrying about losing something.
+- **Saved notes:** **Save as note** keeps a copy in the database with its images, so I can open it on my phone. Agents can read notes with `get_note`.
+
+### 🎯 3. Goal Trackers
+For long, structured learning goals.
+- **Checklists** for things like the **NeetCode 150**, system design topics or books, with groups.
+- **Progress:** a live percentage and count, e.g. `42 / 150`.
+- **Filters:** all, to do and done, without reloading.
+- **Add to today:** put any item on today's board; ticking it there ticks it in the tracker.
+
+### ৳ 4. Money & IOUs (whole BDT)
+Spending and small debts in taka, with no decimals to fuss over.
+- **Quick spend:** amount + category + Enter. See today, this week and this month at a glance.
+- **Monthly budget:** a bar shows what's left, and turns warning at **80 %** and red when over.
+- **Saturday → Friday weeks**, matching the week in Bangladesh.
+- **Who owes whom:** log *lent / borrowed / paid back*, see each person's balance, settle in one click.
+
+### 🔄 5. Renewals & Subscriptions (BDT & USD)
+No more surprise charges.
+- **Two currencies, kept apart:** each item stays in **BDT or USD**, with separate totals. No made-up exchange rates.
+- **Warnings:** due-soon and overdue items stand out, and the nav shows a badge.
+- **Morning email at 08:00 (Dhaka):** a Vercel Cron job sends one digest to my Gmail through **Gmail SMTP**: a week before, the day before, on the day, and when overdue. Each reminder is sent only once.
+
+### ⚡ 6. Agent Hub & Remote MCP Server
+Where my AI agents plug in.
+- **Remote endpoint:** stateless Streamable HTTP at `/api/mcp`.
+- **One key per agent:** scoped (`tasks:read`, `money:write`, `notes:read`…), stored as a **SHA-256 hash**, shown **once**, revocable any time. New keys are **read-only** by default.
+- **Activity log:** every agent call (tool, summary, result) shows up in Settings.
+- **Rate limits:** **30 calls/min** and **1,000/day** per key, so a looping agent can't run wild.
+
+---
+
+## 🛠️ Local Setup & Deployment
+
+> [!TIP]
+> Want your own copy? The app runs on **free tiers only**: Supabase Free, Vercel Hobby and a Gmail app password.
 
 ### 1. Prerequisites
-- **Node.js** ≥ 20
-- **npm** ≥ 10
+- **Node.js** ≥ 20 and **npm** ≥ 10
 - **Git**
-- A free **[Supabase](https://supabase.com/)** PostgreSQL database
-- A **Gmail App Password** (for daily renewal reminder emails)
+- A free **[Supabase](https://supabase.com/)** project
+- A **Gmail app password** (for the reminder emails)
 
-### 2. Clone and Install
+### 2. Clone and install
 ```bash
 git clone https://github.com/RHRONY05/Life_Dashboard.git
 cd Life_Dashboard
 npm install
 ```
 
-### 3. Environment Variables
-Create a `.env.local` file in the root directory:
+### 3. Environment variables
+Copy `.env.example` to `.env.local` and fill it in:
 
 ```ini
-# Supabase Configuration
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
 
-# Owner Authentication & Access Control
-ALLOWED_EMAIL=muhammadrony147@gmail.com
-OWNER_PASSWORD=<your-secure-password>
-OWNER_USER_ID=<supabase-auth-user-id>
+# Owner login
+ALLOWED_EMAIL=<your-email>
+OWNER_PASSWORD=<your-password>
 
-# App Timezone
+# App
 APP_TIMEZONE=Asia/Dhaka
+APP_URL=http://localhost:3000
 
-# Gmail SMTP (Renewal Reminders)
-SMTP_USER=muhammadrony147@gmail.com
-SMTP_PASSWORD=<your-16-char-gmail-app-password>
-ALERT_EMAIL=muhammadrony147@gmail.com
+# Gmail SMTP (renewal reminders)
+GMAIL_USER=<your-gmail>
+GMAIL_APP_PASSWORD=<16-letter app password, no spaces>
+REMINDER_TO=<where reminders go>
 
-# Cron Security
-CRON_SECRET=<your-cron-secret-token>
+# Cron
+CRON_SECRET=<random string>
 
-# E2E Test Credentials (Optional)
-E2E_EMAIL=e2e+life@gmail.com
-E2E_PASSWORD=<e2e-user-password>
+# Tests (optional)
+E2E_EMAIL=<e2e user email>
+E2E_PASSWORD=<e2e user password>
+EMAIL_MOCK=
 ```
 
-| Variable | Description |
+| Variable | What it's for |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anonymous key for client-side queries. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key (used by MCP backend to enforce code-level agent scopes). |
-| `ALLOWED_EMAIL` | Single-user boundary: only this email can authenticate into the dashboard. |
-| `OWNER_PASSWORD` | Strong password used for owner authentication. |
-| `OWNER_USER_ID` | Owner UUID in `auth.users` for RLS association. |
-| `APP_TIMEZONE` | Calendar timezone for day cutoffs (defaults to `Asia/Dhaka`). |
-| `SMTP_USER` & `SMTP_PASSWORD` | Gmail address and 16-character App Password for reminder emails. |
-| `CRON_SECRET` | Bearer token protecting `/api/cron/daily` against unauthorized triggers. |
+| `NEXT_PUBLIC_SUPABASE_URL` / `_ANON_KEY` | Connect the browser and server to Supabase. |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Server only.** Used by the MCP route and the cron, where agent scopes are checked in code. |
+| `ALLOWED_EMAIL` | The **only** account that can sign in. |
+| `OWNER_PASSWORD` | The owner's password. |
+| `APP_TIMEZONE` | When a day starts and ends (`Asia/Dhaka`). |
+| `APP_URL` | Used in emails and MCP config snippets. |
+| `GMAIL_USER` / `GMAIL_APP_PASSWORD` / `REMINDER_TO` | Sending the reminder emails. |
+| `CRON_SECRET` | Protects `/api/cron/daily` from outside calls. |
+| `E2E_EMAIL` / `E2E_PASSWORD` / `EMAIL_MOCK` | Test user and fake mail transport for tests. |
 
-### 4. Database Setup
-1. Open your Supabase project's SQL editor.
-2. Run the migrations in sequence from `supabase/migrations/`:
-   - `20261102215000_life_init.sql` (Tables, columns, indexes, RLS policies)
-   - `20261102215300_cover_foreign_keys.sql` (Composite indexes and performance constraints)
-3. Confirm the tables are created: `tasks`, `task_lists`, `trackers`, `tracker_items`, `expenses`, `ious`, `renewals`, `quick_links`, `api_keys`, `audit_logs`.
+> [!CAUTION]
+> Never commit `.env.local`, and never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser: it bypasses Row Level Security.
 
-### 5. Run Locally
+### 4. Database
+Apply the migrations in `supabase/migrations/` in order (Supabase SQL editor or CLI):
+- `20261102215000_life_init.sql`: tables, indexes and RLS policies
+- `20261102215300_cover_foreign_keys.sql`: indexes for foreign keys
+
+You should then have: `tasks`, `task_lists`, `trackers`, `tracker_items`, `expenses`, `user_settings`, `people`, `iou_entries`, `renewals`, `reminder_log`, `links`, `api_keys`, `agent_audit`.
+
+### 5. Run locally
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) and sign in using your `ALLOWED_EMAIL` and `OWNER_PASSWORD`.
+Open **[http://localhost:3000](http://localhost:3000)** and sign in with `ALLOWED_EMAIL` and `OWNER_PASSWORD`.
 
-### 6. Run Test Suites
+### 6. Tests
 ```bash
-# Unit tests
-npm run test:unit
-
-# End-to-end tests (Desktop & Mobile)
-npm run test:e2e
-
-# Typecheck and ESLint
-npm run typecheck
-npm run lint
+npm run test:unit   # unit tests
+npm run test:int    # integration tests (needs Supabase)
+npm run test:e2e    # Playwright, desktop + mobile
+npm run test:all    # typecheck + lint + every test
 ```
 
 ---
 
-## Deployment (Vercel)
+## 🚀 Deployment (Vercel)
 
-1. Push your repository to GitHub.
-2. Import the project into **[Vercel](https://vercel.com/)**.
-3. In Project Settings → Environment Variables, add the production variables defined above.
-4. Deploy! Next.js 16 App Router builds automatically with Turbopack.
-5. Vercel Cron automatically reads `vercel.json` to invoke `/api/cron/daily` every day at `02:00 UTC` (`08:00 BST`).
+1. Push the repo to GitHub.
+2. Import it into **[Vercel](https://vercel.com/)**.
+3. Add the environment variables above in **Project Settings → Environment Variables**.
+4. Deploy. Next.js 16 builds automatically.
+5. `vercel.json` schedules `/api/cron/daily` every day at **02:00 UTC** (**08:00 in Dhaka**).
 
 ---
 
-## License
+## 📄 License
 
-This project is personal and available under the [MIT License](LICENSE) © 2026 [Muhammad Rony](https://github.com/RHRONY05).
+Personal project, available under the [MIT License](LICENSE) © 2026 [Muhammad Rony](https://github.com/RHRONY05).

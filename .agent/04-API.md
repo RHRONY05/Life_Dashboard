@@ -70,6 +70,20 @@ type TaskList = { id; name; position: number; createdBy: string;
 ### `DELETE /api/lists/[id]` → 204 (items deleted)
 ### `POST /api/lists/[id]/clear-done` → `{ deleted: number }`
 
+## Notes (Canvas; Scratch has no API, it lives in the browser)
+Types: `NoteSummary = { id, title, snippet (first 140 chars of body_md as plain text), createdBy, updatedAt }`,
+`Note = NoteSummary & { doc: object | null, bodyMd: string, createdAt }`.
+### `GET /api/notes?q=<text>` → `{ notes: NoteSummary[] }` (newest `updated_at` first, all of them; `q` = case-insensitive match on title or body_md, 1–100 chars)
+### `POST /api/notes` input `{ title (1–120), doc?: object, bodyMd (0–200 000) }` → `Note` (201). 301st note → 409 `limit_reached`.
+### `GET /api/notes/[id]` → `Note`
+### `PATCH /api/notes/[id]` input `{ baseUpdatedAt, title?, doc?, bodyMd? }` → `Note`
+`baseUpdatedAt` ≠ the row's `updated_at` → 409 `{ error: "conflict", details: { reason: "stale", note: Note } }`.
+After a successful save, removes unreferenced images (07 §8.5). `doc` over 1 MB or more than 30 image refs → 400 `too_large`.
+### `DELETE /api/notes/[id]` → 204 (its images are deleted too)
+### `POST /api/notes/[id]/images` multipart `file` → `{ ref: "sb:<user_id>/<note_id>/<uuid>.<ext>" }` (201)
+Type is checked from the file's first bytes (WebP, PNG, JPEG, GIF), not from its name or header → otherwise 400 `bad_type`. Over 1 MB → 400 `too_large`. 31st image in the note → 409 `limit_reached`.
+### `GET /api/notes/images/<user_id>/<note_id>/<file>` → 302 to a signed URL valid 10 minutes, `Cache-Control: private, max-age=300`. A path outside the caller's folder → 404.
+
 ## Trackers
 ### `GET /api/trackers?archived=0|1` → `{ trackers: TrackerSummary[] }` (newest first)
 ### `POST /api/trackers`
