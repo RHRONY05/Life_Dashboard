@@ -161,4 +161,9 @@ Did: fixed unexpected code block box when copying Markdown/prose from VS Code (m
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (37 passed) int ✅ (9 passed) e2e ✅ (22 passed, 9 skipped for viewport) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅
 Commits: 51f7cad fix(canvas): remove code block box on pasted markdown, full-canvas cursor and theme-adaptive caret
+### 2026-11-03 18:38 — Antigravity — Navigation polish: instant tab switching & page skeletons
+Did: resolved 5-6s frozen navigation transition between tabs. Root causes: 1) absent Next.js `loading.tsx` caused blocking React transitions where the previous page remained frozen until server component finished; 2) hardcoded Toronto Cloudflare IP in DNS patch on Vercel caused intercontinental network roundtrips; 3) sequential duplicate `getUser()` in middleware and `requireOwner()`. Fixes: created high-fidelity Swiss Ink loading skeletons for all routes (`(app)/loading.tsx`, `canvas/loading.tsx`, `trackers/loading.tsx`, `money/loading.tsx`, `renewals/loading.tsx`, `settings/loading.tsx`); enabled instant optimistic tab switching in AppHeader and TabBar with 2px accent progress line; eliminated DNS override on Vercel; forwarded verified owner session headers from middleware to eliminate redundant auth network calls. Verified unit (37), integration (9), build, and deployed to production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (37 passed) int ✅ (9 passed) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: e6d3ae7 fix(nav): instant tab switching, route loading skeletons, and eliminate redundant auth roundtrips
 Next: M3 Trackers + Money (V4 Trackers)
