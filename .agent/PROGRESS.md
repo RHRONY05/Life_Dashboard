@@ -190,4 +190,11 @@ Did: built pure domain logic in `src/lib/domain/spending.ts` (Saturday->Friday w
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (54 passed) int ✅ (19 passed) e2e ✅ (29 passed, 11 skipped for viewport) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅
 Commits: feat(v5): Money page (Spending + IOUs), budget, QuickSpend, and Today rail block
+
+### 2026-11-04 02:05 — Antigravity — Dialog positioning and scroll-safety fix
+Did: fixed modal cutoff and scrolling failure reported by user. Root causes: 1) `DialogPrimitive.Overlay` previously wrapped `DialogPrimitive.Content` with fixed grid centering and no `overflow-y: auto`, trapping content taller than viewport; 2) `.dialog` lacked viewport height bounds (`max-height`); 3) `EntryDialog` had Amount and Date stacked vertically adding ~65px unnecessary height. Fixes: unnested `DialogPrimitive.Content` and positioned with `fixed left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2` alongside `max-h-[calc(100dvh-2rem)] overflow-y-auto`; placed Amount and Date side-by-side in 2-column grid (`row2` pattern from `states.html`) reducing height by ~65px so it fits without scrolling on standard screens, while enabling smooth internal scrolling whenever viewport is small. Verified TypeScript, ESLint, Playwright E2E, Next.js build, and deployed live to production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (54 passed) e2e ✅ (3 passed) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: 38e1aec fix(ui): make dialogs scroll-safe with max-height and compact 2-column row in EntryDialog
+Next: V6 Renewals + daily email (Milestone M4)
 Next: V6 Renewals + daily email (Milestone M4)
