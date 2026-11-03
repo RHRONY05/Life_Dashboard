@@ -171,4 +171,9 @@ Did: fixed numbered list and bullet list markers not rendering (Tailwind CSS pre
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (37 passed) int ✅ (9 passed) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅
 Commits: dbacfe4 fix(canvas): restore list markers and inline alignment for checklist task items
+### 2026-11-03 19:42 — Antigravity — Canvas checklist same-line flex fix in globals.css
+Did: lifted checklist flex-row rules into root globals.css targeting all task list variants (`ul[data-type="taskList"] > li`, `.tiptap ul[data-type="taskList"] > li`, `li:has(> label > input[type="checkbox"])`) to guarantee checkbox and text stay on the exact same line across all browsers and bundle layers. Built, verified, and deployed to production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (37 passed) int ✅ (9 passed) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: 1edb18d fix(canvas): guarantee same-line flex layout for task list checkboxes across all selectors
 Next: M3 Trackers + Money (V4 Trackers)
