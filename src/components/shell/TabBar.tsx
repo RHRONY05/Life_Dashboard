@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CalendarCheck,
+  ClipboardPaste,
   ListChecks,
   Wallet,
   RefreshCw,
@@ -22,6 +23,7 @@ export function TabBar({ renewalsBadge = 0, hasOverdue = false }: TabBarProps) {
 
   const tabs = [
     { href: "/", label: "Today", icon: CalendarCheck },
+    { href: "/canvas", label: "Canvas", icon: ClipboardPaste },
     { href: "/trackers", label: "Trackers", icon: ListChecks },
     { href: "/money", label: "Money", icon: Wallet },
     {
@@ -36,7 +38,7 @@ export function TabBar({ renewalsBadge = 0, hasOverdue = false }: TabBarProps) {
 
   return (
     <nav
-      className="tabbar md:hidden fixed bottom-0 left-0 right-0 h-16 grid grid-cols-5 bg-surface border-t border-frame pb-1 z-30 select-none"
+      className="tabbar md:hidden fixed bottom-0 left-0 right-0 h-16 grid grid-cols-6 bg-surface border-t border-frame pb-1 z-30 select-none"
       aria-label="Mobile navigation"
     >
       {tabs.map((tab) => {

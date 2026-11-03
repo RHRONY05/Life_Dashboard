@@ -46,4 +46,30 @@ export async function resetUserData(targetUserId: string): Promise<void> {
   await admin.from("people").delete().eq("user_id", targetUserId);
   await admin.from("renewals").delete().eq("user_id", targetUserId);
   await admin.from("links").delete().eq("user_id", targetUserId);
+  await admin.from("notes").delete().eq("user_id", targetUserId);
+
+  // Clean up life-notes storage bucket under targetUserId/
+  if (admin.storage) {
+    try {
+      const { data: noteFolders } = await admin.storage
+        .from("life-notes")
+        .list(targetUserId);
+
+      if (noteFolders && noteFolders.length > 0) {
+        for (const folder of noteFolders) {
+          const subPath = `${targetUserId}/${folder.name}`;
+          const { data: files } = await admin.storage
+            .from("life-notes")
+            .list(subPath);
+
+          if (files && files.length > 0) {
+            const filePaths = files.map((f) => `${subPath}/${f.name}`);
+            await admin.storage.from("life-notes").remove(filePaths);
+          }
+        }
+      }
+    } catch (storageErr) {
+      console.error("Failed to clean up test storage in life-notes:", storageErr);
+    }
+  }
 }

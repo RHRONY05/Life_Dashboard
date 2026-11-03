@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarCheck,
+  ClipboardPaste,
   ListChecks,
   Wallet,
   RefreshCw,
@@ -41,6 +42,7 @@ export function AppHeader({
 
   const navItems = [
     { href: "/", label: "Today", icon: CalendarCheck },
+    { href: "/canvas", label: "Canvas", icon: ClipboardPaste },
     { href: "/trackers", label: "Trackers", icon: ListChecks },
     { href: "/money", label: "Money", icon: Wallet },
     {

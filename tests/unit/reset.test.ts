@@ -21,6 +21,12 @@ vi.mock("@/lib/supabase/admin", () => ({
         eq: async () => ({ error: null }),
       }),
     }),
+    storage: {
+      from: () => ({
+        list: async () => ({ data: [], error: null }),
+        remove: async () => ({ error: null }),
+      }),
+    },
   }),
 }));
 

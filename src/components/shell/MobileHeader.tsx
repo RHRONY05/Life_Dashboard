@@ -22,6 +22,7 @@ export function MobileHeader({
   const getPageTitle = () => {
     if (title) return title;
     if (pathname === "/") return "Today";
+    if (pathname.startsWith("/canvas")) return "Canvas";
     if (pathname.startsWith("/trackers")) return "Trackers";
     if (pathname.startsWith("/money")) return "Money";
     if (pathname.startsWith("/renewals")) return "Renewals";

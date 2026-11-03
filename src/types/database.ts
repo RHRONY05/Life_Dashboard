@@ -207,6 +207,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notes: {
+        Row: {
+          body_md: string
+          created_at: string
+          created_by: string
+          doc: Json | null
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body_md?: string
+          created_at?: string
+          created_by?: string
+          doc?: Json | null
+          id?: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          body_md?: string
+          created_at?: string
+          created_by?: string
+          doc?: Json | null
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       people: {
         Row: {
           created_at: string

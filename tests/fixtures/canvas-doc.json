@@ -1,0 +1,74 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [
+        { "type": "text", "text": "CN questions" }
+      ]
+    },
+    {
+      "type": "taskList",
+      "content": [
+        {
+          "type": "taskItem",
+          "attrs": { "checked": false },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "text": "Why does TCP need a 3-way handshake?" }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "taskItem",
+          "attrs": { "checked": true },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                { "type": "text", "text": "What is MSS?" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "codeBlock",
+      "attrs": { "language": "bash" },
+      "content": [
+        { "type": "text", "text": "ping -c 3 1.1.1.1" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "See " },
+        {
+          "type": "text",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": { "href": "https://www.rfc-editor.org/rfc/rfc9293" }
+            }
+          ],
+          "text": "RFC 9293"
+        },
+        { "type": "text", "text": "." }
+      ]
+    },
+    {
+      "type": "canvasImage",
+      "attrs": {
+        "ref": "idb:11111111-2222-3333-4444-555555555555",
+        "alt": "Screenshot",
+        "width": 640,
+        "height": 480
+      }
+    }
+  ]
+}

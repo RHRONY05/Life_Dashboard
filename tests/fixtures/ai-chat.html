@@ -1,0 +1,33 @@
+<div class="ai-response-container" style="color: #333; background: #fff; font-family: 'Arial', sans-serif;">
+  <h2 class="title" style="color: red; font-size: 24px;">TCP Three-Way Handshake</h2>
+  <p style="margin: 10px 0; font-weight: bold;">Here is how TCP establishes a connection:</p>
+  <ul class="steps" style="list-style: circle; color: purple;">
+    <li style="margin-bottom: 5px;">SYN: Client sends syn packet</li>
+    <li style="margin-bottom: 5px;">SYN-ACK: Server acknowledges and responds</li>
+    <li style="margin-bottom: 5px;">ACK: Client acknowledges</li>
+  </ul>
+  <pre style="background: #222; color: #0f0;"><code class="language-bash">sudo tcpdump -i eth0 'tcp[tcpflags] & tcp-syn != 0'</code></pre>
+  <table class="data-table" style="border: 1px solid red; width: 100%;">
+    <thead>
+      <tr style="background: yellow;">
+        <th style="padding: 8px;">Flag</th>
+        <th style="padding: 8px;">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color: blue;">SYN</td>
+        <td>Synchronize sequence numbers</td>
+      </tr>
+      <tr>
+        <td style="color: green;">ACK</td>
+        <td>Acknowledgment valid</td>
+      </tr>
+    </tbody>
+  </table>
+  <!-- Comment to strip -->
+  <script type="text/javascript">
+    console.log("malicious or foreign script execution");
+    window.badActor = true;
+  </script>
+</div>

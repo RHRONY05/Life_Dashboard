@@ -14,10 +14,12 @@ export class NotFoundError extends Error {
 export class ConflictError extends Error {
   status = 409;
   reason: string;
-  constructor(reason: string, message?: string) {
+  details?: Record<string, unknown>;
+  constructor(reason: string, message?: string, details?: Record<string, unknown>) {
     super(message || getErrorMessage(reason, "Conflict"));
     this.name = "ConflictError";
     this.reason = reason;
+    this.details = details;
   }
 }
 

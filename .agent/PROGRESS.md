@@ -8,11 +8,11 @@
 ## Now
 | | |
 |---|---|
-| **Phase** | M1 complete · Next: M2 Canvas (added by the planner 2026-11-03) |
-| **Next task** | V3a Canvas: editor + Scratch (paste Goal 2 from `GOAL.md`) |
+| **Phase** | M2 Canvas in progress |
+| **Next task** | V3b Canvas: saved notes + images |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-02 by Antigravity (M1 Foundation + Today complete) |
+| **Last updated** | 2026-11-03 by Antigravity (V3a Canvas editor + Scratch complete) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -33,6 +33,7 @@ Things only the human can do. Agents add to this list; the human ticks them.
 | Owner / e2e user ids | Owner: `7e8be51c-2337-4746-a7be-9caaa9ce9223` · E2E: `dc69c1f3-8c23-41c5-841b-9b05a2dceb20` |
 | Vercel project / URL | `life-dashboard` · `https://life-rony.vercel.app` & `https://life.rhrony05.me` |
 | MCP packages (versions) | `mcp-handler` 2.3.0 · `@modelcontextprotocol/server` 2.4.0 · `@modelcontextprotocol/sdk` 1.32.2 |
+| Canvas packages | TipTap v3 (3.32.2) · `idb` 8.0.4 |
 | Node / npm | Node v20.19.2 · npm 10.8.2 |
 
 ### Preflight checklist (V0)
@@ -124,11 +125,27 @@ Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (16 passed) int ✅ (5 passe
 Deploy: https://life-rony.vercel.app · prod check ✅ (login, fetched board, created task, ticked done, deleted task, confirmed clean board)
 Commits: 6def8bd feat(v3): Today board, lists, domain logic, API routes, and tests
 Problems / surprises: none; Vocab app verified healthy on vocab.rhrony05.me
-Next: Goal 2 / M2 (Trackers + Money: V4 & V5)
+Next: V3a Canvas: editor + Scratch
+
+### 2026-11-03 16:15 — Antigravity — V3a Canvas: editor + Scratch
+Did: installed TipTap v3 packages (3.32.2) and idb (8.0.4); updated shell (AppHeader and TabBar to 6 columns with Canvas, ShortcutsDialog with `g c`, `Ctrl+Alt+M`, `Ctrl+S`); built pure domain logic (`fitWithin`, `looksLikeMarkdown`, `titleFromText`, `imageRefs`, `unreferencedPaths`); built canvas modules (`editor.ts` with custom `CanvasImage` node, `paste.ts` with `cleanPastedHtml` and smart paste analyzer, `markdown.ts` with exact AST serializer, `images.ts` with client-side WebP shrinking, `scratch-store.ts` with IndexedDB persistence); built `/canvas` client-side editor with toolbar, tab ownership via Web Locks + BroadcastChannel, Clear Scratch with 10s Undo toast, Copy as Markdown, and desktop/mobile parity; wrote unit and e2e test suites.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (32 passed) int ✅ (5 passed) e2e ✅ (20 passed, 7 skipped for viewport) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: feat(v3a): Canvas page, TipTap v3 Scratch editor, IndexedDB persistence, tests
+Problems / surprises: Web Locks in React 19 fast-mount required abort signal and module-level lock persistence to prevent double-mount contention
+Next: V3b Canvas: saved notes + images
 
 ### 2026-11-02 23:25 — Antigravity — Desktop/Mobile separation & ThemeToggle (User Feedback)
 Did: fixed CSS cascade collision where ui.css display definitions overrode Tailwind responsive utilities; wrapped topbar, m-header, tabbar, rail, and day-switcher in strict media queries so mobile elements never leak onto desktop and vice versa; built ThemeToggle component with light default theme and local storage persistence; added ThemeToggle to both AppHeader and MobileHeader; updated project rules (.agent/rules/life-dashboard.md and AGENTS.md) requiring strict desktop (1440x900) and mobile (390x844) parity and light default theme across every module; took live screenshots and verified on production.
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (16 passed) int ✅ (5 passed) e2e ✅ (16 passed, 3 skipped for viewport) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅ (verified desktop and mobile layouts live via Playwright screenshots)
 Commits: a70e43d, 55cb27b, 7bad01f (dropdown alignment & custom scrollbar)
-Next: Goal 2 / M2 (Trackers + Money: V4 & V5)
+Next: V3a Canvas: editor + Scratch
+
+### 2026-11-03 16:15 — Antigravity — V3a Canvas: editor + Scratch
+Did: installed TipTap v3 packages (3.32.2) and idb (8.0.4); updated shell (AppHeader and TabBar to 6 columns with Canvas, ShortcutsDialog with `g c`, `Ctrl+Alt+M`, `Ctrl+S`); built pure domain logic (`fitWithin`, `looksLikeMarkdown`, `titleFromText`, `imageRefs`, `unreferencedPaths`); built canvas modules (`editor.ts` with custom `CanvasImage` node, `paste.ts` with `cleanPastedHtml` and smart paste analyzer, `markdown.ts` with exact AST serializer, `images.ts` with client-side WebP shrinking, `scratch-store.ts` with IndexedDB persistence); built `/canvas` client-side editor with toolbar, tab ownership via Web Locks + BroadcastChannel, Clear Scratch with 10s Undo toast, Copy as Markdown, and desktop/mobile parity; wrote unit and e2e test suites.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (32 passed) int ✅ (5 passed) e2e ✅ (20 passed, 7 skipped for viewport) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: feat(v3a): Canvas page, TipTap v3 Scratch editor, IndexedDB persistence, tests
+Problems / surprises: Web Locks in React 19 fast-mount required abort signal and module-level lock persistence to prevent double-mount contention
+Next: V3b Canvas: saved notes + images

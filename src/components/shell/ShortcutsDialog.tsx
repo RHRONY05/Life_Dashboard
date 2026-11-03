@@ -62,6 +62,10 @@ export function ShortcutsDialog() {
             e.preventDefault();
             router.push("/");
             return;
+          case "c":
+            e.preventDefault();
+            router.push("/canvas");
+            return;
           case "r":
           case "k": // Support both 'r' and 'k' for Trackers
             e.preventDefault();
@@ -95,11 +99,19 @@ export function ShortcutsDialog() {
       group: "Navigation",
       items: [
         { keys: ["g", "t"], desc: "Go to Today" },
+        { keys: ["g", "c"], desc: "Go to Canvas" },
         { keys: ["g", "r"], desc: "Go to Trackers" },
         { keys: ["g", "m"], desc: "Go to Money" },
         { keys: ["g", "w"], desc: "Go to Renewals" },
         { keys: ["g", "s"], desc: "Go to Settings" },
         { keys: ["?"], desc: "Shortcuts dialog" },
+      ],
+    },
+    {
+      group: "Canvas",
+      items: [
+        { keys: ["Ctrl", "Alt", "M"], desc: "Copy page as Markdown" },
+        { keys: ["Ctrl", "S"], desc: "Save Scratch as note / Save note" },
       ],
     },
     {

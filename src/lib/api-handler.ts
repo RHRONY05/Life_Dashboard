@@ -47,7 +47,7 @@ export function handleApiError(err: unknown): NextResponse {
     return NextResponse.json(
       {
         error: "conflict",
-        details: { reason: err.reason },
+        details: { reason: err.reason, ...(err.details || {}) },
       },
       { status: 409 }
     );

@@ -93,3 +93,40 @@ export interface TaskListDto {
   open: TaskDto[];
   done: TaskDto[];
 }
+
+export const CreateNoteSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(120, "Title must be 120 characters or less"),
+  doc: z.record(z.string(), z.unknown()).nullable().optional(),
+  bodyMd: z
+    .string()
+    .max(200000, "Markdown body must be 200,000 characters or less"),
+});
+
+export type CreateNoteInput = z.infer<typeof CreateNoteSchema>;
+
+export const UpdateNoteSchema = z.object({
+  baseUpdatedAt: z.string().min(1, "baseUpdatedAt is required"),
+  title: z.string().trim().min(1).max(120).optional(),
+  doc: z.record(z.string(), z.unknown()).nullable().optional(),
+  bodyMd: z.string().max(200000).optional(),
+});
+
+export type UpdateNoteInput = z.infer<typeof UpdateNoteSchema>;
+
+export interface NoteSummaryDto {
+  id: string;
+  title: string;
+  snippet: string;
+  createdBy: string;
+  updatedAt: string;
+}
+
+export interface NoteDto extends NoteSummaryDto {
+  doc: Record<string, unknown> | null;
+  bodyMd: string;
+  createdAt: string;
+}

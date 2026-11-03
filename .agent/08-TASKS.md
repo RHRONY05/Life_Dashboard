@@ -64,7 +64,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 <!-- ─── end of M1: stop here and give the milestone report ─── -->
 
-- [ ] **V3a Canvas: editor + Scratch**
+- [ ] **V3a Canvas: editor + Scratch** — in progress: Antigravity
   - Read 01 (CV1–CV8), 06 `/canvas`, 07 §8, 10-STATES "Canvas", rules ("Scratch never leaves the browser"), and design `desktop/08-canvas.html`, `mobile/09-canvas.html`, `mobile/10-canvas-notes.html`, `states.html` → "Canvas".
   - Install the TipTap v3 packages and `idb` (02 Stack). Check the current v3 docs for each package name, the Markdown extension (parse on paste, serialise on copy) and the clipboard hooks; record the versions in PROGRESS.md.
   - Shell: add **Canvas** (`clipboard-paste`) second in `AppHeader` and `TabBar` (now 6 columns), `g c`, and the Canvas rows in the shortcuts dialog (06).
