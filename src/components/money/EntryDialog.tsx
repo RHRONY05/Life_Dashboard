@@ -171,33 +171,57 @@ export function EntryDialog({
               </div>
             </div>
 
-            {/* Amount */}
-            <div>
-              <label
-                htmlFor="iou-amount-input"
-                className="block text-[var(--text-xs)] font-semibold text-[var(--ink-2)] mb-1"
-              >
-                Amount in taka
-              </label>
-              <div className="input flex items-center h-10 px-3">
-                <span className="taka text-[var(--ink-3)] font-semibold mr-1">
-                  ৳
-                </span>
-                <input
-                  id="iou-amount-input"
-                  type="number"
-                  min="1"
-                  max="10000000"
-                  step="1"
-                  value={amount}
-                  onChange={(e) => {
-                    setAmount(e.target.value);
-                    setError(null);
-                  }}
-                  placeholder="500"
-                  className="w-full bg-transparent border-0 outline-none font-mono text-[var(--text-base)]"
-                  required
-                />
+            {/* Amount and Date side by side per design states.html */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Amount */}
+              <div>
+                <label
+                  htmlFor="iou-amount-input"
+                  className="block text-[var(--text-xs)] font-semibold text-[var(--ink-2)] mb-1"
+                >
+                  Amount in taka
+                </label>
+                <div className="input flex items-center h-10 px-3">
+                  <span className="taka text-[var(--ink-3)] font-semibold mr-1">
+                    ৳
+                  </span>
+                  <input
+                    id="iou-amount-input"
+                    type="number"
+                    min="1"
+                    max="10000000"
+                    step="1"
+                    value={amount}
+                    onChange={(e) => {
+                      setAmount(e.target.value);
+                      setError(null);
+                    }}
+                    placeholder="500"
+                    className="w-full bg-transparent border-0 outline-none font-mono text-[var(--text-base)]"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Date */}
+              <div>
+                <label
+                  htmlFor="iou-date-input"
+                  className="block text-[var(--text-xs)] font-semibold text-[var(--ink-2)] mb-1"
+                >
+                  Date
+                </label>
+                <div className="input flex items-center h-10 px-3">
+                  <input
+                    id="iou-date-input"
+                    type="date"
+                    max={todayIn(new Date(), "Asia/Dhaka")}
+                    value={occurredOn}
+                    onChange={(e) => setOccurredOn(e.target.value)}
+                    className="w-full bg-transparent border-0 outline-none font-mono text-[var(--text-sm)]"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
@@ -218,27 +242,6 @@ export function EntryDialog({
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="e.g. lunch at canteen, bus ticket"
                   className="w-full bg-transparent border-0 outline-none text-[var(--text-sm)]"
-                />
-              </div>
-            </div>
-
-            {/* Date */}
-            <div>
-              <label
-                htmlFor="iou-date-input"
-                className="block text-[var(--text-xs)] font-semibold text-[var(--ink-2)] mb-1"
-              >
-                Date
-              </label>
-              <div className="input flex items-center h-10 px-3">
-                <input
-                  id="iou-date-input"
-                  type="date"
-                  max={todayIn(new Date(), "Asia/Dhaka")}
-                  value={occurredOn}
-                  onChange={(e) => setOccurredOn(e.target.value)}
-                  className="w-full bg-transparent border-0 outline-none font-mono text-[var(--text-sm)]"
-                  required
                 />
               </div>
             </div>

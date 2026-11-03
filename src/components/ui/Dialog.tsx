@@ -17,7 +17,7 @@ export const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={clsx(
-      "scrim fixed inset-0 z-50 bg-black/45 backdrop-blur-[1px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 grid place-items-center p-4",
+      "fixed inset-0 z-50 bg-black/45 backdrop-blur-[1px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -33,25 +33,24 @@ export const DialogContent = React.forwardRef<
   }
 >(({ className, children, wide = false, hideClose = false, ...props }, ref) => (
   <DialogPortal>
-    <DialogOverlay>
-      <DialogPrimitive.Content
-        ref={ref}
-        className={clsx(
-          "dialog relative z-50 w-full max-w-[520px] bg-surface rounded-xl shadow-lg border border-frame p-[22px_24px_20px] focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          wide && "max-w-[640px]",
-          className
-        )}
-        {...props}
-      >
-        {children}
-        {!hideClose && (
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none text-ink-2 hover:text-ink cursor-pointer">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        )}
-      </DialogPrimitive.Content>
-    </DialogOverlay>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={clsx(
+        "dialog fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] w-[calc(100vw-2rem)] max-w-[520px] max-h-[calc(100dvh-2rem)] overflow-y-auto bg-surface rounded-xl shadow-lg border border-frame p-[22px_24px_20px] focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
+        wide && "max-w-[640px]",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      {!hideClose && (
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none text-ink-2 hover:text-ink cursor-pointer">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      )}
+    </DialogPrimitive.Content>
   </DialogPortal>
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
