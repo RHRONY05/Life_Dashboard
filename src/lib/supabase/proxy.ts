@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { Database } from "@/types/database";
 
-if (typeof window === "undefined") {
+if (typeof window === "undefined" && !process.env.VERCEL) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const dns = require("node:dns");
@@ -95,6 +95,22 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
+  }
+
+  if (user) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-life-user-id", user.id);
+    requestHeaders.set("x-life-user-email", user.email || "");
+    const modifiedResponse = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+    // Preserve any cookies set by supabase
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      modifiedResponse.cookies.set(cookie);
+    });
+    return modifiedResponse;
   }
 
   return supabaseResponse;

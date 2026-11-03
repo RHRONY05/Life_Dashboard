@@ -39,6 +39,15 @@ export function AppHeader({
 }: AppHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [prevPath, setPrevPath] = React.useState(pathname);
+  const [optimisticPath, setOptimisticPath] = React.useState<string | null>(null);
+
+  if (prevPath !== pathname) {
+    setPrevPath(pathname);
+    setOptimisticPath(null);
+  }
+
+  const currentPath = optimisticPath ?? pathname;
 
   const navItems = [
     { href: "/", label: "Today", icon: CalendarCheck },
@@ -57,6 +66,9 @@ export function AppHeader({
 
   return (
     <header className="topbar hidden md:flex h-[60px] items-center gap-6 px-8 bg-surface border-b border-frame z-30 relative select-none">
+      {optimisticPath && optimisticPath !== pathname && (
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent animate-pulse" />
+      )}
       {/* Brand */}
       <Link href="/" className="brand flex items-center gap-2.5 font-display font-extrabold text-[15px] tracking-tight min-w-[220px]">
         <Logo />
@@ -68,13 +80,19 @@ export function AppHeader({
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+              ? currentPath === "/"
+              : currentPath.startsWith(item.href);
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
+              onClick={() => {
+                if (item.href !== pathname) {
+                  setOptimisticPath(item.href);
+                }
+              }}
               className={clsx(
                 "flex items-center gap-2 h-9 px-3.5 rounded-md text-sm font-medium transition-colors",
                 isActive

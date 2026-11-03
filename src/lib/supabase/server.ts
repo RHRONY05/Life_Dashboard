@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { Database } from "@/types/database";
 
-if (typeof window === "undefined") {
+if (typeof window === "undefined" && !process.env.VERCEL) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const dns = require("node:dns");
