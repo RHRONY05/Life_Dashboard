@@ -4,6 +4,8 @@ import { CreateNoteSchema } from "@/lib/schemas";
 import { createNote, getNotes } from "@/lib/services/notes";
 import { handleApiError } from "@/lib/api-handler";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const ctx = await requireOwner();

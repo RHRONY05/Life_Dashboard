@@ -779,6 +779,18 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     }
   }, [userId, triggerNoteSave]);
 
+  const handleBackToPages = useCallback(async () => {
+    if (activeNoteIdRef.current && editorRef.current) {
+      triggerNoteSave();
+      tabScrollMapRef.current.set(activeNoteIdRef.current, window.scrollY);
+    }
+    setActiveNoteId(null);
+    setActiveNote(null);
+    setActiveNoteTitle("");
+    setStaleConflictNote(null);
+    setMobileTab("notes");
+  }, [triggerNoteSave]);
+
   // Select Note / Page
   const handleSelectNote = useCallback(
     async (noteId: string) => {
@@ -1406,7 +1418,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <IconButton
                 aria-label="Back to Pages"
-                onClick={() => setMobileTab("notes")}
+                onClick={handleBackToPages}
               >
                 <ArrowLeft className="w-4 h-4" />
               </IconButton>

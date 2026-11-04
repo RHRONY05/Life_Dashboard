@@ -4,6 +4,8 @@ import { UpdateNoteSchema } from "@/lib/schemas";
 import { deleteNote, getNote, updateNote } from "@/lib/services/notes";
 import { handleApiError } from "@/lib/api-handler";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

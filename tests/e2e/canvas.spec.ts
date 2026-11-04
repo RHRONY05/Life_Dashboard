@@ -1,6 +1,17 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Canvas Scratch E2E", () => {
+  test.beforeEach(async ({ request }) => {
+    // Delete all notes for e2e user so test starts in a clean state
+    const res = await request.get("/api/notes");
+    if (res.ok()) {
+      const data = await res.json();
+      for (const n of data.notes || []) {
+        await request.delete(`/api/notes/${n.id}`);
+      }
+    }
+  });
+
   test("Desktop: loads Scratch, edits text, persists across reload, copies markdown and clears with undo", async ({
     page,
     isMobile,
@@ -379,10 +390,12 @@ test.describe("Canvas Scratch E2E", () => {
     const newSubPageBtn = page.locator(".subpages .add");
     await expect(newSubPageBtn).toBeVisible();
     await newSubPageBtn.click();
-    await expect(page.locator("[data-sonner-toast]", { hasText: "Page created" })).toBeVisible();
+
+    // Wait until child tab is created and loaded into editor
+    await expect(page.locator(".ptabs .ptab")).toHaveCount(3);
+    await expect(titleInput).toHaveValue("Untitled");
 
     // Set title of child to "Backend Tips"
-    await expect(titleInput).toBeVisible();
     await titleInput.fill("Backend Tips");
     await titleInput.blur();
     await page.waitForTimeout(1000);
