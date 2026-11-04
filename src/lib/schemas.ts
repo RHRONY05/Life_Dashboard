@@ -635,4 +635,196 @@ export function isAgentActor(createdBy?: string | null): boolean {
   return Boolean(createdBy && createdBy !== "owner" && createdBy !== "human");
 }
 
+// ============ Renewals ============
+export const RenewalCategories = [
+  "subscription",
+  "hosting",
+  "domain",
+  "credit",
+] as const;
+export type RenewalCategoryType = (typeof RenewalCategories)[number];
+
+export const RenewalCurrencies = ["BDT", "USD"] as const;
+export type RenewalCurrencyType = (typeof RenewalCurrencies)[number];
+
+export const RenewalCycles = ["monthly", "yearly", "one_time", "free"] as const;
+export type RenewalCycleType = (typeof RenewalCycles)[number];
+
+export const RenewalStatuses = ["active", "ended"] as const;
+export type RenewalStatusType = (typeof RenewalStatuses)[number];
+
+export const CreateRenewalSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, "Name is required")
+      .max(80, "Name must be 80 characters or less"),
+    category: z.enum(RenewalCategories),
+    project: z
+      .string()
+      .trim()
+      .max(60, "Project must be 60 characters or less")
+      .nullable()
+      .optional(),
+    manageUrl: z
+      .string()
+      .trim()
+      .max(500, "URL must be 500 characters or less")
+      .regex(/^https?:\/\//, "URL must start with http:// or https://")
+      .nullable()
+      .optional()
+      .or(z.literal("")),
+    amount: z
+      .number()
+      .min(0, "Amount must be at least 0")
+      .multipleOf(0.01, "Amount can have at most 2 decimal places")
+      .nullable()
+      .optional(),
+    currency: z.enum(RenewalCurrencies).default("BDT"),
+    cycle: z.enum(RenewalCycles),
+    renewsOn: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)")
+      .nullable()
+      .optional()
+      .or(z.literal("")),
+    autoRenew: z.boolean().default(false).optional(),
+    remindDaysBefore: z.number().int().min(0).max(60).default(7).optional(),
+    notes: z
+      .string()
+      .trim()
+      .max(500, "Notes must be 500 characters or less")
+      .nullable()
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.cycle !== "free") {
+        return !!data.renewsOn && data.renewsOn.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Pick the date it renews or ends",
+      path: ["renewsOn"],
+    }
+  );
+
+export type CreateRenewalInput = z.infer<typeof CreateRenewalSchema>;
+
+export const UpdateRenewalSchema = z.object({
+  name: z.string().trim().min(1).max(80).optional(),
+  category: z.enum(RenewalCategories).optional(),
+  project: z.string().trim().max(60).nullable().optional(),
+  manageUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .regex(/^https?:\/\//)
+    .nullable()
+    .optional()
+    .or(z.literal("")),
+  amount: z
+    .number()
+    .min(0)
+    .multipleOf(0.01)
+    .nullable()
+    .optional(),
+  currency: z.enum(RenewalCurrencies).optional(),
+  cycle: z.enum(RenewalCycles).optional(),
+  renewsOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional()
+    .or(z.literal("")),
+  autoRenew: z.boolean().optional(),
+  remindDaysBefore: z.number().int().min(0).max(60).optional(),
+  status: z.enum(RenewalStatuses).optional(),
+  notes: z.string().trim().max(500).nullable().optional(),
+});
+
+export type UpdateRenewalInput = z.infer<typeof UpdateRenewalSchema>;
+
+export interface RenewalDto {
+  id: string;
+  name: string;
+  category: RenewalCategoryType;
+  project: string | null;
+  manageUrl: string | null;
+  amount: number | null;
+  currency: RenewalCurrencyType;
+  cycle: RenewalCycleType;
+  renewsOn: string | null;
+  autoRenew: boolean;
+  remindDaysBefore: number;
+  status: RenewalStatusType;
+  notes: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  daysLeft: number | null;
+  state: "ended" | "no_date" | "overdue" | "due_soon" | "upcoming";
+  dueLabel: string;
+  actionLine: string;
+}
+
+export interface RenewalsResponseDto {
+  renewals: RenewalDto[];
+  monthly: { BDT: number; USD: number };
+  counts: { overdue: number; dueSoon: number };
+}
+
+// ============ Quick Links ============
+export const LinkIcons = [
+  "link",
+  "book-open",
+  "graduation-cap",
+  "briefcase",
+  "user",
+  "github",
+  "linkedin",
+  "globe",
+  "code",
+  "mail",
+] as const;
+export type LinkIconType = (typeof LinkIcons)[number];
+
+export const CreateLinkSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(40, "Title must be 40 characters or less"),
+  url: z
+    .string()
+    .trim()
+    .url("Invalid URL")
+    .max(500, "URL must be 500 characters or less")
+    .regex(/^https?:\/\//, "URL must start with http:// or https://"),
+  icon: z.enum(LinkIcons).default("link"),
+});
+
+export type CreateLinkInput = z.infer<typeof CreateLinkSchema>;
+
+export const UpdateLinkSchema = z.object({
+  title: z.string().trim().min(1).max(40).optional(),
+  url: z.string().trim().url().max(500).regex(/^https?:\/\//).optional(),
+  icon: z.enum(LinkIcons).optional(),
+});
+
+export type UpdateLinkInput = z.infer<typeof UpdateLinkSchema>;
+
+export interface LinkDto {
+  id: string;
+  title: string;
+  url: string;
+  icon: string;
+  position: number;
+  createdAt: string;
+}
+
+
+
 

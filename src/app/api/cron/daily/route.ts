@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import { processRemindersAndCleanup } from "@/lib/reminders";
+import { getAdminClient } from "@/lib/supabase/admin";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -8,11 +12,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Stub response for V2 (real reminder logic implemented in V6)
-  return NextResponse.json({
-    ok: true,
-    sent: 0,
-    reminders: 0,
-    auditDeleted: 0,
-  });
+  try {
+    const admin = getAdminClient();
+    const result = await processRemindersAndCleanup(admin);
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error("Cron execution error:", err);
+    return NextResponse.json(
+      { error: "Cron execution failed" },
+      { status: 500 }
+    );
+  }
 }

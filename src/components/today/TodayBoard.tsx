@@ -10,6 +10,8 @@ import {
   TrackerSummaryDto,
   SpendingSummaryDto,
   MoneyTotalsDto,
+  RenewalDto,
+  LinkDto,
 } from "@/lib/schemas";
 import { DayColumn } from "./DayColumn";
 import { ListsSection } from "./ListsSection";
@@ -27,6 +29,8 @@ interface TodayBoardProps {
   initialToPayTotal?: number;
   initialToPayCount?: number;
   initialHasOverdueToPay?: boolean;
+  initialUpcomingRenewals?: RenewalDto[];
+  initialLinks?: LinkDto[];
 }
 
 export function TodayBoard({
@@ -38,6 +42,8 @@ export function TodayBoard({
   initialToPayTotal,
   initialToPayCount,
   initialHasOverdueToPay,
+  initialUpcomingRenewals = [],
+  initialLinks = [],
 }: TodayBoardProps) {
   const [board, setBoard] = useState<BoardResponse>(initialBoard);
   const [lists, setLists] = useState<TaskListDto[]>(initialLists);
@@ -834,6 +840,8 @@ export function TodayBoard({
           toPayTotal={initialToPayTotal}
           toPayCount={initialToPayCount}
           hasOverdueToPay={initialHasOverdueToPay}
+          upcomingRenewals={initialUpcomingRenewals}
+          links={initialLinks}
         />
       </div>
     </>

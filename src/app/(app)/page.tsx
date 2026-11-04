@@ -6,6 +6,7 @@ import { listTrackers } from "@/lib/services/trackers";
 import { getSpendingSummary } from "@/lib/services/spending";
 import { getMoneyOverview } from "@/lib/services/money";
 import { listPaymentTodos } from "@/lib/services/payment-todos";
+import { listRenewals } from "@/lib/services/renewals";
 import { todayIn } from "@/lib/domain/dates";
 import { TodayBoard } from "@/components/today/TodayBoard";
 
@@ -13,15 +14,23 @@ const APP_TIMEZONE = process.env.APP_TIMEZONE || "Asia/Dhaka";
 
 export default async function TodayPage() {
   const ctx = await requireOwner();
-  const [board, listsResult, trackers, spendingSummary, moneyOverview, paymentTodos] =
-    await Promise.all([
-      getBoard(ctx),
-      getLists(ctx),
-      listTrackers(ctx, false),
-      getSpendingSummary(ctx),
-      getMoneyOverview(ctx),
-      listPaymentTodos(ctx),
-    ]);
+  const [
+    board,
+    listsResult,
+    trackers,
+    spendingSummary,
+    moneyOverview,
+    paymentTodos,
+    upcomingRenewals,
+  ] = await Promise.all([
+    getBoard(ctx),
+    getLists(ctx),
+    listTrackers(ctx, false),
+    getSpendingSummary(ctx),
+    getMoneyOverview(ctx),
+    listPaymentTodos(ctx),
+    listRenewals(ctx, "active", 14),
+  ]);
 
   const today = todayIn(new Date(), APP_TIMEZONE);
   const hasOverdueToPay = paymentTodos.open.some(
@@ -48,6 +57,7 @@ export default async function TodayPage() {
         initialToPayTotal={paymentTodos.openTotal}
         initialToPayCount={paymentTodos.open.length}
         initialHasOverdueToPay={hasOverdueToPay}
+        initialUpcomingRenewals={upcomingRenewals.renewals}
       />
     </div>
   );
