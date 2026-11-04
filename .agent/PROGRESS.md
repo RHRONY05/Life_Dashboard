@@ -8,11 +8,11 @@
 ## Now
 | | |
 |---|---|
-| **Phase** | M3b Canvas v2 + Money v2 (in progress) |
-| **Next task** | V5a Money v2: IOU ledger |
+| **Phase** | M5 Agents + final |
+| **Next task** | V8 MCP server + local Lighthouse |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-04 by Antigravity (V3c & V3d complete and deployed, starting V5a) |
+| **Last updated** | 2026-11-04 by Antigravity (M4 complete: V6 Renewals + daily email, V7 Settings: keys, audit, links) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -220,4 +220,17 @@ Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (77 passed) int ✅ (27 pass
 Deploy: https://life-rony.vercel.app · prod check ✅ (aliasAssigned: true, HTTP 200)
 Commits: df02cb8 feat(v5b): To pay list, payment todos, past months, search, and CSV export
 Milestone: M3b Canvas v2 + Money v2 complete (docs/milestones/M3b.md)
-Next: Milestone 4 (V6 Renewals + daily email, V7 Settings)
+
+### 2026-11-04 16:15 — Antigravity — V6 Renewals + daily email
+Did: built pure domain logic in `src/lib/domain/renewals.ts` (currency normalisation, renewal totals per currency, cycle advance dates, renewal group bucketing, reminder stages 7/1/0/-1/20); created email transport & rendering in `src/lib/email.ts` with Gmail SMTP and mocked file transport; implemented reminder processing & audit cleanup in `src/lib/reminders.ts` and daily cron endpoint `GET /api/cron/daily` with Bearer auth; implemented renewals service in `src/lib/services/renewals.ts` and 4 owner API routes (/api/renewals, /api/renewals/[id], /api/renewals/[id]/renewed, /api/renewals/[id]/ended); built full Swiss Ink Renewals UI (`RenewalsClient`, `RenewalCard`, `RenewalDialog`, `RenewalsSummary`, active/paused/ended groups, overdue banner, Renewed action with 10s undo toast, TodayRail Coming up renewals block, nav badge count); added comprehensive unit and integration tests.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (88 passed) int ✅ (29 passed) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (cron daily processed)
+Commits: c3c76a1 feat(v6): Renewals page, domain logic, reminder cron, email service, and tests
+
+### 2026-11-04 17:35 — Antigravity — V7 API keys, activity log, Settings, quick links (M4 complete)
+Did: built pure domain logic in `src/lib/domain/keys.ts` (`generateKey`, `keyPrefix`, `hashKey`, `looksLikeKey`, `rateLimit`, `SCOPES`, `TOOL_SCOPE` map covering all 38 tools) and `src/lib/domain/audit.ts` (`sanitiseArgs` dropping sensitive keys & truncating, `summarise` generating <=200 char descriptions); built services for API keys, audit logging, and quick links (`src/lib/services/keys.ts`, `audit.ts`, `links.ts`); implemented API endpoints (/api/keys, /api/keys/[id]/revoke, /api/audit, /api/links, /api/links/[id], /api/email/test); built complete Swiss Ink Settings UI (`KeyTable` with scope chips, relative timestamps, and revoke button; `KeyDialog` with preset quick picks, scope matrix, single-exposure secret reveal, Antigravity/Claude Code/Other snippets, and close confirmation; `AuditTable` with time, agent, summary, result badge, duration, agent filter, and cursor pagination; `LinkDialog` with 10 visual icons; `SettingsClient` with sidebar anchor navigation, endpoint copy, and instant email test banner; hooked live quick links into Today board & rail); wrote comprehensive unit, integration, and Playwright E2E test suites (desktop and mobile passing).
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (105 passed) int ✅ (36 passed) e2e ✅ (3 passed, 2 skipped for viewport) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: fe9551d feat(v7): API keys, activity log, Settings, quick links, and email test
+Milestone: M4 Renewals + Settings complete (docs/milestones/M4.md)
+Next: Milestone 5 (V8 MCP server + local Lighthouse, V9 Seed & connect agents, V10 Final checks & learning note)

@@ -142,14 +142,14 @@ M3b (Canvas v2 + Money v2) is done after M3 and before V6, in the order V3c → 
 
 <!-- ─── end of M3b: stop here and give the milestone report ─── -->
 
-- [ ] **V6 Renewals + daily email**
+- [x] **V6 Renewals + daily email** — Antigravity (2026-11-04)
   - `domain/renewals.ts` (07 §4), `services/renewals.ts`, routes (04 Renewals), `/renewals` per design `05-renewals` (groups, overdue banner, Renewed + Undo, `RenewalDialog`), nav badge, "Coming up" rail block.
   - `src/lib/email.ts` (nodemailer Gmail SMTP; mock file transport), `src/lib/reminders.ts`, the real `GET /api/cron/daily` (04), `POST /api/email/test`.
   - **Tests:** unit `renewals.test.ts`; integration renewals + cron (09); e2e `renewals.spec.ts`.
   - **AC:** the 07 §4.3 totals example shows "≈ ৳1,450 / month · $21.00 / month"; the cron integration test passes (one digest, then idempotent); with the real Gmail app password, the test email arrives in Rony's inbox (local run).
   - **Prod check:** deploy; call the production cron once with the secret (from your shell, value never printed) and confirm `{ ok: true }`. The production test email is checked in V7, once Settings exists.
 
-- [ ] **V7 API keys, activity log, Settings**
+- [x] **V7 API keys, activity log, Settings** — Antigravity (2026-11-04)
   - `domain/keys.ts`, `domain/audit.ts` (07 §6–7), `services/keys.ts`, `services/audit.ts`, `services/links.ts`, routes (04 Agents, Links, Email).
   - `/settings` per design `06-settings`: `KeyTable`, `KeyDialog` (both steps, suggested names pre-fill scopes, show-once confirm), `AuditTable` (empty until V8, filter, Load more), Quick links editor, Email test. `LinkGrid` / `LinkStrip` on Today now read real links.
   - **Tests:** unit `keys.test.ts`, `audit.test.ts`; integration keys + agent-context cases (09); e2e `settings.spec.ts`.
