@@ -103,7 +103,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 M3b (Canvas v2 + Money v2) is done after M3 and before V6, in the order V3c → V3d → V5a → V5b. The numbers say which module a task belongs to, not the build order.
 
-- [ ] **V3c Canvas v2: fixes, pages tree, tabs** — in progress: Antigravity
+- [x] **V3c Canvas v2: fixes, pages tree, tabs** — complete & deployed
   - **First run `/sync-docs`** (`workflows/sync-docs.md`) and commit its `docs:` fixes, so this task starts from docs that match the code (the M2–M3 fixes changed Canvas, navigation and dialogs).
   - Read 01 (CV3, CV6, CV9–CV12), 03 "Canvas pages", 04 Notes, 06 `/canvas` incl. "Canvas v2", 07 §8.3, 8.3b, 8.8, 8.9, 10-STATES Canvas, and design `desktop/08b-canvas-pages.html`, `mobile/10-canvas-notes.html`, `states.html` → "Canvas v2".
   - **Fixes first, each with a test that failed before:** (1) the save queue, 07 §8.9 rules 1–6 (`lib/canvas/save-queue.ts`); the e2e "type 10 s with a 1.5 s delayed PATCH" case must show no conflict. (2) Plain-text copy, 07 §8.3b (`docToPlainText` as the `clipboardTextSerializer`) and `Ctrl+Shift+C`. (3) Autolink only for `http(s)://` and `www.` (07 §8.3b). (4) Pages with `doc = null` load with `contentType: "markdown"` (06). Deploy these on their own (`fix(canvas): …`) before the rest.
@@ -114,7 +114,7 @@ M3b (Canvas v2 + Money v2) is done after M3 and before V6, in the order V3c → 
   - **AC (browser):** with DevTools throttling on Slow 4G, type in a page for 30 s → never a conflict message; paste `docker run -d --rm --name deeptutor -p 127.0.0.1:3782:3782 -v deeptutor-data:/app/data ghcr.io/hkuds/deeptutor:latest` as a bullet → no link appears; select the bullet, `Ctrl+C`, paste into Notepad/PowerShell → the command exactly; build the DevTools page from Rony's Notion page text (pasted) with sub-pages "Backend tips" and "UI-UX tips" → breadcrumb, Sub-pages list and tree match D08b; open 4 pages, reload → same tabs; fold "Tips", reload → folded; move "Backend tips" to the top level and back; try to move "DevTools" under its own child → refused; pin DevTools → Pinned group. Compare with D08b / M10 at 1440×900 and 390×844, light and dark.
   - **Prod check:** deploy; on production, edit the existing "How to run deep tutor?" page for a minute → no warning; copy its docker line into a terminal → it runs as written.
 
-- [ ] **V3d Canvas v2: agent-ready pages**
+- [x] **V3d Canvas v2: agent-ready pages** — complete & deployed
   - Read 01 (CV8, CV13, CV14), 03 "Canvas pages" (agent edits), 05 §3–4 (the 6 page tools and the rules under the tool table), 07 §6 (summaries), 8.9 rule 7, 8.10, 10-STATES Canvas v2.
   - `domain/canvas.ts`: `headingsOf`, `appendToSection`, `replaceSection` (07 §8.10). `services/notes.ts` (ctx-based, so V8 only wires them): `listNotesTree` (paths, depth, headings), `getNoteForAgent` (by id/path/title, `ambiguous`, children), `createNote` with `parent`, `appendToNote`, `replaceNoteSection`, `updateNote` (all three snapshot into `prev_*`, set `doc = null`, keep `created_by`, `expectedUpdatedAt` where 05 says), `undoAgentEdit`. Zod schemas for the 6 tools in `schemas.ts`, descriptions exactly as in 05. No delete, move or pin on the agent path.
   - Route `POST /api/notes/[id]/undo-agent-edit`. UI: "Edited by Muse · 5m ago · Undo" line + confirm; refresh on focus / tab switch / 60 s with `?since=` (07 §8.9 rule 7); the silent reload + toast, and the conflict line with See theirs / Keep mine (06). Remove the old full-width 409 banner.
@@ -122,7 +122,7 @@ M3b (Canvas v2 + Money v2) is done after M3 and before V6, in the order V3c → 
   - **AC (browser):** with DevTools open in a tab, run a small script (`scripts/dev-agent-edit.ts`, local only, uses an agent ctx named "Muse") that appends "- WeasyPrint" under "Libraries" → within 60 s the page shows it formatted as a bullet in the right section, toast "DevTools was updated by Muse", line "Edited by Muse"; Undo → gone; repeat while typing → the conflict line, Keep mine keeps your text; the tree and paths from `listNotesTree` match the pane.
   - **Prod check:** deploy; no visible change besides V3c (agents connect in V8/V9). Note in PROGRESS that V8 must register the 6 page tools.
 
-- [ ] **V5a Money v2: IOU ledger**
+- [ ] **V5a Money v2: IOU ledger** — in progress: Antigravity
   - Read 01 (M4–M8), 04 Money (IOUs) incl. the new routes and `Person.recent`, 06 IOUs tab, 07 §3c, 10-STATES "Money v2", design `desktop/07b-money-ious-ledger.html`, `mobile/07b-money-ious-ledger.html`, `states.html` → "Money v2".
   - **Fix first:** the `via …` badge in `HistoryPane` and `SpendList` compares with `"human"`; the stored owner value is `"owner"` (03), so every entry shows "via owner". Compare with `"owner"` everywhere and add a test. Deploy on its own.
   - `domain/money.ts`: `withBalances`, `sinceSettled`, `reminderText`, `reminderTask`, `parseIouText` (07 §3c). `services/money.ts`: `updateEntry`, `recent`/`lastNote` on `Person`, `balanceAfter` on entries, `getReminder`, `importIous` (preview + one transaction). Routes per 04. Zod schemas.

@@ -207,7 +207,7 @@ export function HistoryPane({
         ) : (
           entries.map((entry) => {
             const isPos = entry.kind === "lent" || entry.kind === "paid";
-            const isAgent = entry.createdBy && entry.createdBy !== "human";
+            const isAgent = !!entry.createdBy && entry.createdBy !== "owner";
 
             let phrase = "";
             if (entry.kind === "lent") {

@@ -144,7 +144,7 @@ export async function createExpense(
     throw new InvalidInputError("Cannot log expenses for future dates");
   }
 
-  const createdBy = ctx.actor.type === "agent" ? ctx.actor.name : "human";
+  const createdBy = ctx.actor.type === "agent" ? ctx.actor.name : "owner";
 
   const { data, error } = await ctx.db
     .from("expenses")

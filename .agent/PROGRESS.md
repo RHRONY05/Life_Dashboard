@@ -9,10 +9,10 @@
 | | |
 |---|---|
 | **Phase** | M3b Canvas v2 + Money v2 (in progress) |
-| **Next task** | V3c Canvas v2: fixes, pages tree, tabs (in progress) |
+| **Next task** | V5a Money v2: IOU ledger |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-04 by Antigravity (Goal 3b started, /sync-docs complete) |
+| **Last updated** | 2026-11-04 by Antigravity (V3c & V3d complete and deployed, starting V5a) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -203,4 +203,9 @@ Did: audited .agent/ docs against codebase for all changes outside tasks (strict
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (54 passed) int ✅ (19 passed) build ✅
 Deploy: — (docs sync)
 Commits: docs: sync docs with code (6 fixes)
-Next: V3c Canvas v2: fixes, pages tree, tabs
+### 2026-11-04 11:05 — Antigravity — V3c & V3d Canvas v2 (pages tree, tabs, agent-ready pages)
+Did: applied migration 20261104040000_life_canvas_pages.sql (`parent_id`, `pinned`, `body_md`, `prev_*` snapshot columns); backfilled 100% of existing notes to `body_md`; implemented SaveQueue rules 1-6 with concurrency protection; built pure markdown AST converter; implemented plain text clipboard serializer (`Ctrl+C` / `Ctrl+Shift+C`); restricted autolink filter; built pages tree up to 3 levels with cycle and depth detection; implemented 8-tab tabs bar with LRU eviction and localStorage persistence; built breadcrumb and sub-pages list; implemented folding state persistence; implemented agent-ready page tools (`listNotesTree`, `getNoteForAgent`, `createNoteForAgent`, `appendToNote`, `replaceNoteSection`, `updateNoteForAgent`, `undoAgentEdit`); built `.agent-line` with undo dialog, `.conflict-line` with 'See theirs' / 'Keep mine', and 60s background polling + visibilitychange listener; wrote comprehensive unit, integration, and E2E Playwright test suites (all 8 desktop + 1 mobile passing); verified Next.js 16 build; deployed to production and verified live check.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (67 passed) int ✅ (21 passed) e2e ✅ (9 passed) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (aliasAssigned: true)
+Commits: 40d18a4, 8cc5b70
+Next: V5a Money v2: IOU ledger

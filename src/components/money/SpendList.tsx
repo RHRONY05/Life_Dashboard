@@ -137,7 +137,7 @@ export function SpendList({
                 const catLabel =
                   CATEGORY_LABELS[expense.category] || expense.category;
                 const isAgent =
-                  expense.createdBy && expense.createdBy !== "human";
+                  !!expense.createdBy && expense.createdBy !== "owner";
 
                 return (
                   <div

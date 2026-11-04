@@ -165,6 +165,18 @@ describe("Money & Spending Integration Tests (09)", () => {
       );
 
       expect(res.expense.createdBy).toBe("Muse");
+
+      // Verify owner creates with createdBy: "owner"
+      const ownerRes = await createExpense(
+        ctx,
+        {
+          amount: 50,
+          category: "transport",
+          spentOn: "2026-11-02",
+        },
+        clock
+      );
+      expect(ownerRes.expense.createdBy).toBe("owner");
     });
   });
 
@@ -173,7 +185,7 @@ describe("Money & Spending Integration Tests (09)", () => {
       const clock = new Date("2026-11-02T12:00:00Z");
 
       // Rahim: lent 500, received 200
-      await createEntry(
+      const rahimLent = await createEntry(
         ctx,
         {
           personName: "Rahim",
@@ -183,6 +195,7 @@ describe("Money & Spending Integration Tests (09)", () => {
         },
         clock
       );
+      expect(rahimLent.entry.createdBy).toBe("owner");
       // Case-insensitive test: "rahim" matches "Rahim"
       await createEntry(
         ctx,

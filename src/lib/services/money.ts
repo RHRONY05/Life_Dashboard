@@ -211,7 +211,7 @@ export async function createEntry(
     personRow = newPerson;
   }
 
-  const createdBy = ctx.actor.type === "agent" ? ctx.actor.name : "human";
+  const createdBy = ctx.actor.type === "agent" ? ctx.actor.name : "owner";
 
   // Insert entry
   const { data: newEntry, error: insertEntryError } = await ctx.db
@@ -337,7 +337,7 @@ export async function settlePerson(
   }
 
   const todayIso = todayIn(clock, APP_TIMEZONE);
-  const createdBy = ctx.actor.type === "agent" ? ctx.actor.name : "human";
+  const createdBy = ctx.actor.type === "agent" ? ctx.actor.name : "owner";
 
   const { data: newEntry, error: insertError } = await ctx.db
     .from("iou_entries")
