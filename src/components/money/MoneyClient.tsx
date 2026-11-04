@@ -336,7 +336,7 @@ export function MoneyClient({
     }
 
     const data = await res.json();
-    setSummary(data.summary);
+    setSummary(data.summary || data);
 
     // Refresh days list
     const monthQuery = viewedMonth ? `?month=${viewedMonth}` : "";
@@ -368,7 +368,7 @@ export function MoneyClient({
     }
 
     const data = await res.json();
-    setSummary(data.summary);
+    setSummary(data.summary || data);
 
     const monthQuery = viewedMonth ? `?month=${viewedMonth}` : "";
     const refreshRes = await fetch(`/api/spending${monthQuery}`, { cache: "no-store" });
@@ -390,7 +390,7 @@ export function MoneyClient({
     }
 
     const data = await res.json();
-    setSummary(data.summary);
+    setSummary(data.summary || data);
 
     const monthQuery = viewedMonth ? `?month=${viewedMonth}` : "";
     const refreshRes = await fetch(`/api/spending${monthQuery}`, { cache: "no-store" });
@@ -426,10 +426,10 @@ export function MoneyClient({
   };
 
   const handleSaveBudget = async (budget: number | null) => {
-    const res = await fetch("/api/spending/budget", {
+    const res = await fetch("/api/settings/budget", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ budget }),
+      body: JSON.stringify({ monthlyBudget: budget }),
     });
 
     if (!res.ok) {
@@ -437,7 +437,7 @@ export function MoneyClient({
     }
 
     const data = await res.json();
-    setSummary(data.summary);
+    setSummary(data.summary || data);
 
     if (budget === null) {
       showToast("Removed monthly budget");
@@ -975,6 +975,7 @@ export function MoneyClient({
                 onLoadMore={handleLoadMoreSpending}
                 onUpdateExpense={handleUpdateExpense}
                 onDeleteExpense={handleDeleteExpense}
+                onAddExpense={handleAddExpense}
                 onFocusInput={() => quickSpendRef.current?.focusAmount()}
                 loadingMore={loadingMoreSpending}
                 searchQuery={searchQuery}

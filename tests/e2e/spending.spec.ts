@@ -81,6 +81,46 @@ test.describe("Spending E2E", () => {
     await expect(page.locator(".day-head b.num")).toContainText("৳120");
   });
 
+  test("collapses and expands day groups, and adds spend to day via + button", async ({ page, isMobile }) => {
+    test.skip(isMobile, "Desktop test");
+
+    await page.goto("/money");
+    await page.waitForLoadState("networkidle");
+
+    // Add a spend today if none exists
+    const amountInput = page.locator(".quick input[type='number']");
+    await amountInput.fill("50");
+    await amountInput.press("Enter");
+    await expect(page.locator(".spend").first()).toBeVisible();
+
+    // Find the day header toggle
+    const dayToggle = page.locator(".day-head button[aria-expanded]").first();
+    await expect(dayToggle).toHaveAttribute("aria-expanded", "true");
+
+    // Click to collapse
+    await dayToggle.click();
+    await expect(dayToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator(".spend").first()).not.toBeVisible();
+
+    // Click to expand again
+    await dayToggle.click();
+    await expect(dayToggle).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator(".spend").first()).toBeVisible();
+
+    // Click + button on the day header to open Add spend modal
+    await page.locator(".day-head button[aria-label^='Add spend to']").first().click();
+    await expect(page.getByRole("heading", { name: "Add spend" })).toBeVisible();
+
+    // Fill modal form and submit
+    await page.locator("#add-expense-amount").fill("25");
+    await page.getByRole("button", { name: "Transport" }).click();
+    await page.locator("#add-expense-note").fill("Rickshaw");
+    await page.getByRole("button", { name: "Add spend" }).click();
+
+    // Verify new spend added and visible
+    await expect(page.getByText("Rickshaw")).toBeVisible();
+  });
+
   test("mobile: adds and views spend", async ({ page, isMobile }) => {
     test.skip(!isMobile, "Mobile test");
 

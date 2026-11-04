@@ -15,11 +15,15 @@ import {
   Bot,
   Search,
   X,
+  ChevronDown,
+  ChevronRight,
+  Plus,
 } from "lucide-react";
 import {
   SpendingDayGroupDto,
   ExpenseDto,
   SpendingCategory,
+  CreateExpenseInput,
   UpdateExpenseInput,
   isAgentActor,
 } from "@/lib/schemas";
@@ -27,6 +31,7 @@ import { formatTaka } from "@/lib/domain/money";
 import { todayIn, addDays } from "@/lib/domain/dates";
 import { Illustration } from "@/components/illustrations/Illustration";
 import { EditExpenseDialog } from "./EditExpenseDialog";
+import { AddExpenseDialog } from "./AddExpenseDialog";
 import { Button } from "@/components/ui/Button";
 
 interface SpendListProps {
@@ -35,6 +40,7 @@ interface SpendListProps {
   onLoadMore: () => Promise<void>;
   onUpdateExpense: (id: string, input: UpdateExpenseInput) => Promise<void>;
   onDeleteExpense: (id: string) => Promise<void>;
+  onAddExpense?: (input: CreateExpenseInput) => Promise<void>;
   onFocusInput?: () => void;
   loadingMore?: boolean;
   searchQuery?: string;
@@ -95,6 +101,7 @@ export function SpendList({
   onLoadMore,
   onUpdateExpense,
   onDeleteExpense,
+  onAddExpense,
   onFocusInput,
   loadingMore = false,
   searchQuery = "",
@@ -107,12 +114,56 @@ export function SpendList({
     null
   );
   const [editOpen, setEditOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addDialogDate, setAddDialogDate] = useState<string>("");
+  const [collapsedDays, setCollapsedDays] = useState<Set<string>>(() => new Set());
 
   const today = todayIn(new Date(), "Asia/Dhaka");
   const yesterday = addDays(today, -1);
 
   const totalExpenses = days.reduce((acc, d) => acc + d.expenses.length, 0);
   const isSearching = Boolean(searchQuery.trim());
+
+  const allDays = days.map((d) => d.day);
+  const allCollapsed = allDays.length > 0 && allDays.every((d) => collapsedDays.has(d));
+
+  const toggleDay = (day: string) => {
+    setCollapsedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(day)) next.delete(day);
+      else next.add(day);
+      return next;
+    });
+  };
+
+  const toggleAllDays = () => {
+    if (allCollapsed) {
+      setCollapsedDays(new Set());
+    } else {
+      setCollapsedDays(new Set(allDays));
+    }
+  };
+
+  const handleOpenAdd = (day: string) => {
+    setAddDialogDate(day);
+    setAddDialogOpen(true);
+  };
+
+  const handleAddSubmit = async (input: CreateExpenseInput) => {
+    if (onAddExpense) {
+      await onAddExpense(input);
+      // Auto-uncollapse the day so the user sees the newly added spend
+      setCollapsedDays((prev) => {
+        const next = new Set(prev);
+        if (input.spentOn) {
+          next.delete(input.spentOn);
+        } else {
+          next.delete(today);
+        }
+        return next;
+      });
+    }
+  };
 
   return (
     <div className="spend-list">
@@ -189,68 +240,118 @@ export function SpendList({
       ) : (
         /* Days & Expenses List */
         <div>
+          {days.length > 1 && (
+            <div className="flex items-center justify-end px-4 py-1.5 bg-[var(--surface-2)]/60 text-[var(--text-xs)] border-t border-[var(--line)]">
+              <button
+                type="button"
+                onClick={toggleAllDays}
+                className="text-[var(--ink-3)] hover:text-[var(--ink)] font-medium transition-colors cursor-pointer"
+              >
+                {allCollapsed ? "Expand all days" : "Collapse all days"}
+              </button>
+            </div>
+          )}
+
           {days.map((dayGroup) => {
             const dayHeader = formatDayLabel(dayGroup.day, today, yesterday);
+            const isCollapsed = collapsedDays.has(dayGroup.day);
 
             return (
               <div key={dayGroup.day}>
-                <div className="day-head flex items-center justify-between px-4 py-2 border-t border-[var(--line)] bg-[var(--surface-2)]">
-                  <span className="font-semibold text-[var(--text-xs)] uppercase tracking-wider text-[var(--ink-3)]">
-                    {dayHeader}
-                  </span>
-                  <b className="num text-[var(--text-sm)] font-bold text-[var(--ink)]">
-                    {formatTaka(dayGroup.total)}
-                  </b>
-                </div>
+                <div className="day-head flex items-center justify-between px-4 py-2 border-t border-[var(--line)] bg-[var(--surface-2)] select-none">
+                  <button
+                    type="button"
+                    onClick={() => toggleDay(dayGroup.day)}
+                    className="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer group py-0.5"
+                    aria-expanded={!isCollapsed}
+                    title={isCollapsed ? `Expand ${dayHeader}` : `Collapse ${dayHeader}`}
+                  >
+                    <span className="p-0.5 text-[var(--ink-3)] group-hover:text-[var(--ink)] transition-colors">
+                      {isCollapsed ? (
+                        <ChevronRight className="w-3.5 h-3.5 flex-none" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5 flex-none" />
+                      )}
+                    </span>
+                    <span className="font-semibold text-[var(--text-xs)] uppercase tracking-wider text-[var(--ink-3)] group-hover:text-[var(--ink)] transition-colors truncate">
+                      {dayHeader}
+                    </span>
+                    <span className="text-[11px] font-normal text-[var(--ink-4)] ml-1 flex-none">
+                      {dayGroup.expenses.length} {dayGroup.expenses.length === 1 ? "spend" : "spends"}
+                    </span>
+                  </button>
 
-                <div>
-                  {dayGroup.expenses.map((expense) => {
-                    const Icon =
-                      CATEGORY_ICONS[expense.category] || CircleDot;
-                    const catLabel =
-                      CATEGORY_LABELS[expense.category] || expense.category;
-                    const isAgent = isAgentActor(expense.createdBy);
-
-                    return (
-                      <div
-                        key={expense.id}
-                        className="spend flex items-center gap-3 px-4 py-2.5 border-t border-[var(--line)] hover:bg-[var(--surface-2)] transition-colors group"
+                  <div className="flex items-center gap-2.5 flex-none pl-2">
+                    <b className="num text-[var(--text-sm)] font-bold text-[var(--ink)]">
+                      {formatTaka(dayGroup.total)}
+                    </b>
+                    {onAddExpense && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenAdd(dayGroup.day);
+                        }}
+                        className="iconbtn p-1 text-[var(--ink-3)] hover:text-[var(--ink)] hover:bg-[var(--surface)] rounded transition-colors"
+                        aria-label={`Add spend to ${dayHeader}`}
+                        title={`Add spend to ${dayHeader}`}
                       >
-                        <span className="cic flex-none">
-                          <Icon className="w-4 h-4 text-[var(--ink-2)]" />
-                        </span>
-                        <div className="t flex-1 min-w-0">
-                          <div className="font-medium text-[var(--text-sm)] text-[var(--ink)] truncate">
-                            {expense.note || catLabel}
-                          </div>
-                          <div className="text-[var(--text-xs)] text-[var(--ink-3)] flex items-center gap-1.5 flex-wrap">
-                            {expense.note ? <span>{catLabel}</span> : null}
-                            {isAgent && (
-                              <span className="badge b-agent !inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                                <Bot className="w-3 h-3 flex-none" />
-                                <span>via {expense.createdBy}</span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <span className="amt num font-semibold text-[var(--text-sm)] text-[var(--ink)]">
-                          {formatTaka(expense.amount)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedExpense(expense);
-                            setEditOpen(true);
-                          }}
-                          className="iconbtn sm opacity-70 hover:opacity-100 p-1 text-[var(--ink-3)] hover:text-[var(--ink)]"
-                          aria-label="Edit or delete spend"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
-                      </div>
-                    );
-                  })}
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {!isCollapsed && (
+                  <div>
+                    {dayGroup.expenses.map((expense) => {
+                      const Icon =
+                        CATEGORY_ICONS[expense.category] || CircleDot;
+                      const catLabel =
+                        CATEGORY_LABELS[expense.category] || expense.category;
+                      const isAgent = isAgentActor(expense.createdBy);
+
+                      return (
+                        <div
+                          key={expense.id}
+                          className="spend flex items-center gap-3 px-4 py-2.5 border-t border-[var(--line)] hover:bg-[var(--surface-2)] transition-colors group"
+                        >
+                          <span className="cic flex-none">
+                            <Icon className="w-4 h-4 text-[var(--ink-2)]" />
+                          </span>
+                          <div className="t flex-1 min-w-0">
+                            <div className="font-medium text-[var(--text-sm)] text-[var(--ink)] truncate">
+                              {expense.note || catLabel}
+                            </div>
+                            <div className="text-[var(--text-xs)] text-[var(--ink-3)] flex items-center gap-1.5 flex-wrap">
+                              {expense.note ? <span>{catLabel}</span> : null}
+                              {isAgent && (
+                                <span className="badge b-agent !inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                  <Bot className="w-3 h-3 flex-none" />
+                                  <span>via {expense.createdBy}</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <span className="amt num font-semibold text-[var(--text-sm)] text-[var(--ink)]">
+                            {formatTaka(expense.amount)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedExpense(expense);
+                              setEditOpen(true);
+                            }}
+                            className="iconbtn sm opacity-70 hover:opacity-100 p-1 text-[var(--ink-3)] hover:text-[var(--ink)]"
+                            aria-label="Edit or delete spend"
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -277,6 +378,15 @@ export function SpendList({
         onUpdate={onUpdateExpense}
         onDelete={onDeleteExpense}
       />
+
+      {onAddExpense && (
+        <AddExpenseDialog
+          open={addDialogOpen}
+          onOpenChange={setAddDialogOpen}
+          defaultDate={addDialogDate}
+          onAdd={handleAddSubmit}
+        />
+      )}
     </div>
   );
 }
