@@ -521,4 +521,41 @@ describe("Canvas domain logic (07 §8)", () => {
       ]);
     });
   });
+
+  describe("8.12 Multi-page isolation & save queue dispatch", () => {
+    it("isolates queues and payloads between page A, B, and C so content never leaks across pages", async () => {
+      const savedCalls: Array<{ id: string; body: unknown }> = [];
+
+      const patcher = async (id: string, body: unknown) => {
+        savedCalls.push({ id, body });
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id,
+            body,
+            updatedAt: new Date().toISOString(),
+          }),
+        } as unknown as Response;
+      };
+
+      const docA = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Content of Page A" }] }] };
+      const docB = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Content of Page B" }] }] };
+      const docC = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Content of Page C" }] }] };
+
+      await enqueuePageSave("page-a", { title: "Page A", doc: docA, bodyMd: "Content of Page A" }, patcher, () => {});
+      await enqueuePageSave("page-b", { title: "Page B", doc: docB, bodyMd: "Content of Page B" }, patcher, () => {});
+      await enqueuePageSave("page-c", { title: "Page C", doc: docC, bodyMd: "Content of Page C" }, patcher, () => {});
+
+      expect(savedCalls).toHaveLength(3);
+      expect(savedCalls[0].id).toBe("page-a");
+      expect((savedCalls[0].body as { bodyMd: string }).bodyMd).toBe("Content of Page A");
+
+      expect(savedCalls[1].id).toBe("page-b");
+      expect((savedCalls[1].body as { bodyMd: string }).bodyMd).toBe("Content of Page B");
+
+      expect(savedCalls[2].id).toBe("page-c");
+      expect((savedCalls[2].body as { bodyMd: string }).bodyMd).toBe("Content of Page C");
+    });
+  });
 });

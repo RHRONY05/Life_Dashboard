@@ -666,7 +666,18 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
 .trow .chev.none { visibility: hidden; }
 .trow .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .trow .acts { display: none; gap: 2px; }
-.trow:hover .acts, .trow.hover .acts { display: flex; }
+.trow:hover .acts,
+.trow.hover .acts,
+.trow:focus-within .acts,
+.trow:has([data-state="open"]) .acts {
+  display: flex !important;
+}
+
+@media (hover: none), (max-width: 1023px) {
+  .trow .acts {
+    display: flex !important;
+  }
+}
 .trow .acts i, .trow .acts span { width: 24px; height: 24px; display: grid; place-items: center; border-radius: var(--radius-xs); color: var(--ink-2); }
 .trow .acts svg.lucide { width: 14px; height: 14px; }
 .trow .pin { width: 13px; height: 13px; color: var(--ink-3); flex: none; }
