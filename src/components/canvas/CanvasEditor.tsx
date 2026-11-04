@@ -21,8 +21,10 @@ import {
   ChevronDown,
   GitCompare,
   Bot,
+  FileDown,
 } from "lucide-react";
 import { toast } from "sonner";
+import { DOMSerializer } from "@tiptap/pm/model";
 import { getCanvasExtensions } from "@/lib/canvas/editor";
 import { CanvasToolbar } from "@/components/canvas/CanvasToolbar";
 import { NotesPane } from "@/components/canvas/NotesPane";
@@ -46,6 +48,9 @@ import {
   saveImageToIdb,
   deleteUnreferencedImages,
   revokeObjectUrls,
+  getIdbCachedUrl,
+  getImageFromIdb,
+  blobToDataUrl,
 } from "@/lib/canvas/scratch-store";
 import { Banner } from "@/components/ui/Banner";
 import { IconButton } from "@/components/ui/IconButton";
@@ -1300,6 +1305,117 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     });
   }, [editor]);
 
+
+  // Export as PDF
+  const handleExportPdf = useCallback(() => {
+    window.print();
+  }, []);
+
+  // Copy with rich base64 images (works in Word, Google Docs, Apple Notes, etc.)
+  const [isCopyingImages, setIsCopyingImages] = useState(false);
+  const handleCopyWithImages = useCallback(async () => {
+    if (!editor) return;
+    setIsCopyingImages(true);
+    const toastId = toast.loading("Preparing copy with images…");
+
+    try {
+      let rawHtml = "";
+      let plainText = "";
+      const { empty } = editor.state.selection;
+
+      if (!empty) {
+        const slice = editor.state.selection.content();
+        const div = document.createElement("div");
+        div.appendChild(
+          DOMSerializer.fromSchema(editor.schema).serializeFragment(slice.content)
+        );
+        rawHtml = div.innerHTML;
+        plainText = docToPlainText(slice);
+      } else {
+        rawHtml = editor.getHTML();
+        plainText = docToPlainText(editor.state.doc);
+      }
+
+      const container = document.createElement("div");
+      container.innerHTML = rawHtml;
+      const imgElements = Array.from(container.querySelectorAll("img"));
+
+      for (const img of imgElements) {
+        const ref = img.getAttribute("data-ref") || img.getAttribute("src") || "";
+        if (!ref) continue;
+
+        if (ref.startsWith("idb:")) {
+          const id = ref.replace(/^idb:/, "");
+          const cached = getIdbCachedUrl(ref);
+          if (cached && cached.startsWith("data:")) {
+            img.setAttribute("src", cached);
+          } else {
+            const record = await getImageFromIdb(userId, id);
+            if (record?.blob) {
+              const dataUrl = await blobToDataUrl(record.blob);
+              img.setAttribute("src", dataUrl);
+            }
+          }
+        } else if (ref.startsWith("sb:")) {
+          const pathRef = ref.replace(/^sb:/, "");
+          try {
+            const res = await fetch(`/api/notes/images/${pathRef}`);
+            if (res.ok) {
+              const blob = await res.blob();
+              const dataUrl = await blobToDataUrl(blob);
+              img.setAttribute("src", dataUrl);
+            }
+          } catch (e) {
+            console.error("Failed to fetch note image for copy", e);
+          }
+        } else if (ref.startsWith("/api/notes/images/")) {
+          try {
+            const res = await fetch(ref);
+            if (res.ok) {
+              const blob = await res.blob();
+              const dataUrl = await blobToDataUrl(blob);
+              img.setAttribute("src", dataUrl);
+            }
+          } catch (e) {
+            console.error("Failed to fetch note image for copy", e);
+          }
+        } else if (ref.startsWith("blob:")) {
+          try {
+            const res = await fetch(ref);
+            if (res.ok) {
+              const blob = await res.blob();
+              const dataUrl = await blobToDataUrl(blob);
+              img.setAttribute("src", dataUrl);
+            }
+          } catch {}
+        }
+      }
+
+      const finalHtml = container.innerHTML;
+
+      if (navigator.clipboard && window.ClipboardItem) {
+        const htmlBlob = new Blob([finalHtml], { type: "text/html" });
+        const textBlob = new Blob([plainText], { type: "text/plain" });
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": htmlBlob,
+            "text/plain": textBlob,
+          }),
+        ]);
+        toast.success("Copied with images · ready to paste anywhere", { id: toastId });
+        return;
+      }
+
+      await navigator.clipboard.writeText(plainText);
+      toast.success("Copied text to clipboard", { id: toastId });
+    } catch (err) {
+      console.error("Copy with images failed", err);
+      toast.error("Failed to copy with images", { id: toastId });
+    } finally {
+      setIsCopyingImages(false);
+    }
+  }, [editor, userId]);
+
   // Clear Scratch
   const handleClearScratch = useCallback(() => {
     if (!editor || isReadOnly) return;
@@ -1468,6 +1584,12 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
   // Global keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      // Ctrl+P / Cmd+P: Export as PDF
+      if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P")) {
+        e.preventDefault();
+        handleExportPdf();
+      }
+
       // Ctrl+Alt+M: Copy page as Markdown
       if (e.ctrlKey && e.altKey && (e.key === "m" || e.key === "M")) {
         e.preventDefault();
@@ -1536,6 +1658,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     handleCopyAsMarkdown,
+    handleExportPdf,
     handleSaveAsPage,
     handleNewPage,
     handleSelectScratch,
@@ -1712,6 +1835,14 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
           <div className="flex items-center gap-1 flex-none">
             <IconButton
+              aria-label="Export as PDF"
+              onClick={handleExportPdf}
+              title="Export as PDF"
+            >
+              <FileDown className="w-4 h-4" />
+            </IconButton>
+
+            <IconButton
               aria-label="Copy as Markdown"
               onClick={handleCopyAsMarkdown}
             >
@@ -1753,6 +1884,21 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                       )}
                     </DropdownMenuItem>
                     <DropdownMenuItem
+                      onClick={handleCopyWithImages}
+                      className="flex items-center gap-2 cursor-pointer"
+                      disabled={isCopyingImages}
+                    >
+                      <Copy className="w-4 h-4" />
+                      <span>Copy with images</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleExportPdf}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <FileDown className="w-4 h-4" />
+                      <span>Export as PDF</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
                       onClick={handleCopyToScratch}
                       className="flex items-center gap-2 cursor-pointer"
                     >
@@ -1777,6 +1923,36 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                     >
                       <FilePlus className="w-4 h-4" />
                       <span>Save as page</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleCopyWithImages}
+                      className="flex items-center gap-2 cursor-pointer"
+                      disabled={isCopyingImages}
+                    >
+                      <Copy className="w-4 h-4" />
+                      <span>Copy with images</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleExportPdf}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <FileDown className="w-4 h-4" />
+                      <span>Export as PDF</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleCopyWithImages}
+                      className="flex items-center gap-2 cursor-pointer"
+                      disabled={isCopyingImages}
+                    >
+                      <Copy className="w-4 h-4" />
+                      <span>Copy with images</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleExportPdf}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <FileDown className="w-4 h-4" />
+                      <span>Export as PDF</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleClearScratch}
@@ -2067,6 +2243,17 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                 <span>Copy as Markdown</span>
               </button>
 
+              <button
+                type="button"
+                id="export-pdf-btn"
+                className="btn btn-secondary inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded border border-frame bg-surface hover:bg-surface-2 cursor-pointer flex-none"
+                onClick={handleExportPdf}
+                title="Export or print as PDF (Ctrl+P)"
+              >
+                <FileDown className="w-3.5 h-3.5" />
+                <span>Export PDF</span>
+              </button>
+
               {!activeNoteId && (
                 <button
                   type="button"
@@ -2113,6 +2300,21 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                             <span>Pin</span>
                           </>
                         )}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleCopyWithImages}
+                        className="flex items-center gap-2 cursor-pointer"
+                        disabled={isCopyingImages}
+                      >
+                        <Copy className="w-4 h-4" />
+                        <span>Copy with images</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleExportPdf}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <FileDown className="w-4 h-4" />
+                        <span>Export as PDF</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleCopyToScratch}
@@ -2200,6 +2402,17 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                 }
               }}
             >
+                            <div className="print-only-header">
+                <h1>{activeNoteTitle || (activeNoteId ? "Untitled Note" : "Scratch Note")}</h1>
+                <p>
+                  Life Dashboard · {new Date().toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+
               {loadingNoteId ? (
                 <div className="w-full py-6 space-y-4 animate-fade-in select-none">
                   <div className="sk h-9 w-64 rounded-md mb-6" />

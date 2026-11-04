@@ -191,7 +191,7 @@ Fixes and changes Rony asks for in chat, outside a task above. One line each, ne
 - 2026-11-03 · Canvas list markers and task checklist same-line flex layout in globals.css · `06`
 - 2026-11-04 · Dialog scroll-safe positioning with max-height and compact 2-column row in EntryDialog · `06`
 - 2026-11-04 · Spending date input calendar icon overflow fix and browser picker duplicate indicator removal · `06`
-- 2026-11-04 · Canvas multi-select image highlight & rich clipboard copy with valid img src/data-ref, plus sticky topbar navigation · `06`, `07 §8.3`
+- 2026-11-04 · Canvas multi-select image highlight (`.cimg.sel`), rich HTML base64 copy (`Copy with images`), dedicated Export as PDF button (`window.print()` / `Ctrl+P`) with clean print stylesheet, and sticky navbar navigation · `06`, `07 §8.3`
 
 ## Questions for the human
 (Agents add questions here; the human answers inline.)

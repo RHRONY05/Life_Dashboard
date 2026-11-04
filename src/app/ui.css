@@ -742,3 +742,120 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
 .spend-search { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-top: var(--frame-w) solid var(--frame); border-bottom: 1px solid var(--line); }
 .spend-search .input { flex: 1; height: 38px; }
 .results-head { display: flex; justify-content: space-between; padding: 8px 16px; font-size: var(--text-xs); color: var(--ink-2); font-weight: 600; background: var(--surface-2); }
+
+/* Print styles for Export as PDF */
+.print-only-header { display: none; }
+
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: auto;
+  }
+
+  /* Hide app shell chrome & controls */
+  header.topbar,
+  header.m-header,
+  nav.nav,
+  .topbar,
+  .m-header,
+  .tab-bar,
+  .ptabs,
+  .npane,
+  .tb,
+  .ecard-head,
+  .conflict-line,
+  .agent-line,
+  .banner,
+  .save-status,
+  .subpages,
+  button,
+  .iconbtn,
+  .btn,
+  .dropdown-menu,
+  [role="tablist"] {
+    display: none !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #1a1a1a !important;
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  main, .canvas-main, .canvas-writing-surface, .prose {
+    background: transparent !important;
+    color: inherit !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .print-only-header {
+    display: block !important;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #1a1a1a;
+  }
+  .print-only-header h1 {
+    font-size: 22pt;
+    font-weight: 800;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.02em;
+  }
+  .print-only-header p {
+    font-size: 9.5pt;
+    color: #666666;
+    margin: 0;
+  }
+
+  .cimg {
+    margin: 16px 0 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    max-width: 100% !important;
+  }
+
+  .cimg .shot {
+    border: 1px solid #d4d4d4 !important;
+    border-radius: 4px !important;
+    max-width: 100% !important;
+    height: auto !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  .cimg.sel .shot {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  .cimg.sel::after {
+    display: none !important;
+  }
+
+  .cimg .size,
+  .cimg .upill {
+    display: none !important;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+    color: #000000 !important;
+  }
+
+  ul, ol, pre, blockquote, table {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: underline !important;
+  }
+}
