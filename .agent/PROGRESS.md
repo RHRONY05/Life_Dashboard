@@ -233,4 +233,9 @@ Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (105 passed) int ✅ (36 pas
 Deploy: https://life-rony.vercel.app · prod check ✅
 Commits: fe9551d feat(v7): API keys, activity log, Settings, quick links, and email test
 Milestone: M4 Renewals + Settings complete (docs/milestones/M4.md)
+### 2026-11-04 18:05 — Antigravity — Spending collapsible days and add-to-day button
+Did: added collapsible day groups in Spending (`SpendList.tsx`) with chevron toggle, spend count badge, and a global "Collapse all days / Expand all days" control; added a `+` button directly on each day group header allowing users to add an expense directly to that day without scrolling; created `AddExpenseDialog.tsx` modal with amount input, full category chips with icons, date picker pre-filled with the day, optional note, and validation; fixed budget save API call to use `/api/settings/budget`; verified unit and E2E Playwright tests; deployed to production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (105 passed) e2e ✅ (4 passed, 3 skipped) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (dpl_EY1W9axYXucFW5qUw1AjzVCPXTjn)
+Commits: 13b55fe feat(money): collapsible day groups and add spend to day list with AddExpenseDialog
 Next: Milestone 5 (V8 MCP server + local Lighthouse, V9 Seed & connect agents, V10 Final checks & learning note)
