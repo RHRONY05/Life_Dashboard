@@ -1293,7 +1293,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
   const handleCopyAsMarkdown = useCallback(() => {
     if (!editor) return;
     const json = editor.getJSON();
-    const md = docToMarkdown(json);
+    const md = docToMarkdown(json, { images: "refs" });
     navigator.clipboard.writeText(md).then(() => {
       const lineCount = md.split("\n").filter((l) => l.trim().length > 0).length;
       toast(`Copied as Markdown · ${lineCount} lines`);
@@ -1338,7 +1338,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     }
 
     const json = editor.getJSON();
-    const md = docToMarkdown(json);
+    const md = docToMarkdown(json, { images: "refs" });
     const title = titleFromText(md, new Date());
 
     try {
@@ -1491,7 +1491,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
           const slice = editorRef.current.state.selection.content();
           const md = docToMarkdown(
             { type: "doc", content: slice.toJSON()?.content || [] },
-            { images: "placeholder" }
+            { images: "refs" }
           ).trim();
           if (md) {
             navigator.clipboard.writeText(md);

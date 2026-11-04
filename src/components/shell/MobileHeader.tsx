@@ -50,7 +50,7 @@ export function MobileHeader({
   const sub = getSubtitle();
 
   return (
-    <header className="m-header md:hidden h-14 flex-none flex items-center gap-2 pl-4 pr-2 bg-surface border-b border-frame z-30 relative select-none">
+    <header className="m-header md:hidden h-14 flex-none flex items-center gap-2 pl-4 pr-2 bg-surface border-b border-frame z-40 sticky top-0 select-none">
       <h1 className="m-0 text-lg font-display font-extrabold flex-1 tracking-tight">
         <span>{getPageTitle()}</span>
         {sub && (

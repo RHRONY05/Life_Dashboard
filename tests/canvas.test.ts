@@ -17,6 +17,7 @@ import {
 import { docToMarkdown, docToPlainText, markdownToDoc } from "@/lib/canvas/markdown";
 import { cleanPastedHtml, analyzePaste } from "@/lib/canvas/paste";
 import { enqueuePageSave, getOrCreateQueue, clearQueue } from "@/lib/canvas/save-queue";
+import { CanvasImage } from "@/lib/canvas/editor";
 
 describe("Canvas domain logic (07 §8)", () => {
   describe("8.1 fitWithin", () => {
@@ -487,6 +488,30 @@ describe("Canvas domain logic (07 §8)", () => {
       const md = "## Libraries\n- WeasyPrint\n- FFmpeg\n\n## Tips\n1. Golden rule";
       const res = replaceSection(md, "Tips", "1. New tip");
       expect(res).toBe("## Libraries\n- WeasyPrint\n- FFmpeg\n\n## Tips\n1. New tip");
+    });
+  });
+
+  describe("8.11 CanvasImage clipboard serialization", () => {
+    it("serializes CanvasImage to HTML with valid src and data-ref for rich clipboard copying", () => {
+      const render = CanvasImage.config.renderHTML?.({
+        node: null as unknown as import("@tiptap/pm/model").Node,
+        HTMLAttributes: {
+          ref: "sb:owner/note1/photo.webp",
+          alt: "My photo",
+        },
+      });
+      expect(render).toEqual([
+        "span",
+        { class: "cimg" },
+        [
+          "img",
+          expect.objectContaining({
+            src: expect.stringContaining("/api/notes/images/owner/note1/photo.webp"),
+            "data-ref": "sb:owner/note1/photo.webp",
+            alt: "My photo",
+          }),
+        ],
+      ]);
     });
   });
 });

@@ -100,6 +100,13 @@ export async function saveImageToIdb(
     createdAt: new Date().toISOString(),
   };
   await db.put("images", record, id);
+
+  const url = URL.createObjectURL(data.blob);
+  objectUrlCache.set(id, url);
+  blobToDataUrl(data.blob).then((dataUrl) => {
+    dataUrlCache.set(id, dataUrl);
+  });
+
   return `idb:${id}`;
 }
 
@@ -148,8 +155,23 @@ export async function deleteUnreferencedImages(userId: string, doc: CanvasDocNod
   }
 }
 
-// Object URL cache to resolve `idb:<uuid>` in the DOM
+// Object URL and Data URL cache to resolve `idb:<uuid>` in the DOM and clipboard
 const objectUrlCache = new Map<string, string>();
+const dataUrlCache = new Map<string, string>();
+
+export function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string) || "");
+    reader.readAsDataURL(blob);
+  });
+}
+
+export function getIdbCachedUrl(ref: string): string | undefined {
+  if (!ref.startsWith("idb:")) return undefined;
+  const id = ref.replace(/^idb:/, "");
+  return dataUrlCache.get(id) || objectUrlCache.get(id);
+}
 
 export async function resolveIdbRef(userId: string, ref: string): Promise<string> {
   if (!ref.startsWith("idb:")) return ref;
@@ -166,6 +188,11 @@ export async function resolveIdbRef(userId: string, ref: string): Promise<string
 
   const url = URL.createObjectURL(record.blob);
   objectUrlCache.set(id, url);
+  if (!dataUrlCache.has(id)) {
+    blobToDataUrl(record.blob).then((dataUrl) => {
+      dataUrlCache.set(id, dataUrl);
+    });
+  }
   return url;
 }
 

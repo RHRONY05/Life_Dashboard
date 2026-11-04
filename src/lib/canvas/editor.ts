@@ -11,6 +11,7 @@ import { Placeholder } from "@tiptap/extension-placeholder";
 import { Markdown } from "@tiptap/markdown";
 import { CanvasImageView } from "@/components/canvas/CanvasImageView";
 import { FoldExtension } from "@/lib/canvas/fold-extension";
+import { getIdbCachedUrl } from "@/lib/canvas/scratch-store";
 
 export const CanvasImage = Node.create({
   name: "canvasImage",
@@ -45,8 +46,10 @@ export const CanvasImage = Node.create({
         getAttrs: (dom) => {
           const el = dom as HTMLElement;
           const img = el.querySelector("img");
+          const dataRef = img?.getAttribute("data-ref");
+          const src = img?.getAttribute("src") || "";
           return {
-            ref: img?.getAttribute("src") || "",
+            ref: dataRef || src,
             alt: img?.getAttribute("alt") || "",
             width: img?.naturalWidth || null,
             height: img?.naturalHeight || null,
@@ -54,11 +57,13 @@ export const CanvasImage = Node.create({
         },
       },
       {
-        tag: "img[src]",
+        tag: "img",
         getAttrs: (dom) => {
           const el = dom as HTMLImageElement;
+          const dataRef = el.getAttribute("data-ref");
+          const src = el.getAttribute("src") || "";
           return {
-            ref: el.getAttribute("src") || "",
+            ref: dataRef || src,
             alt: el.getAttribute("alt") || "",
             width: el.naturalWidth || null,
             height: el.naturalHeight || null,
@@ -69,7 +74,35 @@ export const CanvasImage = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ["span", { class: "cimg" }, ["img", HTMLAttributes]];
+    const ref = (HTMLAttributes.ref || "") as string;
+    let src = (HTMLAttributes.src || "") as string;
+
+    if (!src && ref) {
+      if (ref.startsWith("http://") || ref.startsWith("https://") || ref.startsWith("data:")) {
+        src = ref;
+      } else if (ref.startsWith("sb:")) {
+        const origin = typeof window !== "undefined" ? window.location.origin : "";
+        src = `${origin}/api/notes/images/${ref.replace(/^sb:/, "")}`;
+      } else if (ref.startsWith("idb:")) {
+        src = getIdbCachedUrl(ref) || ref;
+      }
+    }
+
+    const rest = { ...HTMLAttributes };
+    delete rest.uploading;
+
+    return [
+      "span",
+      { class: "cimg" },
+      [
+        "img",
+        {
+          ...rest,
+          src: src || ref,
+          "data-ref": ref,
+        },
+      ],
+    ];
   },
 
   addNodeView() {

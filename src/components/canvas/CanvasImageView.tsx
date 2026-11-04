@@ -7,8 +7,35 @@ import { Loader2 } from "lucide-react";
 import { resolveIdbRef } from "@/lib/canvas/scratch-store";
 
 export function CanvasImageView(props: NodeViewProps) {
-  const { node, selected } = props;
+  const { node, selected, editor, getPos } = props;
   const { ref, alt, width, height, uploading } = node.attrs;
+
+  const [inRange, setInRange] = useState(false);
+
+  useEffect(() => {
+    if (!editor || typeof getPos !== "function") return;
+
+    function checkSelection() {
+      try {
+        const pos = getPos();
+        if (typeof pos !== "number") return;
+        const { from, to } = editor.state.selection;
+        // True if selection spans across this image node (e.g. Ctrl+A or drag select)
+        const isSpanned = from <= pos && to >= pos + node.nodeSize && from !== to;
+        setInRange(isSpanned);
+      } catch {
+        setInRange(false);
+      }
+    }
+
+    checkSelection();
+    editor.on("selectionUpdate", checkSelection);
+    return () => {
+      editor.off("selectionUpdate", checkSelection);
+    };
+  }, [editor, getPos, node.nodeSize]);
+
+  const isSelected = selected || inRange;
 
   const initialSrc =
     typeof ref === "string" &&
@@ -39,7 +66,7 @@ export function CanvasImageView(props: NodeViewProps) {
 
   return (
     <NodeViewWrapper as="span" className="inline-block my-2 max-w-full">
-      <span className={clsx("cimg", selected && "sel", uploading && "uploading")}>
+      <span className={clsx("cimg", isSelected && "sel", uploading && "uploading")}>
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

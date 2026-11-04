@@ -612,7 +612,8 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
 .prose .ph-line { color: var(--ink-3); }
 .cimg { position: relative; margin: 14px 0; display: inline-block; max-width: 100%; }
 .cimg .shot { display: block; border: var(--frame-w) solid var(--frame); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); }
-.cimg.sel .shot { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.cimg.sel .shot { outline: 3px solid var(--accent-text); outline-offset: 2px; box-shadow: 0 0 0 4px var(--accent-soft); }
+.cimg.sel::after { content: ""; position: absolute; inset: 0; background: var(--accent-soft); opacity: 0.35; border-radius: var(--radius-sm); pointer-events: none; }
 .cimg .size { position: absolute; right: 8px; bottom: 8px; font-family: var(--font-mono); font-size: var(--text-2xs); background: var(--ink); color: var(--bg); padding: 1px 6px; border-radius: var(--radius-xs); }
 .cimg.uploading .shot { opacity: .55; }
 .cimg .upill { position: absolute; left: 10px; top: 10px; display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: var(--radius-sm); background: var(--ink); color: var(--bg); font-size: var(--text-2xs); font-weight: 600; }

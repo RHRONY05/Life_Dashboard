@@ -65,7 +65,7 @@ export function AppHeader({
   ];
 
   return (
-    <header className="topbar hidden md:flex h-[60px] items-center gap-6 px-8 bg-surface border-b border-frame z-30 relative select-none">
+    <header className="topbar hidden md:flex h-[60px] items-center gap-6 px-8 bg-surface border-b border-frame z-40 sticky top-0 select-none">
       {optimisticPath && optimisticPath !== pathname && (
         <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent animate-pulse" />
       )}
