@@ -238,4 +238,9 @@ Did: added collapsible day groups in Spending (`SpendList.tsx`) with chevron tog
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (105 passed) e2e ✅ (4 passed, 3 skipped) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅ (dpl_EY1W9axYXucFW5qUw1AjzVCPXTjn)
 Commits: 13b55fe feat(money): collapsible day groups and add spend to day list with AddExpenseDialog
+### 2026-11-05 00:00 — Antigravity — Item-level + button to add to existing spend & clean modal inputs
+Did: added `+` button directly on each spend item row in `SpendList.tsx` next to `...`; built `AddToSpendDialog.tsx` showing current amount, amount to add input, live calculation summary (`Current ৳10 + Adding ৳10 = New total ৳20`), and optional note, so users don't have to create multiple rows for recurring daily spends like Snacks; fixed all input formatting in `AddExpenseDialog.tsx` by replacing absolute overlapping icons with standard clean flex input wrappers (`৳` prefix and native date picker with zero text collision); added Playwright e2e test verifying item-level addition; deployed to production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (107 passed) e2e ✅ (4 passed, 3 skipped) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (dpl_2wrow5FAKMUDMUfCfFELp4DB7Bb1)
+Commits: f881e2e feat(money): add amount directly to existing spend item with AddToSpendDialog and fix overwritten form text
 Next: Milestone 5 (V8 MCP server + local Lighthouse, V9 Seed & connect agents, V10 Final checks & learning note)
