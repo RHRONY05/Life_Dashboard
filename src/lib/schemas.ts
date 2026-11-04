@@ -142,6 +142,46 @@ export interface NoteDto extends NoteSummaryDto {
   prevAt: string | null;
 }
 
+// ============ Agent Page Tools Schemas (V3d, V8) ============
+
+export const AgentListNotesSchema = z.object({
+  query: z.string().min(1).max(100).optional(),
+});
+
+export const AgentGetNoteSchema = z.object({
+  note: z.string().min(1, "note is required"),
+});
+
+export const AgentCreateNoteSchema = z.object({
+  title: z.string().trim().min(1, "title is required").max(120),
+  markdown: z.string().max(200000).optional(),
+  parent: z.string().optional(),
+});
+
+export const AgentAppendToNoteSchema = z.object({
+  note: z.string().min(1, "note is required"),
+  markdown: z.string().min(1, "markdown is required").max(50000),
+  underHeading: z.string().optional(),
+});
+
+export const AgentReplaceNoteSectionSchema = z.object({
+  note: z.string().min(1, "note is required"),
+  heading: z.string().min(1, "heading is required"),
+  markdown: z.string().max(200000),
+  expectedUpdatedAt: z.string().min(1, "expectedUpdatedAt is required"),
+});
+
+export const AgentUpdateNoteSchema = z
+  .object({
+    note: z.string().min(1, "note is required"),
+    title: z.string().trim().min(1).max(120).optional(),
+    markdown: z.string().max(200000).optional(),
+    expectedUpdatedAt: z.string().optional(),
+  })
+  .refine((data) => data.title !== undefined || data.markdown !== undefined, {
+    message: "At least one of title or markdown must be provided",
+  });
+
 // ============ Trackers ============
 
 export const CreateTrackerSchema = z.object({

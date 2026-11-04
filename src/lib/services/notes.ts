@@ -12,6 +12,10 @@ import {
   flattenTree,
   imageRefs,
   unreferencedPaths,
+  appendToSection,
+  replaceSection,
+  headingsOf,
+  resolveNote,
   type NoteSummaryItem,
 } from "@/lib/domain/canvas";
 import { ConflictError, InvalidInputError, NotFoundError } from "@/lib/errors";
@@ -582,5 +586,410 @@ export async function getNoteImageUrl(
   }
 
   return data.signedUrl;
+}
+
+// ============ Agent Page Tools Services (V3d, V8) ============
+
+export interface AgentNoteTreeItem {
+  id: string;
+  title: string;
+  path: string;
+  parentId: string | null;
+  depth: number;
+  pinned: boolean;
+  headings: string[];
+  createdBy: string;
+  updatedAt: string;
+}
+
+export interface AgentNoteDetail {
+  id: string;
+  title: string;
+  path: string;
+  markdown: string;
+  headings: string[];
+  children: Array<{ id: string; title: string }>;
+  createdBy: string;
+  updatedAt: string;
+}
+
+export interface AgentEditResult {
+  id: string;
+  title: string;
+  path: string;
+  updatedAt: string;
+}
+
+async function resolveNoteInDb(
+  ctx: Ctx,
+  ref: string
+): Promise<{ id: string; row: NoteRow; path: string }> {
+  const { data: allNotes, error } = await ctx.db
+    .from("notes")
+    .select("id, title, parent_id, pinned")
+    .eq("user_id", ctx.userId);
+
+  if (error) throw error;
+  if (!allNotes || allNotes.length === 0) {
+    throw new NotFoundError(`no page with note "${ref}"`);
+  }
+
+  const summaries: NoteSummaryItem[] = allNotes.map((n) => ({
+    id: n.id,
+    title: n.title,
+    parentId: n.parent_id,
+    pinned: n.pinned,
+  }));
+
+  const tree = buildTree(summaries);
+  const result = resolveNote(tree, ref);
+
+  if (!result.ok) {
+    if (result.error === "ambiguous") {
+      throw new ConflictError("ambiguous", `ambiguous (paths: ${result.paths.join(", ")})`);
+    }
+    throw new NotFoundError(`no page with note "${ref}"`);
+  }
+
+  const { data: row, error: rowErr } = await ctx.db
+    .from("notes")
+    .select("*")
+    .eq("user_id", ctx.userId)
+    .eq("id", result.note.id)
+    .single();
+
+  if (rowErr || !row) {
+    throw new NotFoundError(`no page with note "${ref}"`);
+  }
+
+  return { id: result.note.id, row, path: result.note.path };
+}
+
+export async function listNotesTree(
+  ctx: Ctx,
+  query?: string
+): Promise<{ pages: AgentNoteTreeItem[] }> {
+  assertScope(ctx, "notes:read");
+
+  const { data: allNotes, error } = await ctx.db
+    .from("notes")
+    .select("id, title, parent_id, pinned, body_md, created_by, updated_at")
+    .eq("user_id", ctx.userId);
+
+  if (error) throw error;
+  if (!allNotes || allNotes.length === 0) {
+    return { pages: [] };
+  }
+
+  const summaries: NoteSummaryItem[] = allNotes.map((n) => ({
+    id: n.id,
+    title: n.title,
+    parentId: n.parent_id,
+    pinned: n.pinned,
+  }));
+
+  const tree = buildTree(summaries);
+  const flat = flattenTree(tree);
+
+  const notesMap = new Map(allNotes.map((n) => [n.id, n]));
+
+  let pages: AgentNoteTreeItem[] = flat.map((item) => {
+    const raw = notesMap.get(item.id);
+    const md = raw?.body_md || "";
+    const headings = headingsOf(md)
+      .map((h) => h.text)
+      .slice(0, 30);
+
+    return {
+      id: item.id,
+      title: item.title,
+      path: item.path,
+      parentId: item.parentId,
+      depth: item.depth,
+      pinned: item.pinned ?? false,
+      headings,
+      createdBy: raw?.created_by || "owner",
+      updatedAt: raw?.updated_at || new Date().toISOString(),
+    };
+  });
+
+  if (query && query.trim().length > 0) {
+    const q = query.trim().toLowerCase();
+    pages = pages.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.path.toLowerCase().includes(q) ||
+        p.headings.some((h) => h.toLowerCase().includes(q))
+    );
+  }
+
+  return { pages };
+}
+
+export async function getNoteForAgent(
+  ctx: Ctx,
+  noteRef: string
+): Promise<AgentNoteDetail> {
+  assertScope(ctx, "notes:read");
+
+  const { id, row, path } = await resolveNoteInDb(ctx, noteRef);
+
+  const { data: childrenRows } = await ctx.db
+    .from("notes")
+    .select("id, title")
+    .eq("user_id", ctx.userId)
+    .eq("parent_id", id)
+    .order("title", { ascending: true });
+
+  const children = (childrenRows || []).map((c) => ({
+    id: c.id,
+    title: c.title,
+  }));
+
+  const headings = headingsOf(row.body_md).map((h) => h.text);
+
+  return {
+    id: row.id,
+    title: row.title,
+    path,
+    markdown: row.body_md,
+    headings,
+    children,
+    createdBy: row.created_by,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function createNoteForAgent(
+  ctx: Ctx,
+  input: { title: string; markdown?: string; parent?: string }
+): Promise<NoteSummaryDto & { path: string }> {
+  assertScope(ctx, "notes:write");
+
+  // Check 300 page limit
+  const { count } = await ctx.db
+    .from("notes")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", ctx.userId);
+
+  if (count !== null && count >= 300) {
+    throw new ConflictError("limit_reached", "300 pages is the maximum.");
+  }
+
+  let parentId: string | null = null;
+  if (input.parent) {
+    const parent = await resolveNoteInDb(ctx, input.parent);
+
+    const { data: allNotes } = await ctx.db
+      .from("notes")
+      .select("id, title, parent_id, pinned")
+      .eq("user_id", ctx.userId);
+
+    const summaries: NoteSummaryItem[] = (allNotes || []).map((n) => ({
+      id: n.id,
+      title: n.title,
+      parentId: n.parent_id,
+      pinned: n.pinned,
+    }));
+    const tree = buildTree(summaries);
+    const flat = flattenTree(tree);
+    const parentNode = flat.find((n) => n.id === parent.id);
+    const parentDepth = parentNode?.depth ?? 1;
+
+    if (parentDepth >= 3) {
+      throw new ConflictError("too_deep", "Max 3 levels");
+    }
+    parentId = parent.id;
+  }
+
+  const { data, error } = await ctx.db
+    .from("notes")
+    .insert({
+      user_id: ctx.userId,
+      title: input.title.trim(),
+      doc: null,
+      body_md: input.markdown || "",
+      parent_id: parentId,
+      pinned: false,
+      created_by: ctx.actor.type === "agent" ? ctx.actor.name : "owner",
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  const path = await computeNotePath(ctx, data);
+
+  return {
+    id: data.id,
+    title: data.title,
+    parentId: data.parent_id,
+    pinned: data.pinned,
+    snippet: data.body_md.slice(0, 140),
+    createdBy: data.created_by,
+    updatedAt: data.updated_at,
+    path,
+  };
+}
+
+export async function appendToNote(
+  ctx: Ctx,
+  input: { note: string; markdown: string; underHeading?: string }
+): Promise<AgentEditResult> {
+  assertScope(ctx, "notes:write");
+
+  const { id, row, path } = await resolveNoteInDb(ctx, input.note);
+
+  if (input.underHeading) {
+    const clean = input.underHeading.replace(/^#{1,3}\s*/, "").trim().toLowerCase();
+    const headings = headingsOf(row.body_md);
+    const found = headings.some((h) => h.text.toLowerCase() === clean);
+    if (!found) {
+      const available = headings.map((h) => h.text).join(", ");
+      throw new NotFoundError(
+        `heading "${input.underHeading}" (headings: ${available || "none"})`
+      );
+    }
+  }
+
+  const newBodyMd = appendToSection(row.body_md, input.markdown, input.underHeading);
+
+  const { data: updated, error } = await ctx.db
+    .from("notes")
+    .update({
+      body_md: newBodyMd,
+      doc: null,
+      prev_doc: row.doc,
+      prev_body_md: row.body_md,
+      prev_by: ctx.actor.type === "agent" ? ctx.actor.name : "owner",
+      prev_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", ctx.userId)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return {
+    id: updated.id,
+    title: updated.title,
+    path,
+    updatedAt: updated.updated_at,
+  };
+}
+
+export async function replaceNoteSection(
+  ctx: Ctx,
+  input: {
+    note: string;
+    heading: string;
+    markdown: string;
+    expectedUpdatedAt: string;
+  }
+): Promise<AgentEditResult> {
+  assertScope(ctx, "notes:write");
+
+  const { id, row, path } = await resolveNoteInDb(ctx, input.note);
+
+  // Optimistic concurrency check
+  if (new Date(row.updated_at).getTime() !== new Date(input.expectedUpdatedAt).getTime()) {
+    throw new ConflictError("stale", "Note has been modified elsewhere", {
+      note: mapNote(row, path),
+    });
+  }
+
+  const clean = input.heading.replace(/^#{1,3}\s*/, "").trim().toLowerCase();
+  const headings = headingsOf(row.body_md);
+  const found = headings.some((h) => h.text.toLowerCase() === clean);
+  if (!found) {
+    const available = headings.map((h) => h.text).join(", ");
+    throw new NotFoundError(
+      `heading "${input.heading}" (headings: ${available || "none"})`
+    );
+  }
+
+  const newBodyMd = replaceSection(row.body_md, input.heading, input.markdown);
+
+  const { data: updated, error } = await ctx.db
+    .from("notes")
+    .update({
+      body_md: newBodyMd,
+      doc: null,
+      prev_doc: row.doc,
+      prev_body_md: row.body_md,
+      prev_by: ctx.actor.type === "agent" ? ctx.actor.name : "owner",
+      prev_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", ctx.userId)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return {
+    id: updated.id,
+    title: updated.title,
+    path,
+    updatedAt: updated.updated_at,
+  };
+}
+
+export async function updateNoteForAgent(
+  ctx: Ctx,
+  input: {
+    note: string;
+    title?: string;
+    markdown?: string;
+    expectedUpdatedAt?: string;
+  }
+): Promise<AgentEditResult> {
+  assertScope(ctx, "notes:write");
+
+  const { id, row, path } = await resolveNoteInDb(ctx, input.note);
+
+  if (
+    input.expectedUpdatedAt &&
+    new Date(row.updated_at).getTime() !== new Date(input.expectedUpdatedAt).getTime()
+  ) {
+    throw new ConflictError("stale", "Note has been modified elsewhere", {
+      note: mapNote(row, path),
+    });
+  }
+
+  const updates: Partial<NoteRow> & { updated_at: string } = {
+    updated_at: new Date().toISOString(),
+    prev_doc: row.doc,
+    prev_body_md: row.body_md,
+    prev_by: ctx.actor.type === "agent" ? ctx.actor.name : "owner",
+    prev_at: new Date().toISOString(),
+  };
+
+  if (input.title !== undefined) updates.title = input.title.trim();
+  if (input.markdown !== undefined) {
+    updates.body_md = input.markdown;
+    updates.doc = null;
+  }
+
+  const { data: updated, error } = await ctx.db
+    .from("notes")
+    .update(updates)
+    .eq("user_id", ctx.userId)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  const newPath = await computeNotePath(ctx, updated);
+
+  return {
+    id: updated.id,
+    title: updated.title,
+    path: newPath,
+    updatedAt: updated.updated_at,
+  };
 }
 

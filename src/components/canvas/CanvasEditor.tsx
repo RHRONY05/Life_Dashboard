@@ -19,13 +19,19 @@ import {
   Pin,
   PinOff,
   ChevronDown,
+  GitCompare,
+  Bot,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getCanvasExtensions } from "@/lib/canvas/editor";
 import { CanvasToolbar } from "@/components/canvas/CanvasToolbar";
 import { NotesPane } from "@/components/canvas/NotesPane";
 import { docToMarkdown, docToPlainText } from "@/lib/canvas/markdown";
-import { enqueuePageSave, getOrCreateQueue } from "@/lib/canvas/save-queue";
+import {
+  enqueuePageSave,
+  getOrCreateQueue,
+  updateQueueBaseUpdatedAt,
+} from "@/lib/canvas/save-queue";
 import { analyzePaste } from "@/lib/canvas/paste";
 import { processImageFile } from "@/lib/canvas/images";
 import { imageRefs, titleFromText, buildTree, findNodeInTree } from "@/lib/domain/canvas";
@@ -116,6 +122,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
   >("saved");
   const [staleConflictNote, setStaleConflictNote] = useState<NoteDto | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+  const [isUndoConfirmOpen, setIsUndoConfirmOpen] = useState<boolean>(false);
   const [imageCount, setImageCount] = useState<number>(0);
   const [isIdbSupported] = useState<boolean>(() => isIndexedDBAvailable());
 
@@ -1044,6 +1051,170 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     }
   }, [activeNote, handleSelectScratch, fetchNotes]);
 
+  // See theirs (drop unsaved typing, load latest from server)
+  const handleSeeTheirs = useCallback(() => {
+    if (!staleConflictNote || !activeNoteIdRef.current) return;
+    const incoming = staleConflictNote;
+    updateQueueBaseUpdatedAt(incoming.id, incoming.updatedAt);
+    setActiveNote(incoming);
+    setActiveNoteTitle(incoming.title);
+    setStaleConflictNote(null);
+    setNoteSaveStatus("saved");
+    if (editorRef.current) {
+      if (incoming.doc) {
+        editorRef.current.commands.setContent(incoming.doc, { emitUpdate: false });
+        setImageCount(imageRefs(incoming.doc).length);
+      } else {
+        editorRef.current.commands.setContent(incoming.bodyMd || "", {
+          contentType: "markdown",
+          emitUpdate: false,
+        });
+        setImageCount(0);
+      }
+    }
+  }, [staleConflictNote]);
+
+  // Keep mine (overwrite server with current typing)
+  const handleKeepMine = useCallback(() => {
+    if (!staleConflictNote || !activeNoteIdRef.current || !editorRef.current) return;
+    const incoming = staleConflictNote;
+    setStaleConflictNote(null);
+    updateQueueBaseUpdatedAt(activeNoteIdRef.current, incoming.updatedAt);
+    performNoteSave(
+      activeNoteIdRef.current,
+      incoming,
+      editorRef.current.getJSON(),
+      activeNoteTitleRef.current
+    );
+  }, [staleConflictNote, performNoteSave]);
+
+  // Undo agent edit
+  const handleConfirmUndo = useCallback(async () => {
+    if (!activeNote) return;
+    const actorName = activeNote.prevBy || "Agent";
+    setIsUndoConfirmOpen(false);
+    try {
+      const res = await fetch(`/api/notes/${activeNote.id}/undo-agent-edit`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        toast.error("Failed to undo edit.");
+        return;
+      }
+      const undoneNote: NoteDto = await res.json();
+      updateQueueBaseUpdatedAt(undoneNote.id, undoneNote.updatedAt);
+      setActiveNote(undoneNote);
+      setActiveNoteTitle(undoneNote.title);
+      setStaleConflictNote(null);
+      setNoteSaveStatus("saved");
+      if (editorRef.current) {
+        if (undoneNote.doc) {
+          editorRef.current.commands.setContent(undoneNote.doc, { emitUpdate: false });
+          setImageCount(imageRefs(undoneNote.doc).length);
+        } else {
+          editorRef.current.commands.setContent(undoneNote.bodyMd || "", {
+            contentType: "markdown",
+            emitUpdate: false,
+          });
+          setImageCount(0);
+        }
+      }
+      toast(`${actorName}'s edit undone`);
+      fetchNotes();
+    } catch {
+      toast.error("Failed to undo edit.");
+    }
+  }, [activeNote, fetchNotes]);
+
+  // 60s background polling + visibilitychange (07 §8.9 rule 7)
+  useEffect(() => {
+    if (!activeNoteId) return;
+
+    let cancelled = false;
+
+    const checkRefresh = async () => {
+      if (document.visibilityState !== "visible") return;
+      if (typeof navigator !== "undefined" && !navigator.onLine) return;
+      if (!activeNoteRef.current) return;
+
+      const currentId = activeNoteIdRef.current;
+      if (!currentId) return;
+
+      const queue = getOrCreateQueue(currentId);
+      const base = queue.baseUpdatedAt || activeNoteRef.current.updatedAt;
+
+      try {
+        const res = await fetch(
+          `/api/notes/${currentId}?since=${encodeURIComponent(base)}`
+        );
+        if (cancelled) return;
+        if (res.status === 204) {
+          return;
+        }
+        if (res.ok) {
+          const incoming: NoteDto = await res.json();
+          if (cancelled) return;
+
+          const docJson = editorRef.current
+            ? JSON.stringify(editorRef.current.getJSON())
+            : "";
+          const isDocUnsaved = docJson !== queue.lastSavedDocJson;
+          const isTitleUnsaved =
+            activeNoteTitleRef.current !== queue.lastSavedTitle;
+          const hasUnsavedEdits =
+            queue.inFlight || queue.dirty || isDocUnsaved || isTitleUnsaved;
+
+          if (!hasUnsavedEdits) {
+            updateQueueBaseUpdatedAt(incoming.id, incoming.updatedAt);
+            setActiveNote(incoming);
+            setActiveNoteTitle(incoming.title);
+            setStaleConflictNote(null);
+            if (editorRef.current) {
+              if (incoming.doc) {
+                editorRef.current.commands.setContent(incoming.doc, {
+                  emitUpdate: false,
+                });
+                setImageCount(imageRefs(incoming.doc).length);
+              } else {
+                editorRef.current.commands.setContent(
+                  incoming.bodyMd || "",
+                  {
+                    contentType: "markdown",
+                    emitUpdate: false,
+                  }
+                );
+                setImageCount(0);
+              }
+            }
+            const actorName =
+              incoming.prevBy || incoming.createdBy || "Muse";
+            toast(`${incoming.title} was updated by ${actorName}`);
+            fetchNotes();
+          } else {
+            setStaleConflictNote(incoming);
+          }
+        }
+      } catch {
+        // network / transient error
+      }
+    };
+
+    const intervalId = setInterval(checkRefresh, 60_000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        checkRefresh();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [activeNoteId, fetchNotes]);
+
   // Copy as Markdown
   const handleCopyAsMarkdown = useCallback(() => {
     if (!editor) return;
@@ -1359,56 +1530,6 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
             Use here
           </button>
         </div>
-      )}
-
-      {/* 409 Stale Conflict Banner */}
-      {staleConflictNote && (
-        <Banner variant="warn" className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 stroke-[2] flex-none" />
-            <span>This page changed somewhere else.</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="px-2.5 py-1 text-xs font-bold bg-surface border border-line rounded hover:bg-surface-2 cursor-pointer"
-              onClick={() => {
-                if (editor) {
-                  if (staleConflictNote.doc) {
-                    editor.commands.setContent(staleConflictNote.doc, { emitUpdate: false });
-                  } else {
-                    editor.commands.setContent(staleConflictNote.bodyMd || "", {
-                      contentType: "markdown",
-                      emitUpdate: false,
-                    });
-                  }
-                }
-                setActiveNote(staleConflictNote);
-                setActiveNoteTitle(staleConflictNote.title);
-                setStaleConflictNote(null);
-                setNoteSaveStatus("saved");
-              }}
-            >
-              Load latest
-            </button>
-            <button
-              type="button"
-              className="px-2.5 py-1 text-xs font-bold bg-accent text-accent-ink rounded hover:bg-accent-hover cursor-pointer"
-              onClick={() => {
-                if (editor) {
-                  performNoteSave(
-                    activeNote!.id,
-                    staleConflictNote,
-                    editor.getJSON(),
-                    activeNoteTitle
-                  );
-                }
-              }}
-            >
-              Keep mine
-            </button>
-          </div>
-        </Banner>
       )}
 
       {/* Mobile Top Controls (< 768px) */}
@@ -1946,6 +2067,41 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
               </DropdownMenu>
             </div>
 
+            {/* Conflict Line (06 / V3d) */}
+            {staleConflictNote && (
+              <div className="conflict-line">
+                <GitCompare className="w-3.5 h-3.5 flex-none" />
+                <span>
+                  {staleConflictNote.prevBy || staleConflictNote.createdBy || "Someone"}{" "}
+                  changed this page while you were typing.
+                </span>
+                <button type="button" onClick={handleSeeTheirs}>
+                  See theirs
+                </button>
+                <span>·</span>
+                <button type="button" onClick={handleKeepMine}>
+                  Keep mine
+                </button>
+              </div>
+            )}
+
+            {/* Agent Line (06 / V3d) */}
+            {activeNote && activeNote.prevBy && !staleConflictNote && (
+              <div className="agent-line">
+                <Bot className="w-3.5 h-3.5 text-ink-3 flex-none" />
+                <span>
+                  Edited by <b>{activeNote.prevBy}</b> ·{" "}
+                  {formatRelativeDate(activeNote.prevAt || activeNote.updatedAt)} ·{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsUndoConfirmOpen(true)}
+                  >
+                    Undo
+                  </button>
+                </span>
+              </div>
+            )}
+
             {/* Toolbar */}
             <CanvasToolbar
               editor={editor}
@@ -2053,6 +2209,35 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
               onClick={handleDeleteNoteConfirm}
             >
               Delete page
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Undo Agent Edit Confirmation Dialog */}
+      <Dialog open={isUndoConfirmOpen} onOpenChange={setIsUndoConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Undo edit</DialogTitle>
+            <DialogDescription>
+              Undo {activeNote?.prevBy || "agent"}&apos;s edit? Changes you made after it are lost too.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              className="px-4 py-2 text-xs font-semibold rounded border border-line hover:bg-surface-2 cursor-pointer"
+              onClick={() => setIsUndoConfirmOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              id="confirm-undo-agent-edit-btn"
+              className="px-4 py-2 text-xs font-bold rounded bg-danger text-white hover:opacity-90 cursor-pointer"
+              onClick={handleConfirmUndo}
+            >
+              Undo edit
             </button>
           </DialogFooter>
         </DialogContent>

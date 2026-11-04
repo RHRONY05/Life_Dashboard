@@ -12,6 +12,13 @@ import {
   uploadNoteImage,
   getNoteImageUrl,
   detectImageMimeType,
+  listNotesTree,
+  getNoteForAgent,
+  createNoteForAgent,
+  appendToNote,
+  replaceNoteSection,
+  updateNoteForAgent,
+  undoAgentEdit,
 } from "@/lib/services/notes";
 import { ConflictError, InvalidInputError, NotFoundError } from "@/lib/errors";
 
@@ -277,5 +284,99 @@ describe("Notes Integration Tests (09 §Canvas)", () => {
     await expect(getNote(ctx, l1.id)).rejects.toThrow(NotFoundError);
     await expect(getNote(ctx, l2.id)).rejects.toThrow(NotFoundError);
     await expect(getNote(ctx, l3.id)).rejects.toThrow(NotFoundError);
+  });
+
+  it("handles agent page tools: listNotesTree, getNoteForAgent, appendToNote, replaceNoteSection, updateNoteForAgent, undoAgentEdit", async () => {
+    const agentCtx: Ctx = {
+      db: ctx.db,
+      userId: ctx.userId,
+      actor: {
+        type: "agent",
+        keyId: "test-key-id",
+        name: "Muse",
+        scopes: ["notes:read", "notes:write"],
+      },
+    };
+
+    // 1. Agent creates note "DevTools" with markdown
+    const created = await createNoteForAgent(agentCtx, {
+      title: "DevTools",
+      markdown: "## Libraries\n- WeasyPrint\n\n## Tips\n1. Use docker",
+    });
+    expect(created.title).toBe("DevTools");
+    expect(created.createdBy).toBe("Muse");
+
+    // 2. Agent creates sub-page "Backend tips" under DevTools
+    const child = await createNoteForAgent(agentCtx, {
+      title: "Backend tips",
+      markdown: "## DB\n- PostgreSQL",
+      parent: "DevTools",
+    });
+    expect(child.title).toBe("Backend tips");
+    expect(child.parentId).toBe(created.id);
+    expect(child.path).toBe("DevTools / Backend tips");
+
+    // 3. listNotesTree returns tree order with headings and depth
+    const treeRes = await listNotesTree(agentCtx);
+    expect(treeRes.pages.length).toBe(2);
+    const parentPage = treeRes.pages.find((p) => p.id === created.id)!;
+    expect(parentPage.depth).toBe(1);
+    expect(parentPage.headings).toEqual(["Libraries", "Tips"]);
+    const childPage = treeRes.pages.find((p) => p.id === child.id)!;
+    expect(childPage.depth).toBe(2);
+    expect(childPage.path).toBe("DevTools / Backend tips");
+
+    // 4. getNoteForAgent resolves by path and returns markdown + children
+    const detail = await getNoteForAgent(agentCtx, "DevTools / Backend tips");
+    expect(detail.id).toBe(child.id);
+    expect(detail.markdown).toBe("## DB\n- PostgreSQL");
+
+    const parentDetail = await getNoteForAgent(agentCtx, "devtools");
+    expect(parentDetail.children).toEqual([{ id: child.id, title: "Backend tips" }]);
+
+    // 5. appendToNote under heading "Libraries"
+    const appended = await appendToNote(agentCtx, {
+      note: "DevTools",
+      underHeading: "Libraries",
+      markdown: "- FFmpeg",
+    });
+    expect(appended.id).toBe(created.id);
+
+    // Verify snapshot was created in prev_* and body_md was updated
+    const afterAppend = await getNote(ctx, created.id);
+    expect(afterAppend.bodyMd).toContain("- FFmpeg");
+    expect(afterAppend.prevBy).toBe("Muse");
+    expect(afterAppend.prevAt).toBeDefined();
+
+    // 6. replaceNoteSection replaces section under "Tips"
+    const replaced = await replaceNoteSection(agentCtx, {
+      note: "DevTools",
+      heading: "Tips",
+      markdown: "1. Revised tip",
+      expectedUpdatedAt: afterAppend.updatedAt,
+    });
+    expect(replaced.id).toBe(created.id);
+
+    const afterReplace = await getNote(ctx, created.id);
+    expect(afterReplace.bodyMd).toContain("1. Revised tip");
+    expect(afterReplace.prevBy).toBe("Muse");
+
+    // 7. updateNoteForAgent renames or rewrites note
+    const updated = await updateNoteForAgent(agentCtx, {
+      note: "DevTools",
+      title: "DevTools Master",
+      markdown: "## Overwritten\n- Completely new content",
+    });
+    expect(updated.title).toBe("DevTools Master");
+    const afterUpdate = await getNote(ctx, created.id);
+    expect(afterUpdate.title).toBe("DevTools Master");
+    expect(afterUpdate.bodyMd).toBe("## Overwritten\n- Completely new content");
+
+    // 8. undoAgentEdit restores previous content and clears prev_*
+    const undone = await undoAgentEdit(ctx, created.id);
+    expect(undone.title).toBe("DevTools Master");
+    expect(undone.bodyMd).toContain("1. Revised tip");
+    expect(undone.prevBy).toBeNull();
+    expect(undone.prevAt).toBeNull();
   });
 });

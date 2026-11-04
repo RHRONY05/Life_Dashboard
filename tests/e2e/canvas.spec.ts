@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { createServerClient } from "@supabase/ssr";
+
+if (typeof (globalThis as unknown as { WebSocket: unknown }).WebSocket === "undefined") {
+  (globalThis as unknown as { WebSocket: unknown }).WebSocket = class MockWebSocket {};
+}
 
 test.describe("Canvas Scratch E2E", () => {
   test.beforeEach(async ({ request }) => {
@@ -420,6 +425,126 @@ test.describe("Canvas Scratch E2E", () => {
     await page.waitForTimeout(500);
 
     // Clean up created pages
+    const moreBtn = page.locator(".ecard-head").getByRole("button", { name: "More options" });
+    if (await moreBtn.isVisible()) {
+      await moreBtn.click();
+      await page.getByRole("menuitem", { name: /Delete page/i }).click();
+      await page.locator("#confirm-delete-note-btn").click();
+      await page.waitForTimeout(500);
+    }
+  });
+
+  test("Agent-ready pages: shows Edited by Muse line, confirms and undoes agent edit", async ({
+    page,
+    request,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "Desktop test");
+
+    // 1. Create a page "Agent Page" via API
+    const createRes = await request.post("/api/notes", {
+      data: {
+        title: "Agent Page",
+        bodyMd: "## Base Section\n- Original line",
+        doc: {
+          type: "doc",
+          content: [
+            {
+              type: "heading",
+              attrs: { level: 2 },
+              content: [{ type: "text", text: "Base Section" }],
+            },
+            {
+              type: "bulletList",
+              content: [
+                {
+                  type: "listItem",
+                  content: [
+                    {
+                      type: "paragraph",
+                      content: [{ type: "text", text: "Original line" }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    expect(createRes.ok()).toBe(true);
+    const created = await createRes.json();
+
+    // 2. Open /canvas and select the note
+    await page.goto("/canvas");
+    await page.waitForLoadState("networkidle");
+
+    const pageRow = page.locator(".tree .trow", { hasText: "Agent Page" }).first();
+    await pageRow.click();
+    await expect(page.locator(".ecard-head .ntitle")).toHaveValue("Agent Page");
+
+    // 3. Simulate an agent edit in the DB directly
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll: () => [],
+          setAll: () => {},
+        },
+      }
+    );
+
+    const { error: updateErr } = await supabase
+      .from("notes")
+      .update({
+        body_md: "## Base Section\n- Original line\n- Added by Muse",
+        doc: null,
+        prev_doc: created.doc,
+        prev_body_md: created.bodyMd,
+        prev_by: "Muse",
+        prev_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", created.id);
+    expect(updateErr).toBeNull();
+
+    // 4. Reload page to fetch updated note
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    const pageRowAfter = page.locator(".tree .trow", { hasText: "Agent Page" }).first();
+    await pageRowAfter.click();
+    await expect(page.locator(".ecard-head .ntitle")).toHaveValue("Agent Page");
+
+    // Verify: Agent line is displayed
+    const agentLine = page.locator(".agent-line");
+    await expect(agentLine).toBeVisible();
+    await expect(agentLine).toContainText("Edited by Muse");
+    await expect(agentLine.getByRole("button", { name: "Undo" })).toBeVisible();
+
+    // 5. Click Undo -> Dialog opens
+    await agentLine.getByRole("button", { name: "Undo" }).click();
+    await expect(
+      page.getByText("Undo Muse's edit? Changes you made after it are lost too.")
+    ).toBeVisible();
+
+    // 6. Confirm Undo
+    const confirmBtn = page.locator("#confirm-undo-agent-edit-btn");
+    await confirmBtn.click();
+
+    // Verify toast appears
+    await expect(
+      page.locator("[data-sonner-toast]", { hasText: "Muse's edit undone" })
+    ).toBeVisible();
+
+    // Agent line is now hidden
+    await expect(agentLine).toBeHidden();
+
+    // Content no longer has agent addition
+    await expect(page.locator(".prose .tiptap")).not.toContainText("Added by Muse");
+
+    // Clean up
     const moreBtn = page.locator(".ecard-head").getByRole("button", { name: "More options" });
     if (await moreBtn.isVisible()) {
       await moreBtn.click();

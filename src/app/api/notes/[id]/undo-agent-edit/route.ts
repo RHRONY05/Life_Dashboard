@@ -3,6 +3,8 @@ import { requireOwner } from "@/lib/auth";
 import { undoAgentEdit } from "@/lib/services/notes";
 import { handleApiError } from "@/lib/api-handler";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
