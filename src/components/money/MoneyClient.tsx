@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Plus, MoreHorizontal, Download, ClipboardPaste } from "lucide-react";
 import { Segmented } from "@/components/ui/Segmented";
 import { showToast } from "@/components/ui/Toast";
@@ -65,13 +65,31 @@ export function MoneyClient({
   initialMoneyOverview = DEFAULT_MONEY_OVERVIEW,
   initialPaymentTodos = [],
 }: MoneyClientProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab");
   const monthParam = searchParams.get("month");
 
-  const activeTab: "spending" | "ious" | "topay" =
+  const tabParam = searchParams.get("tab");
+  const urlTab: "spending" | "ious" | "topay" =
     tabParam === "ious" ? "ious" : tabParam === "topay" ? "topay" : "spending";
+
+  const [activeTab, setActiveTab] = useState<"spending" | "ious" | "topay">(urlTab);
+  const [prevUrlTab, setPrevUrlTab] = useState(urlTab);
+
+  if (urlTab !== prevUrlTab) {
+    setPrevUrlTab(urlTab);
+    setActiveTab(urlTab);
+  }
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const url = new URL(window.location.href);
+      const param = url.searchParams.get("tab");
+      const nextTab = param === "ious" ? "ious" : param === "topay" ? "topay" : "spending";
+      setActiveTab(nextTab);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   // ─── SPENDING STATE ───
   const [summary, setSummary] = useState<SpendingSummaryDto>(initialSummary);
@@ -80,6 +98,7 @@ export function MoneyClient({
     initialHasMoreSpending
   );
   const [loadingMoreSpending, setLoadingMoreSpending] = useState(false);
+  const [loadingMonth, setLoadingMonth] = useState(false);
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
   const [viewedMonth, setViewedMonth] = useState<string | undefined>(
     monthParam ?? undefined
@@ -265,20 +284,25 @@ export function MoneyClient({
   }, [activeTab]);
 
   const handleTabChange = (id: string) => {
-    if (id === "ious") {
-      router.push("/money?tab=ious");
-    } else if (id === "topay") {
-      router.push("/money?tab=topay");
-    } else {
-      router.push("/money");
-    }
+    const next = id === "ious" ? "ious" : id === "topay" ? "topay" : "spending";
+    setActiveTab(next);
+    const nextUrl =
+      next === "spending"
+        ? (viewedMonth ? `/money?month=${viewedMonth}` : "/money")
+        : `/money?tab=${next}${viewedMonth ? `&month=${viewedMonth}` : ""}`;
+    window.history.replaceState(null, "", nextUrl);
   };
 
   // ─── SPENDING HANDLERS ───
 
   const handleSelectMonth = async (month: string) => {
     setViewedMonth(month);
-    router.push(`/money?month=${month}`, { scroll: false });
+    const nextUrl =
+      activeTab === "spending"
+        ? `/money?month=${month}`
+        : `/money?tab=${activeTab}&month=${month}`;
+    window.history.replaceState(null, "", nextUrl);
+    setLoadingMonth(true);
     try {
       const [sumRes, daysRes] = await Promise.all([
         fetch(`/api/spending/summary?month=${month}`, { cache: "no-store" }),
@@ -294,6 +318,8 @@ export function MoneyClient({
       }
     } catch {
       showToast("Failed to load month spending");
+    } finally {
+      setLoadingMonth(false);
     }
   };
 
@@ -812,7 +838,10 @@ export function MoneyClient({
   const todayCount = todayGroup ? todayGroup.expenses.length : 0;
 
   return (
-    <div className="page flex-1 max-w-[1200px] mx-auto w-full px-4 sm:px-6 py-6">
+    <div className="page flex-1 max-w-[1200px] mx-auto w-full px-4 sm:px-6 py-6 relative">
+      {loadingMonth && (
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent animate-pulse z-30" />
+      )}
       {/* Header */}
       <div className="page-head flex flex-wrap items-center gap-4 mb-6">
         <h1 className="text-[var(--text-2xl)] font-bold font-display tracking-tight text-[var(--ink)]">

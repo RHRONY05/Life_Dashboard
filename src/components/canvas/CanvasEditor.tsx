@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
-import { useEditor, EditorContent, type Editor } from "@tiptap/react";
+import { useEditor, EditorContent, type Editor, type JSONContent } from "@tiptap/react";
 import clsx from "clsx";
 import {
   Copy,
@@ -106,6 +106,9 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
   const [openTabs, setOpenTabs] = useState<string[]>([]);
   const tabLruOrderRef = useRef<string[]>([]);
   const tabScrollMapRef = useRef<Map<string | null, number>>(new Map());
+  const [loadingNoteId, setLoadingNoteId] = useState<string | null>(null);
+  const noteCacheRef = useRef<Map<string, NoteDto>>(new Map());
+  const scratchDocRef = useRef<JSONContent | null>(null);
 
   // Notes list state
   const [notes, setNotes] = useState<NoteSummaryDto[]>([]);
@@ -276,6 +279,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
           (result) => {
             if (result.kind === "saved") {
               const updated = result.note;
+              noteCacheRef.current.set(updated.id, updated);
               setActiveNote(updated);
               setActiveNoteTitle(updated.title);
               setStaleConflictNote(null);
@@ -692,6 +696,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       .then((saved) => {
         if (!active) return;
         if (saved && saved.doc) {
+          scratchDocRef.current = saved.doc as JSONContent;
           editor.commands.setContent(saved.doc, { emitUpdate: false });
           setImageCount(imageRefs(saved.doc).length);
         } else {
@@ -754,11 +759,13 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       tabScrollMapRef.current.set(activeNoteIdRef.current, window.scrollY);
     }
 
+    // Instantly switch active tab to Scratch (0ms)
     setActiveNoteId(null);
     setActiveNote(null);
     setActiveNoteTitle("");
     setStaleConflictNote(null);
     setMobileTab("scratch");
+    setLoadingNoteId(null);
 
     if (editorRef.current) {
       // Clear folds on Scratch
@@ -768,17 +775,34 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       });
       editorRef.current.view.dispatch(tr);
 
-      const saved = await loadScratch(userId);
-      if (saved && saved.doc) {
-        editorRef.current.commands.setContent(saved.doc, { emitUpdate: false });
-        setImageCount(imageRefs(saved.doc).length);
-      } else {
-        editorRef.current.commands.setContent({
-          type: "doc",
-          content: [{ type: "paragraph" }],
-        }, { emitUpdate: false });
-        setImageCount(0);
+      // Fast-path: if scratch doc is in memory cache, restore immediately in 0ms!
+      if (scratchDocRef.current) {
+        editorRef.current.commands.setContent(scratchDocRef.current, { emitUpdate: false });
+        setImageCount(imageRefs(scratchDocRef.current).length);
+        const prevScroll = tabScrollMapRef.current.get(null) ?? 0;
+        window.scrollTo({ top: prevScroll });
       }
+
+      // Revalidate from IndexedDB
+      try {
+        const saved = await loadScratch(userId);
+        if (saved && saved.doc) {
+          scratchDocRef.current = saved.doc as JSONContent;
+          if (editorRef.current && activeNoteIdRef.current === null) {
+            editorRef.current.commands.setContent(saved.doc, { emitUpdate: false });
+            setImageCount(imageRefs(saved.doc).length);
+          }
+        } else if (!scratchDocRef.current && editorRef.current) {
+          editorRef.current.commands.setContent(
+            {
+              type: "doc",
+              content: [{ type: "paragraph" }],
+            },
+            { emitUpdate: false }
+          );
+          setImageCount(0);
+        }
+      } catch {}
 
       // Restore Scratch scroll
       const prevScroll = tabScrollMapRef.current.get(null) ?? 0;
@@ -804,7 +828,9 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       // 1. Flush outgoing note save or Scratch save
       if (!activeNoteIdRef.current && editorRef.current) {
         try {
-          await saveScratch(userId, editorRef.current.getJSON());
+          const scratchJson = editorRef.current.getJSON();
+          scratchDocRef.current = scratchJson;
+          await saveScratch(userId, scratchJson);
           tabScrollMapRef.current.set(null, window.scrollY);
         } catch {}
       } else if (activeNoteIdRef.current && editorRef.current) {
@@ -812,86 +838,134 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         tabScrollMapRef.current.set(activeNoteIdRef.current, window.scrollY);
       }
 
-      try {
-        const res = await fetch(`/api/notes/${noteId}`);
-        if (!res.ok) {
-          toast.error("Could not load page.");
-          return;
+      // 2. INSTANT OPTIMISTIC TAB HIGHLIGHT (0ms)
+      setActiveNoteId(noteId);
+      const noteSummary = notes.find((n) => n.id === noteId);
+      if (noteSummary) {
+        setActiveNoteTitle(noteSummary.title);
+      }
+
+      // Add to openTabs immediately so the tab lights up in 0ms!
+      setOpenTabs((prev) => {
+        if (prev.includes(noteId)) {
+          return prev;
         }
+        let nextTabs = [...prev];
+        if (nextTabs.length >= 8) {
+          const lruList = tabLruOrderRef.current;
+          const evictCandidate = lruList.find(
+            (id) => id !== activeNoteIdRef.current && nextTabs.includes(id)
+          );
+          const toEvict = evictCandidate || nextTabs[0];
+          nextTabs = nextTabs.filter((id) => id !== toEvict);
+        }
+        const activeIdx = activeNoteIdRef.current
+          ? nextTabs.indexOf(activeNoteIdRef.current)
+          : -1;
+        if (activeIdx >= 0) {
+          nextTabs.splice(activeIdx + 1, 0, noteId);
+        } else {
+          nextTabs.push(noteId);
+        }
+        return nextTabs;
+      });
 
-        const noteData: NoteDto = await res.json();
-        getOrCreateQueue(noteData.id, noteData);
+      // Update LRU tracking
+      tabLruOrderRef.current = [
+        ...tabLruOrderRef.current.filter((id) => id !== noteId),
+        noteId,
+      ];
+      setMobileTab("scratch");
 
-        // Update tabs: add noteId to openTabs (max 8)
-        setOpenTabs((prev) => {
-          if (prev.includes(noteId)) {
-            return prev;
-          }
-          let nextTabs = [...prev];
-          if (nextTabs.length >= 8) {
-            // Evict least recently used tab that isn't currently active
-            const lruList = tabLruOrderRef.current;
-            const evictCandidate = lruList.find(
-              (id) => id !== activeNoteIdRef.current && nextTabs.includes(id)
-            );
-            const toEvict = evictCandidate || nextTabs[0];
-            nextTabs = nextTabs.filter((id) => id !== toEvict);
-          }
-          // Insert after active note if present, else at end
-          const activeIdx = activeNoteIdRef.current
-            ? nextTabs.indexOf(activeNoteIdRef.current)
-            : -1;
-          if (activeIdx >= 0) {
-            nextTabs.splice(activeIdx + 1, 0, noteId);
-          } else {
-            nextTabs.push(noteId);
-          }
-          return nextTabs;
-        });
-
-        // Update LRU tracking
-        tabLruOrderRef.current = [
-          ...tabLruOrderRef.current.filter((id) => id !== noteId),
-          noteId,
-        ];
-
-        setActiveNoteId(noteData.id);
-        setActiveNote(noteData);
-        setActiveNoteTitle(noteData.title);
-        setStaleConflictNote(null);
-        setNoteSaveStatus("saved");
-        setMobileTab("scratch"); // switch view to editor on mobile
+      // 3. FAST PATH: In-memory cache hit (0ms instant switch!)
+      const cached = noteCacheRef.current.get(noteId);
+      if (cached) {
+        setActiveNote(cached);
+        setActiveNoteTitle(cached.title);
+        setLoadingNoteId(null);
+        getOrCreateQueue(cached.id, cached);
 
         if (editorRef.current) {
-          if (noteData.doc) {
-            editorRef.current.commands.setContent(noteData.doc, { emitUpdate: false });
-            setImageCount(imageRefs(noteData.doc).length);
+          if (cached.doc) {
+            editorRef.current.commands.setContent(cached.doc, { emitUpdate: false });
+            setImageCount(imageRefs(cached.doc).length);
           } else {
-            // Agent-created note without doc: initialize from markdown
-            editorRef.current.commands.setContent(noteData.bodyMd || "", {
+            editorRef.current.commands.setContent(cached.bodyMd || "", {
               contentType: "markdown",
               emitUpdate: false,
             });
             setImageCount(0);
           }
 
-          // Restore folds for this page
-          const folds = loadFoldsFromStorage(noteData.id);
+          const folds = loadFoldsFromStorage(cached.id);
           const tr = editorRef.current.state.tr.setMeta(foldPluginKey, {
-            pageId: noteData.id,
+            pageId: cached.id,
             foldedKeys: folds,
           });
           editorRef.current.view.dispatch(tr);
 
-          // Restore scroll
-          const prevScroll = tabScrollMapRef.current.get(noteData.id) ?? 0;
+          const prevScroll = tabScrollMapRef.current.get(cached.id) ?? 0;
           window.scrollTo({ top: prevScroll });
         }
+      } else {
+        // Show loading skeleton in editor while fetching
+        setLoadingNoteId(noteId);
+      }
+
+      // 4. Fetch / Revalidate in background
+      try {
+        const res = await fetch(`/api/notes/${noteId}`);
+        if (!res.ok) {
+          if (!cached) {
+            toast.error("Could not load page.");
+            setLoadingNoteId(null);
+          }
+          return;
+        }
+
+        const noteData: NoteDto = await res.json();
+        noteCacheRef.current.set(noteData.id, noteData);
+        getOrCreateQueue(noteData.id, noteData);
+
+        // Only update editor if user is still on this note
+        if (activeNoteIdRef.current === noteId) {
+          setActiveNote(noteData);
+          setActiveNoteTitle(noteData.title);
+          setStaleConflictNote(null);
+          setNoteSaveStatus("saved");
+          setLoadingNoteId(null);
+
+          if (editorRef.current) {
+            if (noteData.doc) {
+              editorRef.current.commands.setContent(noteData.doc, { emitUpdate: false });
+              setImageCount(imageRefs(noteData.doc).length);
+            } else {
+              editorRef.current.commands.setContent(noteData.bodyMd || "", {
+                contentType: "markdown",
+                emitUpdate: false,
+              });
+              setImageCount(0);
+            }
+
+            const folds = loadFoldsFromStorage(noteData.id);
+            const tr = editorRef.current.state.tr.setMeta(foldPluginKey, {
+              pageId: noteData.id,
+              foldedKeys: folds,
+            });
+            editorRef.current.view.dispatch(tr);
+
+            const prevScroll = tabScrollMapRef.current.get(noteData.id) ?? 0;
+            window.scrollTo({ top: prevScroll });
+          }
+        }
       } catch {
-        toast.error("Could not load page.");
+        if (!cached) {
+          toast.error("Failed to load page.");
+          setLoadingNoteId(null);
+        }
       }
     },
-    [userId, triggerNoteSave]
+    [userId, triggerNoteSave, notes]
   );
 
   // Restore active tab note if initially requested
@@ -1888,9 +1962,12 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
           {/* Editor Card */}
           <section
-            className="ecard bg-surface border border-frame rounded-lg shadow-md flex flex-col overflow-hidden"
+            className="ecard bg-surface border border-frame rounded-lg shadow-md flex flex-col overflow-hidden relative"
             aria-label={activeNoteId ? "Page editor" : "Scratch"}
           >
+            {loadingNoteId && (
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent animate-pulse z-30" />
+            )}
             {/* Desktop Ecard Head (>= 768px) */}
             <div className="ecard-head hidden md:flex items-center gap-3 px-5 py-3 border-b border-frame select-none">
               <div className="title-col flex-1 min-w-0">
@@ -2123,13 +2200,24 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                 }
               }}
             >
-              <div className="prose w-full cursor-text focus:outline-none">
-                <EditorContent
-                  editor={editor}
-                  className="min-h-[500px] cursor-text focus:outline-none"
-                />
+              {loadingNoteId ? (
+                <div className="w-full py-6 space-y-4 animate-fade-in select-none">
+                  <div className="sk h-9 w-64 rounded-md mb-6" />
+                  <div className="sk h-4 w-full rounded" />
+                  <div className="sk h-4 w-11/12 rounded" />
+                  <div className="sk h-4 w-4/5 rounded" />
+                  <div className="sk h-4 w-full rounded mt-6" />
+                  <div className="sk h-4 w-3/4 rounded" />
+                  <div className="sk h-4 w-5/6 rounded" />
+                </div>
+              ) : (
+                <div className="prose w-full cursor-text focus:outline-none">
+                  <EditorContent
+                    editor={editor}
+                    className="min-h-[500px] cursor-text focus:outline-none"
+                  />
 
-                {/* Sub-pages list (only for depth 1 or 2) */}
+                  {/* Sub-pages list (only for depth 1 or 2) */}
                 {activeNote && activeNode && activeNode.depth < 3 && (
                   <div className="subpages">
                     <div className="lbl">Sub-pages</div>
@@ -2169,6 +2257,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                   </div>
                 )}
               </div>
+            )}
             </div>
           </section>
         </div>
