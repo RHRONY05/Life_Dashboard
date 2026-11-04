@@ -16,7 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import clsx from "clsx";
-import { NoteSummaryDto } from "@/lib/schemas";
+import { NoteSummaryDto, isAgentActor } from "@/lib/schemas";
 import {
   buildTree,
   canMove,
@@ -524,7 +524,7 @@ export function NotesPane({
                     </p>
                     <div className="meta">
                       <span>{formatRelativeDate(n.updatedAt)}</span>
-                      {n.createdBy !== "owner" && (
+                      {isAgentActor(n.createdBy) && (
                         <span className="chip text-[10px] px-1 py-0 bg-info-soft text-info-text rounded">
                           via {n.createdBy}
                         </span>

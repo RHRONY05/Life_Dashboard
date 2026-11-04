@@ -20,6 +20,7 @@ import {
   nextMonthly,
   openTotal,
 } from "@/lib/domain/money";
+import { isAgentActor } from "@/lib/schemas";
 
 describe("Money (IOUs) domain logic (07-LOGIC.md §3)", () => {
   it("calculates balance and sentences for Rahim, Karim, and Tanvir", () => {
@@ -268,6 +269,17 @@ hello
         { amount: 200, paidOn: "2026-11-01" },
       ];
       expect(openTotal(items)).toBe(3500);
+    });
+
+    it("isAgentActor returns true only for agent actors, not owner or legacy human", () => {
+      expect(isAgentActor("owner")).toBe(false);
+      expect(isAgentActor("human")).toBe(false);
+      expect(isAgentActor(null)).toBe(false);
+      expect(isAgentActor(undefined)).toBe(false);
+      expect(isAgentActor("")).toBe(false);
+      expect(isAgentActor("Muse")).toBe(true);
+      expect(isAgentActor("Antigravity")).toBe(true);
+      expect(isAgentActor("Claude")).toBe(true);
     });
   });
 });

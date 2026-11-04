@@ -19,6 +19,7 @@ import {
   TrackerDetailDto,
   TrackerItemDto,
   TrackerSummaryDto,
+  isAgentActor,
 } from "@/lib/schemas";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { IconButton } from "@/components/ui/IconButton";
@@ -339,10 +340,10 @@ export function TrackerDetail({
         <div style={{ flex: 1 }} className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h2>{tracker.name}</h2>
-            {tracker.createdBy && tracker.createdBy !== "owner" && (
-              <span className="badge b-agent text-[11px] py-0 px-1.5 h-5">
-                <Bot className="w-3 h-3 mr-1" />
-                via {tracker.createdBy}
+            {isAgentActor(tracker.createdBy) && (
+              <span className="badge b-agent !inline-flex items-center gap-1 text-[11px] py-0 px-1.5 h-5 whitespace-nowrap">
+                <Bot className="w-3 h-3 flex-none" />
+                <span>via {tracker.createdBy}</span>
               </span>
             )}
             {tracker.archived && (

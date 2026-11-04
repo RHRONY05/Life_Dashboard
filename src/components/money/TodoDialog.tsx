@@ -219,7 +219,7 @@ export function TodoDialog({
                 <label className="block text-[var(--text-xs)] font-semibold text-[var(--ink-2)] mb-1.5">
                   Category
                 </label>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="cats flex flex-wrap gap-1.5">
                   {CATEGORIES.map((cat) => {
                     const meta = CATEGORY_META[cat];
                     const Icon = CATEGORY_ICONS[cat];
@@ -232,14 +232,12 @@ export function TodoDialog({
                         onClick={() => setCategory(cat)}
                         disabled={isLimitReached}
                         className={clsx(
-                          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[var(--text-xs)] font-medium border transition-colors",
-                          selected
-                            ? "bg-[var(--ink)] text-[var(--surface)] border-[var(--ink)]"
-                            : "bg-[var(--surface-2)] text-[var(--ink-2)] border-[var(--line)] hover:border-[var(--line-strong)]"
+                          "cat text-[var(--text-xs)]",
+                          selected && "on"
                         )}
                       >
-                        {Icon && <Icon className="w-3.5 h-3.5" />}
-                        {meta.label}
+                        {Icon && <Icon className="w-3.5 h-3.5 flex-none" />}
+                        <span>{meta.label}</span>
                       </button>
                     );
                   })}

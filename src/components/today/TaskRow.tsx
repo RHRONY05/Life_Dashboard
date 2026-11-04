@@ -17,7 +17,7 @@ import {
   MoreHorizontal,
   CornerDownRight,
 } from "lucide-react";
-import { TaskDto } from "@/lib/schemas";
+import { TaskDto, isAgentActor } from "@/lib/schemas";
 import { BoardColumnKey, moveTargets } from "@/lib/domain/board";
 import { IconButton } from "@/components/ui/IconButton";
 import {
@@ -184,10 +184,10 @@ export function TaskRow({
                 moved {task.movedCount}×
               </span>
             )}
-            {task.createdBy !== "owner" && (
-              <span className="badge b-agent">
-                <Bot className="w-3 h-3" />
-                via {task.createdBy}
+            {isAgentActor(task.createdBy) && (
+              <span className="badge b-agent !inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                <Bot className="w-3 h-3 flex-none" />
+                <span>via {task.createdBy}</span>
               </span>
             )}
             {task.trackerItemId && (

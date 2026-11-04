@@ -21,6 +21,7 @@ import {
   ExpenseDto,
   SpendingCategory,
   UpdateExpenseInput,
+  isAgentActor,
 } from "@/lib/schemas";
 import { formatTaka } from "@/lib/domain/money";
 import { todayIn, addDays } from "@/lib/domain/dates";
@@ -208,8 +209,7 @@ export function SpendList({
                       CATEGORY_ICONS[expense.category] || CircleDot;
                     const catLabel =
                       CATEGORY_LABELS[expense.category] || expense.category;
-                    const isAgent =
-                      Boolean(expense.createdBy && expense.createdBy !== "owner");
+                    const isAgent = isAgentActor(expense.createdBy);
 
                     return (
                       <div
@@ -223,15 +223,15 @@ export function SpendList({
                           <div className="font-medium text-[var(--text-sm)] text-[var(--ink)] truncate">
                             {expense.note || catLabel}
                           </div>
-                          <span className="text-[var(--text-xs)] text-[var(--ink-3)] flex items-center gap-1.5">
-                            {expense.note ? catLabel : ""}
+                          <div className="text-[var(--text-xs)] text-[var(--ink-3)] flex items-center gap-1.5 flex-wrap">
+                            {expense.note ? <span>{catLabel}</span> : null}
                             {isAgent && (
-                              <span className="badge b-agent inline-flex items-center gap-1 text-[10px] px-1 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent-text)] font-semibold">
-                                <Bot className="w-3 h-3" />
-                                via {expense.createdBy}
+                              <span className="badge b-agent !inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                <Bot className="w-3 h-3 flex-none" />
+                                <span>via {expense.createdBy}</span>
                               </span>
                             )}
-                          </span>
+                          </div>
                         </div>
                         <span className="amt num font-semibold text-[var(--text-sm)] text-[var(--ink)]">
                           {formatTaka(expense.amount)}

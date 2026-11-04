@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PersonDto, EntryDto } from "@/lib/schemas";
+import { PersonDto, EntryDto, isAgentActor } from "@/lib/schemas";
 import { formatTaka } from "@/lib/domain/money";
 import { Illustration } from "@/components/illustrations/Illustration";
 import { Button } from "@/components/ui/Button";
@@ -293,7 +293,7 @@ export function PeopleList({
               ) : (
                 mobileExpandedEntries.map((entry) => {
                   const isPos = entry.kind === "lent" || entry.kind === "paid";
-                  const isAgent = Boolean(entry.createdBy && entry.createdBy !== "owner");
+                  const isAgent = isAgentActor(entry.createdBy);
 
                   let phrase = "";
                   if (entry.kind === "lent") {
@@ -322,9 +322,9 @@ export function PeopleList({
                           <span className="d flex items-center gap-1.5 flex-wrap">
                             {formatDayShort(entry.occurredOn)}
                             {isAgent && (
-                              <span className="badge b-agent inline-flex items-center gap-1 text-[10px] px-1 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent-text)] font-semibold">
-                                <Bot className="w-3 h-3" />
-                                via {entry.createdBy}
+                              <span className="badge b-agent !inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                <Bot className="w-3 h-3 flex-none" />
+                                <span>via {entry.createdBy}</span>
                               </span>
                             )}
                           </span>

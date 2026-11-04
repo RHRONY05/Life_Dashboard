@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Bot } from "lucide-react";
-import { TrackerSummaryDto } from "@/lib/schemas";
+import { TrackerSummaryDto, isAgentActor } from "@/lib/schemas";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import clsx from "clsx";
 
@@ -35,10 +35,10 @@ export function TrackerCard({
     >
       <h4>
         <span className="truncate">{tracker.name}</span>
-        {tracker.createdBy && tracker.createdBy !== "owner" && (
-          <span className="badge b-agent flex-none text-[11px] py-0 px-1.5 h-5">
-            <Bot className="w-3 h-3 mr-1" />
-            via {tracker.createdBy}
+        {isAgentActor(tracker.createdBy) && (
+          <span className="badge b-agent !inline-flex items-center gap-1 flex-none text-[11px] py-0 px-1.5 h-5 whitespace-nowrap">
+            <Bot className="w-3 h-3 flex-none" />
+            <span>via {tracker.createdBy}</span>
           </span>
         )}
       </h4>

@@ -630,4 +630,9 @@ export interface MoneyOverviewDto {
   people: PersonDto[];
 }
 
+/** Returns true only if createdBy belongs to an AI agent (not owner or legacy human) */
+export function isAgentActor(createdBy?: string | null): boolean {
+  return Boolean(createdBy && createdBy !== "owner" && createdBy !== "human");
+}
+
 
