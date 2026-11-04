@@ -66,7 +66,7 @@ the finished app and reads the code-flow walkthrough; he doesn't write code.
 - [x] M1 Foundation + Today (V0–V3)
 - [x] M2 Canvas (V3a–V3b)
 - [x] M3 Trackers + Money (V4–V5)
-- [ ] M3b Canvas v2 + Money v2 (V3c, V3d, V5a, V5b)
+- [x] M3b Canvas v2 + Money v2 (V3c, V3d, V5a, V5b)
 - [ ] M4 Renewals + Settings (V6–V7)
 - [ ] M5 Agents + final (V8–V10)
 

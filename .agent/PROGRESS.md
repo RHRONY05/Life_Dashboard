@@ -208,4 +208,16 @@ Did: applied migration 20261104040000_life_canvas_pages.sql (`parent_id`, `pinne
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (67 passed) int ✅ (21 passed) e2e ✅ (9 passed) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅ (aliasAssigned: true)
 Commits: 40d18a4, 8cc5b70
-Next: V5a Money v2: IOU ledger
+### 2026-11-04 13:45 — Antigravity — V5a Money v2: IOU ledger
+Did: fixed "via owner" display bug in HistoryPane/SpendList; implemented pure domain logic in `src/lib/domain/money.ts` (`withBalances`, `sinceSettled`, `reminderText`, `reminderTask`, `parseIouText`); updated `src/lib/services/money.ts` (`updateEntry`, `recent`/`lastNote` on Person, `balanceAfter` calculation, `getReminder`, `importIous`); built UI with per-person `+` quick entry with live "will owe ৳X" calculation, inline entry edit dialog, running balance ledger with Settled dividers, breakdown chips, Copy reminder (bilingual 07 §3c format), Remind me button (Today/Tomorrow tasks), and 2-step phone notes import dialog with duplicate detection; verified unit, integration, and E2E Playwright tests; deployed to production.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (72 passed) int ✅ (23 passed) e2e ✅ (5 passed, 4 skipped) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: fd96dda feat(v5a): IOU ledger, running balances, breakdown chips, reminder, and notes import
+
+### 2026-11-04 14:42 — Antigravity — V5b Money v2: To pay, past months, search, export (M3b complete)
+Did: applied migration `20261104134800_life_money_v2.sql` creating `public.payment_todos` with RLS, indices, triggers, and `giving` category constraint; regenerated database types; implemented pure domain logic in `src/lib/domain/spending.ts` (month parameter), `src/lib/domain/money.ts` (`dueState`, `dueLabel`, `nextMonthly`, `openTotal`), and `src/lib/domain/csv.ts` (Excel-compatible UTF-8 BOM `\uFEFF` and CRLF formatting); implemented `src/lib/services/payment-todos.ts` (list, create with 100 limit, update, delete, mark paid with monthly repeat and undo) and updated spending services with month filter and search query; built UI with 3-way segmented tabs (Spending · IOUs · To pay with badge), "Still to pay" tile, Today rail "To pay" line, overdue-first open list, "Mark paid" with monthly repeat and 10s Undo toast, collapsible Paid archive, month switcher, note search bar, Giving category chip, and CSV exports for spending and IOUs; verified unit, integration, and E2E Playwright tests; deployed to production and confirmed HTTP 200.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (77 passed) int ✅ (27 passed) e2e ✅ (5 passed, 4 skipped) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (aliasAssigned: true, HTTP 200)
+Commits: df02cb8 feat(v5b): To pay list, payment todos, past months, search, and CSV export
+Milestone: M3b Canvas v2 + Money v2 complete (docs/milestones/M3b.md)
+Next: Milestone 4 (V6 Renewals + daily email, V7 Settings)
