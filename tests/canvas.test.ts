@@ -493,13 +493,20 @@ describe("Canvas domain logic (07 §8)", () => {
 
   describe("8.11 CanvasImage clipboard serialization", () => {
     it("serializes CanvasImage to HTML with valid src and data-ref for rich clipboard copying", () => {
-      const render = CanvasImage.config.renderHTML?.({
-        node: null as unknown as import("@tiptap/pm/model").Node,
-        HTMLAttributes: {
-          ref: "sb:owner/note1/photo.webp",
-          alt: "My photo",
-        },
-      });
+      const renderFn = CanvasImage.config.renderHTML as unknown as (
+        this: unknown,
+        props: { node: unknown; HTMLAttributes: Record<string, unknown> }
+      ) => unknown;
+      const render = renderFn.call(
+        {},
+        {
+          node: null,
+          HTMLAttributes: {
+            ref: "sb:owner/note1/photo.webp",
+            alt: "My photo",
+          },
+        }
+      );
       expect(render).toEqual([
         "span",
         { class: "cimg" },
