@@ -287,7 +287,7 @@ Rate limit: 30 calls in the last 60 s, the oldest 50 s ago → `{ ok: false, ret
 ### 8.2 Paste (`lib/canvas/paste.ts`, in TipTap's `handlePaste` / `transformPastedHTML`)
 Checked in this order; the first match wins:
 1. **Files** in the clipboard (`image/*`) → one image node each, in order (8.1); any text is ignored.
-2. **`vscode-editor-data`** present (copied from VS Code) → one code block; language = its `mode`; text = `text/plain`.
+2. **`vscode-editor-data`** present (copied from VS Code) → one code block (language = its `mode`; text = `text/plain`). Exception: if `mode === "markdown"` or the text `looksLikeMarkdown` → rule 5; if `mode === "plaintext"` → rule 6.
 3. **`text/html`** present → `cleanPastedHtml` then the editor's schema parser. Cleaning removes `style`, `class`, `id`, colours, fonts, `<meta>`, `<style>`, `<script>`, comments and event attributes; `h4–h6` → `h3`; links keep only `http(s):` and `mailto:` hrefs; `<img>` with an `https:` src → image node with that URL as ref (not downloaded); `data:` image → converted to a file and handled by 8.1. Exception: when the HTML has no block structure (only `<span>`/`<div>`/`<br>` around text) and the `text/plain` part `looksLikeMarkdown` → rule 5.
 4. **`text/plain` that is one URL** (`^https?://\S+$`) → a link; with text selected, the selection becomes the link text.
 5. **`text/plain` that `looksLikeMarkdown`** → parsed as Markdown (`@tiptap/markdown`).

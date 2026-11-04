@@ -12,7 +12,7 @@
 | **Next task** | V3c Canvas v2 (paste Goal 3b from `GOAL.md`; it starts with `/sync-docs`), then V3d, V5a, V5b |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-03 by Antigravity (V5 Money complete, M3 reached) |
+| **Last updated** | 2026-11-04 by Antigravity (Goal 3b started, /sync-docs complete) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -198,5 +198,9 @@ Did: fixed modal cutoff and scrolling failure reported by user. Root causes: 1) 
 Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (54 passed) e2e ✅ (3 passed) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅
 Commits: 38e1aec fix(ui): make dialogs scroll-safe with max-height and compact 2-column row in EntryDialog
-Next: V6 Renewals + daily email (Milestone M4)
-Next: V6 Renewals + daily email (Milestone M4)
+### 2026-11-04 09:42 — Antigravity — /sync-docs audit & docs update
+Did: audited .agent/ docs against codebase for all changes outside tasks (strict mobile/desktop media queries, ThemeToggle, canvas paste exception for markdown & plaintext, full-canvas cursor feel, explicit list markers & checklist same-line flex, dialog scroll-safety & EntryDialog 2-column row, spending calendar picker fix). Updated 06-UI.md, 07-LOGIC.md, 08-TASKS.md ("Changes outside tasks"), and PROGRESS.md. Verified unit and integration tests.
+Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (54 passed) int ✅ (19 passed) build ✅
+Deploy: — (docs sync)
+Commits: docs: sync docs with code (6 fixes)
+Next: V3c Canvas v2: fixes, pages tree, tabs

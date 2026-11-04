@@ -185,6 +185,12 @@ M3b (Canvas v2 + Money v2) is done after M3 and before V6, in the order V3c → 
 
 ## Changes outside tasks
 Fixes and changes Rony asks for in chat, outside a task above. One line each, newest last: date · what changed · which docs were updated (`06`, `07 §8.3`…) or "no doc change: <why>".
+- 2026-11-02 · Desktop/mobile strict media queries & ThemeToggle with light default · `06`, `rules/life-dashboard.md`, `AGENTS.md`
+- 2026-11-03 · Canvas paste & cursor polish (no code block box on pasted markdown, full-canvas cursor with min-height 500px, caret-color: var(--ink)) · `06`, `07 §8.2`
+- 2026-11-03 · Instant tab switching with optimistic nav progress line, route loading skeletons, session forwarding in middleware · `06`
+- 2026-11-03 · Canvas list markers and task checklist same-line flex layout in globals.css · `06`
+- 2026-11-04 · Dialog scroll-safe positioning with max-height and compact 2-column row in EntryDialog · `06`
+- 2026-11-04 · Spending date input calendar icon overflow fix and browser picker duplicate indicator removal · `06`
 
 ## Questions for the human
 (Agents add questions here; the human answers inline.)
