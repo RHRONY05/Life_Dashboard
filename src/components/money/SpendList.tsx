@@ -32,6 +32,7 @@ import { todayIn, addDays } from "@/lib/domain/dates";
 import { Illustration } from "@/components/illustrations/Illustration";
 import { EditExpenseDialog } from "./EditExpenseDialog";
 import { AddExpenseDialog } from "./AddExpenseDialog";
+import { AddToSpendDialog } from "./AddToSpendDialog";
 import { Button } from "@/components/ui/Button";
 
 interface SpendListProps {
@@ -116,6 +117,8 @@ export function SpendList({
   const [editOpen, setEditOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addDialogDate, setAddDialogDate] = useState<string>("");
+  const [addToSpendOpen, setAddToSpendOpen] = useState(false);
+  const [addToSpendExpense, setAddToSpendExpense] = useState<ExpenseDto | null>(null);
   const [collapsedDays, setCollapsedDays] = useState<Set<string>>(() => new Set());
 
   const today = todayIn(new Date(), "Asia/Dhaka");
@@ -336,17 +339,31 @@ export function SpendList({
                           <span className="amt num font-semibold text-[var(--text-sm)] text-[var(--ink)]">
                             {formatTaka(expense.amount)}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedExpense(expense);
-                              setEditOpen(true);
-                            }}
-                            className="iconbtn sm opacity-70 hover:opacity-100 p-1 text-[var(--ink-3)] hover:text-[var(--ink)]"
-                            aria-label="Edit or delete spend"
-                          >
-                            <MoreHorizontal className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1 flex-none">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAddToSpendExpense(expense);
+                                setAddToSpendOpen(true);
+                              }}
+                              className="iconbtn sm p-1.5 text-[var(--ink-3)] hover:text-[var(--ink)] hover:bg-[var(--surface-3)] rounded transition-colors"
+                              aria-label={`Add amount to ${expense.note || catLabel}`}
+                              title={`Add amount to ${expense.note || catLabel}`}
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedExpense(expense);
+                                setEditOpen(true);
+                              }}
+                              className="iconbtn sm opacity-70 hover:opacity-100 p-1 text-[var(--ink-3)] hover:text-[var(--ink)]"
+                              aria-label="Edit or delete spend"
+                            >
+                              <MoreHorizontal className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
@@ -387,6 +404,13 @@ export function SpendList({
           onAdd={handleAddSubmit}
         />
       )}
+
+      <AddToSpendDialog
+        open={addToSpendOpen}
+        onOpenChange={setAddToSpendOpen}
+        expense={addToSpendExpense}
+        onUpdate={onUpdateExpense}
+      />
     </div>
   );
 }

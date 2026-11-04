@@ -119,6 +119,15 @@ test.describe("Spending E2E", () => {
 
     // Verify new spend added and visible
     await expect(page.getByText("Rickshaw")).toBeVisible();
+
+    // Click + button on the item row to add amount to existing spend
+    await page.locator(".spend button[aria-label^='Add amount to']").first().click();
+    await expect(page.getByRole("heading", { name: /^Add to / })).toBeVisible();
+    await page.locator("#add-to-spend-amount").fill("15");
+    await page.getByRole("button", { name: "Add ৳15" }).click();
+
+    // Verify Rickshaw amount increased from ৳25 to ৳40
+    await expect(page.locator(".spend").filter({ hasText: "Rickshaw" })).toContainText("৳40");
   });
 
   test("mobile: adds and views spend", async ({ page, isMobile }) => {

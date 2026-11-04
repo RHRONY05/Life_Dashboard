@@ -11,7 +11,6 @@ import {
   Gamepad2,
   HandHeart,
   CircleDot,
-  Calendar,
 } from "lucide-react";
 import {
   Dialog,
@@ -140,8 +139,8 @@ export function AddExpenseDialog({
             >
               Amount (BDT)
             </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--ink-3)] font-semibold text-[var(--text-base)] pointer-events-none">
+            <div className="input flex items-center h-11 px-3 bg-[var(--surface)]">
+              <span className="text-[var(--ink-3)] font-semibold text-[var(--text-base)] mr-2 select-none">
                 ৳
               </span>
               <input
@@ -157,7 +156,7 @@ export function AddExpenseDialog({
                 }}
                 placeholder="0"
                 autoFocus
-                className="input w-full pl-8 h-11 text-[var(--text-base)] font-bold text-[var(--ink)]"
+                className="w-full bg-transparent border-0 outline-none text-[var(--text-base)] font-bold text-[var(--ink)] p-0"
               />
             </div>
           </div>
@@ -200,15 +199,14 @@ export function AddExpenseDialog({
             >
               Date
             </label>
-            <div className="relative">
-              <Calendar className="w-4 h-4 text-[var(--ink-3)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <div className="input flex items-center h-10 px-3 bg-[var(--surface)]">
               <input
                 id="add-expense-date"
                 type="date"
                 max={today}
                 value={spentOn}
                 onChange={(e) => setSpentOn(e.target.value)}
-                className="input w-full pl-10 h-10 text-[var(--text-sm)] text-[var(--ink)]"
+                className="w-full bg-transparent border-0 outline-none text-[var(--text-sm)] text-[var(--ink)] p-0 cursor-pointer"
               />
             </div>
           </div>
@@ -221,15 +219,17 @@ export function AddExpenseDialog({
             >
               Note (optional)
             </label>
-            <input
-              id="add-expense-note"
-              type="text"
-              maxLength={140}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. Lunch, rickshaw, books..."
-              className="input w-full h-10 text-[var(--text-sm)] text-[var(--ink)]"
-            />
+            <div className="input flex items-center h-10 px-3 bg-[var(--surface)]">
+              <input
+                id="add-expense-note"
+                type="text"
+                maxLength={140}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="e.g. Lunch, rickshaw, books..."
+                className="w-full bg-transparent border-0 outline-none text-[var(--text-sm)] text-[var(--ink)] placeholder:text-[var(--ink-4)] p-0"
+              />
+            </div>
           </div>
 
           <DialogFooter className="gap-2 pt-2">
