@@ -200,4 +200,82 @@ describe("Notes Integration Tests (09 §Canvas)", () => {
 
     await deleteNote(ctx, note.id);
   });
+
+  it("handles parentId, hierarchy depth limits, cycle prevention, and pin limits", async () => {
+    // 1. Create level 1 note
+    const l1 = await createNote(ctx, {
+      title: "DevTools",
+      bodyMd: "Top level",
+    });
+    expect(l1.parentId).toBeNull();
+    expect(l1.path).toBe("DevTools");
+
+    // 2. Create level 2 note
+    const l2 = await createNote(ctx, {
+      title: "Backend tips",
+      bodyMd: "Level 2",
+      parentId: l1.id,
+    });
+    expect(l2.parentId).toBe(l1.id);
+    expect(l2.path).toBe("DevTools / Backend tips");
+
+    // 3. Create level 3 note
+    const l3 = await createNote(ctx, {
+      title: "Postgres",
+      bodyMd: "Level 3",
+      parentId: l2.id,
+    });
+    expect(l3.parentId).toBe(l2.id);
+    expect(l3.path).toBe("DevTools / Backend tips / Postgres");
+
+    // 4. Create level 4 note under level 3 -> throws 409 too_deep
+    await expect(
+      createNote(ctx, {
+        title: "RLS",
+        bodyMd: "Level 4 should fail",
+        parentId: l3.id,
+      })
+    ).rejects.toThrow(ConflictError);
+
+    // 5. Move l1 under l3 -> throws 409 cycle
+    await expect(
+      updateNote(ctx, l1.id, {
+        baseUpdatedAt: l1.updatedAt,
+        parentId: l3.id,
+      })
+    ).rejects.toThrow(ConflictError);
+
+    // 6. Pin notes: max 5 pins
+    const p1 = await updateNote(ctx, l1.id, {
+      baseUpdatedAt: l1.updatedAt,
+      pinned: true,
+    });
+    expect(p1.pinned).toBe(true);
+
+    const notesToPin: string[] = [];
+    for (let i = 1; i <= 4; i++) {
+      const extra = await createNote(ctx, { title: `Pinned Page ${i}`, bodyMd: "" });
+      const pinnedExtra = await updateNote(ctx, extra.id, {
+        baseUpdatedAt: extra.updatedAt,
+        pinned: true,
+      });
+      expect(pinnedExtra.pinned).toBe(true);
+      notesToPin.push(extra.id);
+    }
+
+    // 6th pin attempt -> throws 409 limit_reached
+    const extra6 = await createNote(ctx, { title: "Pinned Page 6", bodyMd: "" });
+    await expect(
+      updateNote(ctx, extra6.id, {
+        baseUpdatedAt: extra6.updatedAt,
+        pinned: true,
+      })
+    ).rejects.toThrow(ConflictError);
+
+    // 7. Subtree delete: deleting l1 deletes l2 and l3
+    await deleteNote(ctx, l1.id);
+    await expect(getNote(ctx, l1.id)).rejects.toThrow(NotFoundError);
+    await expect(getNote(ctx, l2.id)).rejects.toThrow(NotFoundError);
+    await expect(getNote(ctx, l3.id)).rejects.toThrow(NotFoundError);
+  });
 });

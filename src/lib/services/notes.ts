@@ -6,21 +6,33 @@ import {
   NoteSummaryDto,
   UpdateNoteInput,
 } from "@/lib/schemas";
-import { imageRefs, unreferencedPaths } from "@/lib/domain/canvas";
+import {
+  buildTree,
+  canMove,
+  flattenTree,
+  imageRefs,
+  unreferencedPaths,
+  type NoteSummaryItem,
+} from "@/lib/domain/canvas";
 import { ConflictError, InvalidInputError, NotFoundError } from "@/lib/errors";
 
 type NoteRow = Database["public"]["Tables"]["notes"]["Row"];
 
-function mapNote(n: NoteRow): NoteDto {
+function mapNote(n: NoteRow, path?: string): NoteDto {
   return {
     id: n.id,
     title: n.title,
+    parentId: n.parent_id,
+    pinned: n.pinned,
     snippet: n.body_md.slice(0, 140),
     doc: n.doc as Record<string, unknown> | null,
     bodyMd: n.body_md,
+    path: path || n.title,
     createdBy: n.created_by,
     createdAt: n.created_at,
     updatedAt: n.updated_at,
+    prevBy: n.prev_by,
+    prevAt: n.prev_at,
   };
 }
 
@@ -85,13 +97,12 @@ export async function getNotes(
 
   let req = ctx.db
     .from("notes")
-    .select("id, title, body_md, created_by, updated_at")
+    .select("id, title, parent_id, pinned, body_md, created_by, updated_at")
     .eq("user_id", ctx.userId)
     .order("updated_at", { ascending: false });
 
   if (query && query.trim().length > 0) {
     const q = query.trim().slice(0, 100);
-    // Sanitize ilike special chars if needed, or simple wildcard
     const sanitized = q.replace(/[%_]/g, "\\$&");
     req = req.or(`title.ilike.%${sanitized}%,body_md.ilike.%${sanitized}%`);
   }
@@ -102,12 +113,37 @@ export async function getNotes(
   const summaries: NoteSummaryDto[] = (data || []).map((row) => ({
     id: row.id,
     title: row.title,
+    parentId: row.parent_id,
+    pinned: row.pinned,
     snippet: row.body_md.slice(0, 140),
     createdBy: row.created_by,
     updatedAt: row.updated_at,
   }));
 
   return { notes: summaries };
+}
+
+async function computeNotePath(ctx: Ctx, note: NoteRow): Promise<string> {
+  let current: { id: string; title: string; parent_id: string | null } | null = note;
+  const titles = [current.title];
+  let depth = 1;
+
+  while (current?.parent_id && depth <= 3) {
+    const res = await ctx.db
+      .from("notes")
+      .select("id, title, parent_id")
+      .eq("user_id", ctx.userId)
+      .eq("id", current.parent_id)
+      .maybeSingle();
+
+    const parentNode = res.data as { id: string; title: string; parent_id: string | null } | null;
+    if (!parentNode) break;
+    titles.unshift(parentNode.title);
+    current = parentNode;
+    depth++;
+  }
+
+  return titles.join(" / ");
 }
 
 export async function getNote(ctx: Ctx, id: string): Promise<NoteDto> {
@@ -125,7 +161,8 @@ export async function getNote(ctx: Ctx, id: string): Promise<NoteDto> {
     throw new NotFoundError("Note not found");
   }
 
-  return mapNote(data);
+  const path = await computeNotePath(ctx, data);
+  return mapNote(data, path);
 }
 
 export async function createNote(
@@ -146,6 +183,40 @@ export async function createNote(
       "limit_reached",
       "You have reached the limit of 300 notes."
     );
+  }
+
+  // Validate parentId if provided
+  if (input.parentId) {
+    const { data: parent, error: parentErr } = await ctx.db
+      .from("notes")
+      .select("id, parent_id")
+      .eq("user_id", ctx.userId)
+      .eq("id", input.parentId)
+      .maybeSingle();
+
+    if (parentErr) throw parentErr;
+    if (!parent) {
+      throw new NotFoundError("Parent note not found");
+    }
+
+    // Check parent's depth
+    let parentDepth = 1;
+    let curr = parent;
+    while (curr.parent_id && parentDepth <= 3) {
+      const { data: ancestor } = await ctx.db
+        .from("notes")
+        .select("id, parent_id")
+        .eq("user_id", ctx.userId)
+        .eq("id", curr.parent_id)
+        .maybeSingle();
+      if (!ancestor) break;
+      curr = ancestor;
+      parentDepth++;
+    }
+
+    if (parentDepth >= 3) {
+      throw new ConflictError("too_deep", "Max 3 levels");
+    }
   }
 
   if (input.doc) {
@@ -169,14 +240,17 @@ export async function createNote(
       user_id: ctx.userId,
       title: input.title.trim(),
       doc: (input.doc as Json) ?? null,
-      body_md: input.bodyMd,
+      body_md: input.bodyMd || "",
+      parent_id: input.parentId || null,
+      pinned: false,
       created_by: ctx.actor.type === "owner" ? "owner" : ctx.actor.name,
     })
     .select()
     .single();
 
   if (error) throw error;
-  return mapNote(data);
+  const path = await computeNotePath(ctx, data);
+  return mapNote(data, path);
 }
 
 export async function updateNote(
@@ -202,9 +276,47 @@ export async function updateNote(
   const existingTime = new Date(existing.updated_at).getTime();
   const baseTime = new Date(input.baseUpdatedAt).getTime();
   if (existingTime !== baseTime) {
+    const path = await computeNotePath(ctx, existing);
     throw new ConflictError("stale", "Note has been modified elsewhere", {
-      note: mapNote(existing),
+      note: mapNote(existing, path),
     });
+  }
+
+  // Check pin limit: max 5 pinned pages
+  if (input.pinned === true && !existing.pinned) {
+    const { count: pinnedCount } = await ctx.db
+      .from("notes")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", ctx.userId)
+      .eq("pinned", true);
+
+    if (pinnedCount !== null && pinnedCount >= 5) {
+      throw new ConflictError("limit_reached", "You can pin 5 pages.");
+    }
+  }
+
+  // Check parent move validity if parentId is being changed
+  if (input.parentId !== undefined && input.parentId !== existing.parent_id) {
+    const { data: allNotes } = await ctx.db
+      .from("notes")
+      .select("id, title, parent_id, pinned")
+      .eq("user_id", ctx.userId);
+
+    const summaries: NoteSummaryItem[] = (allNotes || []).map((n) => ({
+      id: n.id,
+      title: n.title,
+      parentId: n.parent_id,
+      pinned: n.pinned,
+    }));
+
+    const tree = buildTree(summaries);
+    const moveVerdict = canMove(tree, id, input.parentId);
+    if (moveVerdict === "cycle") {
+      throw new ConflictError("cycle", "Cannot move page under itself");
+    }
+    if (moveVerdict === "too_deep") {
+      throw new ConflictError("too_deep", "Max 3 levels");
+    }
   }
 
   if (input.doc) {
@@ -222,18 +334,26 @@ export async function updateNote(
     }
   }
 
-  const updates: {
-    title?: string;
-    doc?: Json | null;
-    body_md?: string;
-    updated_at: string;
-  } = {
+  const updates: Partial<NoteRow> & { updated_at: string } = {
     updated_at: new Date().toISOString(),
   };
 
   if (input.title !== undefined) updates.title = input.title.trim();
   if (input.doc !== undefined) updates.doc = (input.doc as Json) ?? null;
   if (input.bodyMd !== undefined) updates.body_md = input.bodyMd;
+  if (input.parentId !== undefined) updates.parent_id = input.parentId;
+  if (input.pinned !== undefined) updates.pinned = input.pinned;
+
+  // Clear prev_* if older than 7 days
+  if (
+    existing.prev_at &&
+    Date.now() - new Date(existing.prev_at).getTime() > 7 * 24 * 60 * 60 * 1000
+  ) {
+    updates.prev_doc = null;
+    updates.prev_body_md = null;
+    updates.prev_by = null;
+    updates.prev_at = null;
+  }
 
   const { data: updated, error: updateErr } = await ctx.db
     .from("notes")
@@ -245,7 +365,7 @@ export async function updateNote(
 
   if (updateErr) throw updateErr;
 
-  // Clean up unreferenced storage images older than 10 mins (07 §8.5)
+  // Clean up unreferenced storage images older than 10 mins (keeping doc, prev_doc, body_md)
   try {
     const folderPath = `${ctx.userId}/${id}`;
     const { data: files } = await ctx.db.storage
@@ -256,57 +376,82 @@ export async function updateNote(
       const activeDoc = (
         input.doc !== undefined ? input.doc : existing.doc
       ) as Record<string, unknown> | null;
+      const prevDoc = existing.prev_doc as Record<string, unknown> | null;
+
       const activeRefs = activeDoc ? imageRefs(activeDoc) : [];
+      const prevRefs = prevDoc ? imageRefs(prevDoc) : [];
+      const allActiveRefs = new Set([...activeRefs, ...prevRefs]);
 
       const storageFiles = files.map((f) => ({
         path: `${folderPath}/${f.name}`,
         createdAt: new Date(f.created_at || Date.now()),
       }));
 
-      const toDelete = unreferencedPaths(activeRefs, storageFiles, new Date());
+      const toDelete = unreferencedPaths(allActiveRefs, storageFiles, new Date());
       if (toDelete.length > 0) {
-        // storage remove takes array of paths relative to bucket
         await ctx.db.storage.from("life-notes").remove(toDelete);
       }
     }
   } catch (cleanErr) {
-    // Non-fatal cleanup
     console.error("Failed to clean up unreferenced images:", cleanErr);
   }
 
-  return mapNote(updated);
+  const path = await computeNotePath(ctx, updated);
+  return mapNote(updated, path);
 }
 
 export async function deleteNote(ctx: Ctx, id: string): Promise<void> {
   assertScope(ctx, "notes:write");
 
-  const { data: existing, error: fetchErr } = await ctx.db
+  const { data: allUserNotes } = await ctx.db
     .from("notes")
-    .select("id")
-    .eq("user_id", ctx.userId)
-    .eq("id", id)
-    .maybeSingle();
+    .select("id, title, parent_id")
+    .eq("user_id", ctx.userId);
 
-  if (fetchErr) throw fetchErr;
-  if (!existing) {
+  const target = allUserNotes?.find((n) => n.id === id);
+  if (!target) {
     throw new NotFoundError("Note not found");
   }
 
-  // Delete all storage objects in <user_id>/<id>/
-  try {
-    const folderPath = `${ctx.userId}/${id}`;
-    const { data: files } = await ctx.db.storage
-      .from("life-notes")
-      .list(folderPath);
+  // Find all descendants in the subtree to delete their image folders
+  const summaries: NoteSummaryItem[] = (allUserNotes || []).map((n) => ({
+    id: n.id,
+    title: n.title,
+    parentId: n.parent_id,
+  }));
+  const tree = buildTree(summaries);
+  const flat = flattenTree(tree);
 
-    if (files && files.length > 0) {
-      const filePaths = files.map((f) => `${folderPath}/${f.name}`);
-      await ctx.db.storage.from("life-notes").remove(filePaths);
+  // Find all descendants of target
+  function collectSubtreeIds(rootId: string): string[] {
+    const ids = [rootId];
+    const children = flat.filter((n) => n.parentId === rootId);
+    for (const ch of children) {
+      ids.push(...collectSubtreeIds(ch.id));
     }
-  } catch (storageErr) {
-    console.error("Failed to remove note storage files:", storageErr);
+    return ids;
   }
 
+  const subtreeIds = collectSubtreeIds(id);
+
+  // Delete storage objects for all notes in subtree
+  for (const noteId of subtreeIds) {
+    try {
+      const folderPath = `${ctx.userId}/${noteId}`;
+      const { data: files } = await ctx.db.storage
+        .from("life-notes")
+        .list(folderPath);
+
+      if (files && files.length > 0) {
+        const filePaths = files.map((f) => `${folderPath}/${f.name}`);
+        await ctx.db.storage.from("life-notes").remove(filePaths);
+      }
+    } catch (storageErr) {
+      console.error(`Failed to remove storage files for note ${noteId}:`, storageErr);
+    }
+  }
+
+  // Delete from DB (on delete cascade deletes children in DB)
   const { error: delErr } = await ctx.db
     .from("notes")
     .delete()
@@ -316,6 +461,47 @@ export async function deleteNote(ctx: Ctx, id: string): Promise<void> {
   if (delErr) throw delErr;
 }
 
+export async function undoAgentEdit(ctx: Ctx, id: string): Promise<NoteDto> {
+  assertScope(ctx, "notes:write");
+
+  const { data: existing, error: fetchErr } = await ctx.db
+    .from("notes")
+    .select("*")
+    .eq("user_id", ctx.userId)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fetchErr) throw fetchErr;
+  if (!existing) {
+    throw new NotFoundError("Note not found");
+  }
+
+  if (!existing.prev_doc && !existing.prev_body_md) {
+    throw new ConflictError("nothing_to_undo", "No agent edit to undo");
+  }
+
+  const { data: updated, error: updateErr } = await ctx.db
+    .from("notes")
+    .update({
+      doc: existing.prev_doc,
+      body_md: existing.prev_body_md || "",
+      prev_doc: null,
+      prev_body_md: null,
+      prev_by: null,
+      prev_at: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", ctx.userId)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (updateErr) throw updateErr;
+
+  const path = await computeNotePath(ctx, updated);
+  return mapNote(updated, path);
+}
+
 export async function uploadNoteImage(
   ctx: Ctx,
   noteId: string,
@@ -323,7 +509,6 @@ export async function uploadNoteImage(
 ): Promise<{ ref: string }> {
   assertScope(ctx, "notes:write");
 
-  // Verify note exists and belongs to user
   const { data: note, error: noteErr } = await ctx.db
     .from("notes")
     .select("id")
@@ -336,14 +521,12 @@ export async function uploadNoteImage(
     throw new NotFoundError("Note not found");
   }
 
-  // File size check: 1MB limit
   if (buffer.length > 1_048_576) {
     throw new InvalidInputError("File exceeds 1MB limit", {
       reason: "too_large",
     });
   }
 
-  // Magic byte validation
   const detected = detectImageMimeType(buffer);
   if (!detected) {
     throw new InvalidInputError(
@@ -352,33 +535,31 @@ export async function uploadNoteImage(
     );
   }
 
-  // Check 30 images limit on the note
-  const folderPath = `${ctx.userId}/${noteId}`;
   const { data: files, error: listErr } = await ctx.db.storage
     .from("life-notes")
-    .list(folderPath);
+    .list(`${ctx.userId}/${noteId}`);
 
   if (listErr) throw listErr;
   if (files && files.length >= 30) {
     throw new ConflictError(
       "limit_reached",
-      "A note can hold at most 30 images"
+      "A note can contain at most 30 images."
     );
   }
 
-  const imageId = crypto.randomUUID();
-  const storagePath = `${folderPath}/${imageId}.${detected.ext}`;
+  const uuid = crypto.randomUUID();
+  const filePath = `${ctx.userId}/${noteId}/${uuid}.${detected.ext}`;
 
   const { error: uploadErr } = await ctx.db.storage
     .from("life-notes")
-    .upload(storagePath, buffer, {
+    .upload(filePath, buffer, {
       contentType: detected.mime,
       upsert: false,
     });
 
   if (uploadErr) throw uploadErr;
 
-  return { ref: `sb:${storagePath}` };
+  return { ref: `sb:${filePath}` };
 }
 
 export async function getNoteImageUrl(
@@ -402,3 +583,4 @@ export async function getNoteImageUrl(
 
   return data.signedUrl;
 }
+

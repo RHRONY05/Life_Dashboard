@@ -93,7 +93,6 @@ export function titleFromText(md: string, today?: Date | string): string {
   }
 
   if (clean.length > 60) {
-    // Cut at the last space at or before char 60
     const substring = clean.slice(0, 60);
     const lastSpace = substring.lastIndexOf(" ");
     if (lastSpace > 0) {
@@ -149,7 +148,6 @@ export function unreferencedPaths(
 
   const result: string[] = [];
   for (const file of files) {
-    // Check if path or full ref is in refs
     const isReferenced =
       refSet.has(file.path) ||
       refSet.has(`sb:${file.path}`) ||
@@ -168,4 +166,304 @@ export function unreferencedPaths(
   }
 
   return result;
+}
+
+// 07 §8.8 Pages tree
+export interface NoteSummaryItem {
+  id: string;
+  title: string;
+  parentId?: string | null;
+  pinned?: boolean;
+  snippet?: string;
+  createdBy?: string;
+  updatedAt?: string;
+}
+
+export interface NoteTreeNode extends NoteSummaryItem {
+  parentId: string | null;
+  depth: number;
+  path: string;
+  children: NoteTreeNode[];
+}
+
+export function buildTree(items: NoteSummaryItem[]): NoteTreeNode[] {
+  // Map items to intermediate nodes
+  const nodeMap = new Map<string, NoteTreeNode>();
+  for (const item of items) {
+    nodeMap.set(item.id, {
+      ...item,
+      parentId: item.parentId || null,
+      depth: 1,
+      path: item.title,
+      children: [],
+    });
+  }
+
+  const roots: NoteTreeNode[] = [];
+
+  for (const item of items) {
+    const node = nodeMap.get(item.id)!;
+    if (item.parentId && nodeMap.has(item.parentId)) {
+      const parent = nodeMap.get(item.parentId)!;
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+
+  // Sort siblings case-insensitively, then by id
+  function sortNodes(list: NoteTreeNode[]) {
+    list.sort((a, b) => {
+      const cmp = a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+      if (cmp !== 0) return cmp;
+      return a.id.localeCompare(b.id);
+    });
+    for (const child of list) {
+      sortNodes(child.children);
+    }
+  }
+
+  // Assign depth and path recursively
+  function assignMeta(node: NoteTreeNode, currentDepth: number, parentPath: string) {
+    node.depth = currentDepth;
+    node.path = parentPath ? `${parentPath} / ${node.title}` : node.title;
+    for (const child of node.children) {
+      assignMeta(child, currentDepth + 1, node.path);
+    }
+  }
+
+  sortNodes(roots);
+  for (const root of roots) {
+    assignMeta(root, 1, "");
+  }
+
+  return roots;
+}
+
+export function findNodeInTree(nodes: NoteTreeNode[], id: string): NoteTreeNode | null {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    const found = findNodeInTree(node.children, id);
+    if (found) return found;
+  }
+  return null;
+}
+
+export function getSubtreeHeight(node: NoteTreeNode): number {
+  if (!node.children || node.children.length === 0) return 1;
+  return 1 + Math.max(...node.children.map(getSubtreeHeight));
+}
+
+export function isDescendant(parent: NoteTreeNode, targetId: string): boolean {
+  for (const child of parent.children) {
+    if (child.id === targetId) return true;
+    if (isDescendant(child, targetId)) return true;
+  }
+  return false;
+}
+
+export function canMove(
+  tree: NoteTreeNode[],
+  id: string,
+  newParentId: string | null
+): "ok" | "cycle" | "too_deep" {
+  const node = findNodeInTree(tree, id);
+  if (!node) return "ok";
+
+  if (newParentId === null) {
+    // Move to top level (depth 1)
+    const height = getSubtreeHeight(node);
+    if (1 + height - 1 > 3) return "too_deep";
+    return "ok";
+  }
+
+  // Cycle check: cannot move under itself or any descendant
+  if (newParentId === id) return "cycle";
+  if (isDescendant(node, newParentId)) return "cycle";
+
+  // Depth check: newParent.depth + subtreeHeight <= 3
+  const newParent = findNodeInTree(tree, newParentId);
+  if (!newParent) return "ok";
+
+  const height = getSubtreeHeight(node);
+  if (newParent.depth + height > 3) {
+    return "too_deep";
+  }
+
+  return "ok";
+}
+
+export function flattenTree(tree: NoteTreeNode[]): NoteTreeNode[] {
+  const result: NoteTreeNode[] = [];
+  function traverse(nodes: NoteTreeNode[]) {
+    for (const n of nodes) {
+      result.push(n);
+      traverse(n.children);
+    }
+  }
+  traverse(tree);
+  return result;
+}
+
+export function normalizePath(p: string): string {
+  return p
+    .split("/")
+    .map((s) => s.trim().toLowerCase())
+    .join("/");
+}
+
+export type ResolveNoteResult =
+  | { ok: true; note: NoteTreeNode }
+  | { ok: false; error: "not_found" }
+  | { ok: false; error: "ambiguous"; paths: string[] };
+
+export function resolveNote(
+  allNotes: NoteTreeNode[] | NoteSummaryItem[],
+  ref: string
+): ResolveNoteResult {
+  const tree = "children" in (allNotes[0] || {})
+    ? (allNotes as NoteTreeNode[])
+    : buildTree(allNotes as NoteSummaryItem[]);
+  const flat = flattenTree(tree);
+
+  const trimmedRef = ref.trim();
+
+  // 1. By ID
+  const byId = flat.find((n) => n.id.toLowerCase() === trimmedRef.toLowerCase());
+  if (byId) return { ok: true, note: byId };
+
+  // 2. By exact path (case-insensitive, spaces around / ignored)
+  const targetNormPath = normalizePath(trimmedRef);
+  const byPath = flat.find((n) => normalizePath(n.path) === targetNormPath);
+  if (byPath) return { ok: true, note: byPath };
+
+  // 3. By title
+  const targetTitle = trimmedRef.toLowerCase();
+  const byTitle = flat.filter((n) => n.title.toLowerCase() === targetTitle);
+  if (byTitle.length === 1) {
+    return { ok: true, note: byTitle[0] };
+  }
+  if (byTitle.length > 1) {
+    return {
+      ok: false,
+      error: "ambiguous",
+      paths: byTitle.map((n) => n.path),
+    };
+  }
+
+  return { ok: false, error: "not_found" };
+}
+
+// 07 §8.10 Markdown sections (for agent page tools)
+export interface HeadingItem {
+  level: number;
+  text: string;
+  lineIndex: number;
+}
+
+export function headingsOf(md: string): HeadingItem[] {
+  if (!md || typeof md !== "string") return [];
+
+  const lines = md.split(/\r?\n/);
+  const result: HeadingItem[] = [];
+  let inCodeBlock = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trimStart().startsWith("```")) {
+      inCodeBlock = !inCodeBlock;
+      continue;
+    }
+    if (inCodeBlock) continue;
+
+    const match = line.match(/^(#{1,3})\s+(.+)$/);
+    if (match) {
+      result.push({
+        level: match[1].length,
+        text: match[2].trim(),
+        lineIndex: i,
+      });
+    }
+  }
+
+  return result;
+}
+
+export function appendToSection(md: string, add: string, heading?: string): string {
+  const lines = md.split(/\r?\n/);
+
+  if (!heading) {
+    // Append at end of page
+    const trimmedEnd = md.trimEnd();
+    if (!trimmedEnd) return add;
+    const isLastLineList = /^[-*]\s+|\d+\.\s+|-\s*\[[ xX]\]/.test(lines[lines.length - 1] || "");
+    const isAddList = /^[-*]\s+|\d+\.\s+|-\s*\[[ xX]\]/.test(add.trim());
+    const separator = isLastLineList && isAddList ? "\n" : "\n\n";
+    return `${trimmedEnd}${separator}${add}\n`;
+  }
+
+  const headings = headingsOf(md);
+  const targetClean = heading.replace(/^#{1,3}\s*/, "").trim().toLowerCase();
+  const targetHeading = headings.find((h) => h.text.toLowerCase() === targetClean);
+
+  if (!targetHeading) {
+    // Fallback: append at end of page
+    return appendToSection(md, add);
+  }
+
+  // Section runs until the next heading with level <= targetHeading.level, or end of doc
+  let sectionEndLine = lines.length;
+  for (const h of headings) {
+    if (h.lineIndex > targetHeading.lineIndex && h.level <= targetHeading.level) {
+      sectionEndLine = h.lineIndex;
+      break;
+    }
+  }
+
+  // Find insertion point before any trailing blank lines in this section
+  let insertLine = sectionEndLine;
+  while (insertLine > targetHeading.lineIndex + 1 && lines[insertLine - 1].trim() === "") {
+    insertLine--;
+  }
+
+  const lastLine = lines[insertLine - 1] || "";
+  const isLastLineList = /^[-*]\s+|\d+\.\s+|-\s*\[[ xX]\]/.test(lastLine.trim());
+  const isAddList = /^[-*]\s+|\d+\.\s+|-\s*\[[ xX]\]/.test(add.trim());
+
+  const before = lines.slice(0, insertLine);
+  const after = lines.slice(insertLine);
+
+  if (isLastLineList && isAddList) {
+    return [...before, add, ...after].join("\n");
+  }
+
+  // Otherwise separated by blank line if needed
+  if (before.length > 0 && before[before.length - 1].trim() !== "") {
+    return [...before, "", add, ...after].join("\n");
+  }
+  return [...before, add, ...after].join("\n");
+}
+
+export function replaceSection(md: string, heading: string, body: string): string {
+  const lines = md.split(/\r?\n/);
+  const headings = headingsOf(md);
+  const targetClean = heading.replace(/^#{1,3}\s*/, "").trim().toLowerCase();
+  const targetHeading = headings.find((h) => h.text.toLowerCase() === targetClean);
+
+  if (!targetHeading) {
+    return md;
+  }
+
+  let sectionEndLine = lines.length;
+  for (const h of headings) {
+    if (h.lineIndex > targetHeading.lineIndex && h.level <= targetHeading.level) {
+      sectionEndLine = h.lineIndex;
+      break;
+    }
+  }
+
+  const before = lines.slice(0, targetHeading.lineIndex + 1);
+  const after = lines.slice(sectionEndLine);
+
+  return [...before, body, ...after].join("\n");
 }

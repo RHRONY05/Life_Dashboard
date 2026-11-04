@@ -5,13 +5,19 @@ import { deleteNote, getNote, updateNote } from "@/lib/services/notes";
 import { handleApiError } from "@/lib/api-handler";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const ctx = await requireOwner();
     const { id } = await params;
+    const { searchParams } = new URL(req.url);
+    const since = searchParams.get("since");
+
     const note = await getNote(ctx, id);
+    if (since && note.updatedAt === since) {
+      return new NextResponse(null, { status: 204 });
+    }
     return NextResponse.json(note);
   } catch (err) {
     return handleApiError(err);

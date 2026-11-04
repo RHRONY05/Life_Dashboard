@@ -10,6 +10,7 @@ import { TableCell } from "@tiptap/extension-table-cell";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { Markdown } from "@tiptap/markdown";
 import { CanvasImageView } from "@/components/canvas/CanvasImageView";
+import { FoldExtension } from "@/lib/canvas/fold-extension";
 
 export const CanvasImage = Node.create({
   name: "canvasImage",
@@ -126,5 +127,6 @@ export function getCanvasExtensions(placeholderText?: string) {
     }),
     Markdown,
     CanvasImage,
+    FoldExtension,
   ];
 }

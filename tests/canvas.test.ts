@@ -7,6 +7,12 @@ import {
   titleFromText,
   imageRefs,
   unreferencedPaths,
+  buildTree,
+  canMove,
+  resolveNote,
+  headingsOf,
+  appendToSection,
+  replaceSection,
 } from "@/lib/domain/canvas";
 import { docToMarkdown, docToPlainText, markdownToDoc } from "@/lib/canvas/markdown";
 import { cleanPastedHtml, analyzePaste } from "@/lib/canvas/paste";
@@ -377,6 +383,110 @@ describe("Canvas domain logic (07 §8)", () => {
       );
       expect(saveCallCount).toBe(1); // skipped, no extra call
       expect(resultKind).toBe("skipped");
+    });
+  });
+
+  describe("8.8 Pages tree (buildTree, canMove, resolveNote)", () => {
+    const pages = [
+      { id: "1", title: "DevTools", parentId: null },
+      { id: "2", title: "Backend tips", parentId: "1" },
+      { id: "3", title: "Postgres", parentId: "2" },
+      { id: "4", title: "Frontend tips", parentId: "1" },
+      { id: "5", title: "React", parentId: "4" },
+    ];
+
+    it("buildTree builds hierarchy with depth and path", () => {
+      const tree = buildTree(pages);
+      expect(tree).toHaveLength(1);
+      const root = tree[0];
+      expect(root.title).toBe("DevTools");
+      expect(root.depth).toBe(1);
+      expect(root.path).toBe("DevTools");
+      expect(root.children).toHaveLength(2); // Backend tips, Frontend tips sorted
+
+      const backend = root.children.find((c) => c.title === "Backend tips")!;
+      expect(backend.depth).toBe(2);
+      expect(backend.path).toBe("DevTools / Backend tips");
+      expect(backend.children).toHaveLength(1);
+
+      const postgres = backend.children[0];
+      expect(postgres.depth).toBe(3);
+      expect(postgres.path).toBe("DevTools / Backend tips / Postgres");
+    });
+
+    it("canMove prevents cycle: DevTools under Postgres -> cycle", () => {
+      const tree = buildTree(pages);
+      const res = canMove(tree, "1", "3");
+      expect(res).toBe("cycle");
+    });
+
+    it("canMove prevents too_deep: page with one child under Backend tips -> too_deep", () => {
+      const tree = buildTree(pages);
+      // "Frontend tips" has child "React" (subtree height = 2)
+      // Moving "Frontend tips" under "Backend tips" (depth 2): 2 + 2 = 4 > 3 -> too_deep
+      const res = canMove(tree, "4", "2");
+      expect(res).toBe("too_deep");
+    });
+
+    it("canMove allows valid move: Postgres to top level or under Frontend tips", () => {
+      const tree = buildTree(pages);
+      expect(canMove(tree, "3", null)).toBe("ok");
+      expect(canMove(tree, "3", "4")).toBe("ok"); // depth 2 + height 1 = 3 <= 3
+    });
+
+    it("resolveNote resolves by ID, exact path, and title", () => {
+      const tree = buildTree(pages);
+      const res1 = resolveNote(tree, "devtools/backend tips");
+      expect(res1.ok).toBe(true);
+      if (res1.ok) {
+        expect(res1.note.title).toBe("Backend tips");
+      }
+
+      const res2 = resolveNote(tree, "3");
+      expect(res2.ok).toBe(true);
+      if (res2.ok) {
+        expect(res2.note.title).toBe("Postgres");
+      }
+
+      const res3 = resolveNote(tree, "Postgres");
+      expect(res3.ok).toBe(true);
+      if (res3.ok) {
+        expect(res3.note.title).toBe("Postgres");
+      }
+
+      // Ambiguous title test
+      const ambiguousPages = [
+        ...pages,
+        { id: "6", title: "Postgres", parentId: "4" },
+      ];
+      const ambTree = buildTree(ambiguousPages);
+      const resAmb = resolveNote(ambTree, "Postgres");
+      expect(resAmb.ok).toBe(false);
+      if (!resAmb.ok) {
+        expect(resAmb.error).toBe("ambiguous");
+      }
+    });
+  });
+
+  describe("8.10 Markdown sections (headingsOf, appendToSection, replaceSection)", () => {
+    it("headingsOf ignores headings inside code blocks", () => {
+      const md = "## Heading 1\n```bash\n## not a heading\n```\n### Heading 2";
+      const headings = headingsOf(md);
+      expect(headings).toHaveLength(2);
+      expect(headings[0].text).toBe("Heading 1");
+      expect(headings[1].text).toBe("Heading 2");
+    });
+
+    it("appendToSection appends list items without extra blank line to list", () => {
+      const md = "## Libraries\n- WeasyPrint\n- FFmpeg\n\n## Tips\n1. Golden rule";
+      const res = appendToSection(md, "- Spline", "libraries");
+      expect(res).toBe("## Libraries\n- WeasyPrint\n- FFmpeg\n- Spline\n\n## Tips\n1. Golden rule");
+    });
+
+    it("replaceSection replaces section body keeping heading", () => {
+      const md = "## Libraries\n- WeasyPrint\n- FFmpeg\n\n## Tips\n1. Golden rule";
+      const res = replaceSection(md, "Tips", "1. New tip");
+      expect(res).toBe("## Libraries\n- WeasyPrint\n- FFmpeg\n\n## Tips\n1. New tip");
     });
   });
 });

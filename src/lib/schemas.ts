@@ -103,7 +103,10 @@ export const CreateNoteSchema = z.object({
   doc: z.record(z.string(), z.unknown()).nullable().optional(),
   bodyMd: z
     .string()
-    .max(200000, "Markdown body must be 200,000 characters or less"),
+    .max(200000, "Markdown body must be 200,000 characters or less")
+    .optional()
+    .default(""),
+  parentId: z.string().uuid().nullable().optional(),
 });
 
 export type CreateNoteInput = z.infer<typeof CreateNoteSchema>;
@@ -113,6 +116,8 @@ export const UpdateNoteSchema = z.object({
   title: z.string().trim().min(1).max(120).optional(),
   doc: z.record(z.string(), z.unknown()).nullable().optional(),
   bodyMd: z.string().max(200000).optional(),
+  parentId: z.string().uuid().nullable().optional(),
+  pinned: z.boolean().optional(),
 });
 
 export type UpdateNoteInput = z.infer<typeof UpdateNoteSchema>;
@@ -120,15 +125,21 @@ export type UpdateNoteInput = z.infer<typeof UpdateNoteSchema>;
 export interface NoteSummaryDto {
   id: string;
   title: string;
+  parentId: string | null;
+  pinned: boolean;
   snippet: string;
   createdBy: string;
   updatedAt: string;
+  path?: string;
 }
 
 export interface NoteDto extends NoteSummaryDto {
   doc: Record<string, unknown> | null;
   bodyMd: string;
+  path: string;
   createdAt: string;
+  prevBy: string | null;
+  prevAt: string | null;
 }
 
 // ============ Trackers ============

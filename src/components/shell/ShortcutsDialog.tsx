@@ -111,7 +111,11 @@ export function ShortcutsDialog() {
       group: "Canvas",
       items: [
         { keys: ["Ctrl", "Alt", "M"], desc: "Copy page as Markdown" },
-        { keys: ["Ctrl", "S"], desc: "Save Scratch as note / Save note" },
+        { keys: ["Ctrl", "Shift", "C"], desc: "Copy selection as Markdown" },
+        { keys: ["Alt", "1…9"], desc: "Go to tab 1 (Scratch) … 9" },
+        { keys: ["Alt", "W"], desc: "Close active page tab" },
+        { keys: ["Ctrl", "Alt", "N"], desc: "New page" },
+        { keys: ["Ctrl", "S"], desc: "Save as page / Save page" },
       ],
     },
     {

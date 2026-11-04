@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import clsx from "clsx";
 import {
@@ -10,8 +10,15 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
-  BookmarkPlus,
+  FilePlus,
   CopyPlus,
+  FileText,
+  ClipboardPaste,
+  X,
+  Plus,
+  Pin,
+  PinOff,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getCanvasExtensions } from "@/lib/canvas/editor";
@@ -21,7 +28,11 @@ import { docToMarkdown, docToPlainText } from "@/lib/canvas/markdown";
 import { enqueuePageSave, getOrCreateQueue } from "@/lib/canvas/save-queue";
 import { analyzePaste } from "@/lib/canvas/paste";
 import { processImageFile } from "@/lib/canvas/images";
-import { imageRefs, titleFromText } from "@/lib/domain/canvas";
+import { imageRefs, titleFromText, buildTree, findNodeInTree } from "@/lib/domain/canvas";
+import {
+  foldPluginKey,
+  loadFoldsFromStorage,
+} from "@/lib/canvas/fold-extension";
 import {
   isIndexedDBAvailable,
   loadScratch,
@@ -37,6 +48,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/DropdownMenu";
 import {
   Dialog,
@@ -55,12 +67,39 @@ interface CanvasEditorProps {
 // Module-level lock holder to prevent React 19 StrictMode mount/cleanup race conditions
 let tabLockRelease: (() => void) | null = null;
 
+function formatRelativeDate(iso?: string): string {
+  if (!iso) return "";
+  try {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days === 1) return "yesterday";
+    if (days < 7) return `${days}d ago`;
+    return new Date(iso).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+    });
+  } catch {
+    return "";
+  }
+}
+
 export function CanvasEditor({ userId }: CanvasEditorProps) {
   // Navigation & View state
   const [mobileTab, setMobileTab] = useState<"scratch" | "notes">("scratch");
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [activeNote, setActiveNote] = useState<NoteDto | null>(null);
   const [activeNoteTitle, setActiveNoteTitle] = useState<string>("");
+  const initialActiveNoteIdRef = useRef<string | null>(null);
+
+  // Tabs state: up to 8 page tabs + Scratch (Scratch is active when activeNoteId === null)
+  const [openTabs, setOpenTabs] = useState<string[]>([]);
+  const tabLruOrderRef = useRef<string[]>([]);
+  const tabScrollMapRef = useRef<Map<string | null, number>>(new Map());
 
   // Notes list state
   const [notes, setNotes] = useState<NoteSummaryDto[]>([]);
@@ -87,28 +126,14 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
   const activeNoteRef = useRef<NoteDto | null>(null);
   const activeNoteTitleRef = useRef<string>(activeNoteTitle);
   const activeNoteIdRef = useRef<string | null>(activeNoteId);
-  const shiftDownRef = useRef<boolean>(false);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Shift") shiftDownRef.current = true;
-    };
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "Shift") shiftDownRef.current = false;
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
+  const openTabsRef = useRef<string[]>(openTabs);
 
   useEffect(() => {
     activeNoteRef.current = activeNote;
     activeNoteTitleRef.current = activeNoteTitle;
     activeNoteIdRef.current = activeNoteId;
-  }, [activeNote, activeNoteTitle, activeNoteId]);
+    openTabsRef.current = openTabs;
+  }, [activeNote, activeNoteTitle, activeNoteId, openTabs]);
 
   // Expose userId globally for CanvasImageView resolution
   useEffect(() => {
@@ -127,14 +152,58 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!ignore && data?.notes) {
-          setNotes(data.notes);
+          const fetchedNotes: NoteSummaryDto[] = data.notes;
+          setNotes(fetchedNotes);
+
+          // Restore tabs from localStorage
+          if (typeof window !== "undefined") {
+            try {
+              const raw = localStorage.getItem(`life-canvas-tabs-${userId}`);
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && Array.isArray(parsed.open)) {
+                  // Only keep note IDs that actually exist
+                  const validIds = parsed.open.filter((id: string) =>
+                    fetchedNotes.some((n) => n.id === id)
+                  );
+                  setOpenTabs(validIds.slice(0, 8));
+                  tabLruOrderRef.current = [...validIds];
+
+                  if (
+                    parsed.active &&
+                    fetchedNotes.some((n) => n.id === parsed.active)
+                  ) {
+                    initialActiveNoteIdRef.current = parsed.active;
+                  }
+                }
+              }
+            } catch {
+              // ignore
+            }
+          }
         }
       })
       .catch(() => {});
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [userId]);
+
+  // Persist open tabs to localStorage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(
+        `life-canvas-tabs-${userId}`,
+        JSON.stringify({
+          open: openTabs,
+          active: activeNoteId,
+        })
+      );
+    } catch {
+      // ignore
+    }
+  }, [openTabs, activeNoteId, userId]);
 
   // Fetch notes function
   const fetchNotes = useCallback(async (q?: string) => {
@@ -408,7 +477,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
   const handleNoteImageUpload = useCallback(
     async (file: File): Promise<{ ref: string; width?: number; height?: number }> => {
       const currentId = activeNoteIdRef.current;
-      if (!currentId) throw new Error("No active note");
+      if (!currentId) throw new Error("No active page");
 
       const processed = await processImageFile(file);
       const formData = new FormData();
@@ -421,7 +490,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Failed to upload note image.");
+        throw new Error(err.message || "Failed to upload image.");
       }
 
       const data = await res.json();
@@ -448,34 +517,21 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         return docToPlainText(slice);
       },
       handlePaste: (view, event) => {
-        if (isReadOnly) return true;
-        if (shiftDownRef.current) return false; // Ctrl+Shift+V plain text paste
         const analysis = analyzePaste(event);
+
+        if (analysis.kind === "plain") {
+          return false;
+        }
 
         if (analysis.kind === "images") {
           event.preventDefault();
-          const files = analysis.data as File[];
+          const files = (analysis.data as File[]) || [];
+
           (async () => {
             for (const file of files) {
-              try {
-                if (activeNoteIdRef.current) {
-                  // In a Note: upload directly
-                  const res = await handleNoteImageUpload(file);
-                  editorRef.current
-                    ?.chain()
-                    .focus()
-                    .insertContent({
-                      type: "canvasImage",
-                      attrs: {
-                        ref: res.ref,
-                        alt: file.name,
-                        width: res.width,
-                        height: res.height,
-                      },
-                    })
-                    .run();
-                } else {
-                  // In Scratch: store in IndexedDB
+              if (!activeNoteIdRef.current) {
+                // Scratch: store in IndexedDB
+                try {
                   const processed = await processImageFile(file);
                   const id = crypto.randomUUID();
                   const ref = await saveImageToIdb(userId, id, processed);
@@ -486,16 +542,40 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                       type: "canvasImage",
                       attrs: {
                         ref,
-                        alt: file.name,
                         width: processed.width,
                         height: processed.height,
+                        uploading: false,
                       },
                     })
                     .run();
+                } catch (err: unknown) {
+                  if (err && typeof err === "object" && "name" in err && err.name === "QuotaExceededError") {
+                    setIsStorageFull(true);
+                  }
+                  toast.error("Failed to store image in browser storage.");
                 }
-              } catch (err: unknown) {
-                const msg = err instanceof Error ? err.message : "Failed to paste image.";
-                toast.error(msg);
+              } else {
+                // Saved Page: upload to server
+                try {
+                  const up = await handleNoteImageUpload(file);
+                  editorRef.current
+                    ?.chain()
+                    .focus()
+                    .insertContent({
+                      type: "canvasImage",
+                      attrs: {
+                        ref: up.ref,
+                        width: up.width,
+                        height: up.height,
+                        uploading: false,
+                      },
+                    })
+                    .run();
+                  triggerNoteSave();
+                } catch (err: unknown) {
+                  const msg = err instanceof Error ? err.message : "Failed to upload image.";
+                  toast.error(msg);
+                }
               }
             }
           })();
@@ -559,7 +639,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       setImageCount(count);
 
       if (activeNoteIdRef.current) {
-        // Active Note: 800ms debounce save
+        // Active Page: 800ms debounce save
         setNoteSaveStatus("saving");
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
@@ -596,7 +676,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     }
   }, [editor, isReadOnly]);
 
-  // Initial load: Load Scratch from IndexedDB on mount
+  // Initial load: Load Scratch from IndexedDB on mount if no active note
   useEffect(() => {
     if (!editor || activeNoteIdRef.current) return;
 
@@ -605,13 +685,13 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       .then((saved) => {
         if (!active) return;
         if (saved && saved.doc) {
-          editor.commands.setContent(saved.doc);
+          editor.commands.setContent(saved.doc, { emitUpdate: false });
           setImageCount(imageRefs(saved.doc).length);
         } else {
           editor.commands.setContent({
             type: "doc",
             content: [{ type: "paragraph" }],
-          });
+          }, { emitUpdate: false });
         }
       })
       .catch(() => {
@@ -619,7 +699,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         editor.commands.setContent({
           type: "doc",
           content: [{ type: "paragraph" }],
-        });
+        }, { emitUpdate: false });
       });
 
     return () => {
@@ -661,8 +741,10 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
   // Select Scratch
   const handleSelectScratch = useCallback(async () => {
+    // 1. Flush pending save of outgoing note
     if (activeNoteIdRef.current && editorRef.current) {
       triggerNoteSave();
+      tabScrollMapRef.current.set(activeNoteIdRef.current, window.scrollY);
     }
 
     setActiveNoteId(null);
@@ -672,40 +754,88 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     setMobileTab("scratch");
 
     if (editorRef.current) {
+      // Clear folds on Scratch
+      const tr = editorRef.current.state.tr.setMeta(foldPluginKey, {
+        pageId: null,
+        foldedKeys: new Set(),
+      });
+      editorRef.current.view.dispatch(tr);
+
       const saved = await loadScratch(userId);
       if (saved && saved.doc) {
-        editorRef.current.commands.setContent(saved.doc);
+        editorRef.current.commands.setContent(saved.doc, { emitUpdate: false });
         setImageCount(imageRefs(saved.doc).length);
       } else {
         editorRef.current.commands.setContent({
           type: "doc",
           content: [{ type: "paragraph" }],
-        });
+        }, { emitUpdate: false });
         setImageCount(0);
       }
+
+      // Restore Scratch scroll
+      const prevScroll = tabScrollMapRef.current.get(null) ?? 0;
+      window.scrollTo({ top: prevScroll });
     }
   }, [userId, triggerNoteSave]);
 
-  // Select Note
+  // Select Note / Page
   const handleSelectNote = useCallback(
     async (noteId: string) => {
+      // 1. Flush outgoing note save or Scratch save
       if (!activeNoteIdRef.current && editorRef.current) {
         try {
           await saveScratch(userId, editorRef.current.getJSON());
+          tabScrollMapRef.current.set(null, window.scrollY);
         } catch {}
       } else if (activeNoteIdRef.current && editorRef.current) {
         triggerNoteSave();
+        tabScrollMapRef.current.set(activeNoteIdRef.current, window.scrollY);
       }
 
       try {
         const res = await fetch(`/api/notes/${noteId}`);
         if (!res.ok) {
-          toast.error("Could not load note.");
+          toast.error("Could not load page.");
           return;
         }
 
         const noteData: NoteDto = await res.json();
         getOrCreateQueue(noteData.id, noteData);
+
+        // Update tabs: add noteId to openTabs (max 8)
+        setOpenTabs((prev) => {
+          if (prev.includes(noteId)) {
+            return prev;
+          }
+          let nextTabs = [...prev];
+          if (nextTabs.length >= 8) {
+            // Evict least recently used tab that isn't currently active
+            const lruList = tabLruOrderRef.current;
+            const evictCandidate = lruList.find(
+              (id) => id !== activeNoteIdRef.current && nextTabs.includes(id)
+            );
+            const toEvict = evictCandidate || nextTabs[0];
+            nextTabs = nextTabs.filter((id) => id !== toEvict);
+          }
+          // Insert after active note if present, else at end
+          const activeIdx = activeNoteIdRef.current
+            ? nextTabs.indexOf(activeNoteIdRef.current)
+            : -1;
+          if (activeIdx >= 0) {
+            nextTabs.splice(activeIdx + 1, 0, noteId);
+          } else {
+            nextTabs.push(noteId);
+          }
+          return nextTabs;
+        });
+
+        // Update LRU tracking
+        tabLruOrderRef.current = [
+          ...tabLruOrderRef.current.filter((id) => id !== noteId),
+          noteId,
+        ];
+
         setActiveNoteId(noteData.id);
         setActiveNote(noteData);
         setActiveNoteTitle(noteData.title);
@@ -725,13 +855,182 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
             });
             setImageCount(0);
           }
+
+          // Restore folds for this page
+          const folds = loadFoldsFromStorage(noteData.id);
+          const tr = editorRef.current.state.tr.setMeta(foldPluginKey, {
+            pageId: noteData.id,
+            foldedKeys: folds,
+          });
+          editorRef.current.view.dispatch(tr);
+
+          // Restore scroll
+          const prevScroll = tabScrollMapRef.current.get(noteData.id) ?? 0;
+          window.scrollTo({ top: prevScroll });
         }
       } catch {
-        toast.error("Could not load note.");
+        toast.error("Could not load page.");
       }
     },
     [userId, triggerNoteSave]
   );
+
+  // Restore active tab note if initially requested
+  useEffect(() => {
+    if (initialActiveNoteIdRef.current && editor) {
+      const id = initialActiveNoteIdRef.current;
+      initialActiveNoteIdRef.current = null;
+      handleSelectNote(id);
+    }
+  }, [editor, handleSelectNote]);
+
+  // Close tab
+  const handleCloseTab = useCallback(
+    (tabId: string) => {
+      // Flush save of closing tab if active
+      if (activeNoteIdRef.current === tabId) {
+        triggerNoteSave();
+        const currentTabs = openTabsRef.current;
+        const idx = currentTabs.indexOf(tabId);
+        const nextId = idx > 0 ? currentTabs[idx - 1] : null;
+        if (nextId) {
+          handleSelectNote(nextId);
+        } else {
+          handleSelectScratch();
+        }
+      }
+
+      setOpenTabs((prev) => prev.filter((id) => id !== tabId));
+      tabLruOrderRef.current = tabLruOrderRef.current.filter((id) => id !== tabId);
+      tabScrollMapRef.current.delete(tabId);
+    },
+    [handleSelectNote, handleSelectScratch, triggerNoteSave]
+  );
+
+  // New Page
+  const handleNewPage = useCallback(
+    async (parentId: string | null = null) => {
+      if (notes.length >= 300) {
+        toast.error("300 pages is the maximum. Delete old ones first.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: "Untitled",
+            parentId: parentId || null,
+            bodyMd: "",
+            doc: { type: "doc", content: [{ type: "paragraph" }] },
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          toast.error(err.message || "Failed to create page.");
+          return;
+        }
+
+        const created: NoteDto = await res.json();
+        await fetchNotes();
+        toast("Page created");
+        await handleSelectNote(created.id);
+      } catch {
+        toast.error("Failed to create page.");
+      }
+    },
+    [notes.length, fetchNotes, handleSelectNote]
+  );
+
+  // Pin / Unpin toggle
+  const handlePinToggle = useCallback(
+    async (id: string, pinned: boolean) => {
+      if (pinned) {
+        const count = notes.filter((n) => n.pinned).length;
+        if (count >= 5) {
+          toast.error("5 pinned pages is the maximum. Unpin one first.");
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch(`/api/notes/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ pinned }),
+        });
+
+        if (res.ok) {
+          toast(pinned ? "Page pinned" : "Page unpinned");
+          await fetchNotes();
+          if (activeNoteIdRef.current === id) {
+            const updated = await res.json();
+            setActiveNote(updated);
+          }
+        } else {
+          const err = await res.json().catch(() => ({}));
+          toast.error(err.message || "Failed to update page.");
+        }
+      } catch {
+        toast.error("Failed to update page.");
+      }
+    },
+    [notes, fetchNotes]
+  );
+
+  // Move to
+  const handleMoveTo = useCallback(
+    async (id: string, targetParentId: string | null) => {
+      try {
+        const res = await fetch(`/api/notes/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ parentId: targetParentId }),
+        });
+
+        if (res.ok) {
+          toast("Page moved");
+          await fetchNotes();
+          if (activeNoteIdRef.current === id) {
+            const updated = await res.json();
+            setActiveNote(updated);
+          }
+        } else {
+          const err = await res.json().catch(() => ({}));
+          toast.error(err.message || "Failed to move page.");
+        }
+      } catch {
+        toast.error("Failed to move page.");
+      }
+    },
+    [fetchNotes]
+  );
+
+  // Delete note
+  const handleDeleteNoteConfirm = useCallback(async () => {
+    if (!activeNote) return;
+
+    try {
+      const res = await fetch(`/api/notes/${activeNote.id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok || res.status === 204) {
+        toast("Page deleted");
+        setIsDeleteDialogOpen(false);
+        const deletedId = activeNote.id;
+        setOpenTabs((prev) => prev.filter((id) => id !== deletedId));
+        handleSelectScratch();
+        fetchNotes();
+      } else {
+        toast.error("Could not delete page.");
+      }
+    } catch {
+      toast.error("Could not delete page.");
+    }
+  }, [activeNote, handleSelectScratch, fetchNotes]);
 
   // Copy as Markdown
   const handleCopyAsMarkdown = useCallback(() => {
@@ -773,11 +1072,11 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     });
   }, [editor, isReadOnly, userId]);
 
-  // Save as note (from Scratch, 07 §8.7)
-  const handleSaveAsNote = useCallback(async () => {
+  // Save as page (from Scratch)
+  const handleSaveAsPage = useCallback(async () => {
     if (!editor) return;
     if (notes.length >= 300) {
-      toast.error("300 notes is the maximum. Delete old ones first.");
+      toast.error("300 pages is the maximum. Delete old ones first.");
       return;
     }
 
@@ -786,7 +1085,6 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     const title = titleFromText(md, new Date());
 
     try {
-      // 1. Create note row
       const createRes = await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -799,13 +1097,13 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
       if (!createRes.ok) {
         const err = await createRes.json().catch(() => ({}));
-        toast.error(err.message || "Failed to save note.");
+        toast.error(err.message || "Failed to save page.");
         return;
       }
 
       const createdNote: NoteDto = await createRes.json();
 
-      // 2. Upload any local idb: images to the note's storage
+      // Upload local idb images to page storage
       const updatedDoc = JSON.parse(JSON.stringify(json));
       const refs = imageRefs(updatedDoc);
       const idbRefs = refs.filter((r) => r.startsWith("idb:"));
@@ -820,7 +1118,11 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
           const stored = await getImageFromIdb(userId, imgId);
           if (stored) {
             const formData = new FormData();
-            formData.append("file", stored.blob, `image-${imgId}.${stored.type.split("/")[1] || "webp"}`);
+            formData.append(
+              "file",
+              stored.blob,
+              `image-${imgId}.${stored.type.split("/")[1] || "webp"}`
+            );
             const upRes = await fetch(`/api/notes/${createdNote.id}/images`, {
               method: "POST",
               body: formData,
@@ -834,7 +1136,6 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
           }
         }
 
-        // Swap refs in updatedDoc
         const walk = (node: Record<string, unknown>) => {
           if (
             node.type === "canvasImage" &&
@@ -855,7 +1156,6 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         };
         walk(updatedDoc);
 
-        // 3. Update the note with swapped image refs
         await fetch(`/api/notes/${createdNote.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -867,14 +1167,12 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         });
       }
 
-      // 4. Refresh notes list
       await fetchNotes();
 
       if (uploadFailures > 0) {
         toast(`Saved, but ${uploadFailures} image couldn't be uploaded.`);
       }
 
-      // 5. Toast with Open and Clear Scratch actions
       toast(`Saved as “${title}”`, {
         action: {
           label: "Open",
@@ -884,11 +1182,11 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         },
       });
     } catch {
-      toast.error("Failed to save note.");
+      toast.error("Failed to save page.");
     }
   }, [editor, notes.length, userId, fetchNotes, handleSelectNote]);
 
-  // Copy to Scratch (from Note)
+  // Copy to Scratch
   const handleCopyToScratch = useCallback(async () => {
     if (!editor) return;
     const currentJson = editor.getJSON();
@@ -899,7 +1197,6 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         content: [{ type: "paragraph" }],
       };
 
-    // Append note contents to scratch doc
     if (Array.isArray(currentJson.content)) {
       scratchDoc.content = [
         ...(scratchDoc.content || []),
@@ -911,37 +1208,27 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     toast("Copied to Scratch");
   }, [editor, userId]);
 
-  // Delete note
-  const handleDeleteNoteConfirm = useCallback(async () => {
-    if (!activeNote) return;
-
-    try {
-      const res = await fetch(`/api/notes/${activeNote.id}`, {
-        method: "DELETE",
-      });
-
-      if (res.ok || res.status === 204) {
-        toast("Note deleted");
-        setIsDeleteDialogOpen(false);
-        handleSelectScratch();
-        fetchNotes();
-      } else {
-        toast.error("Could not delete note.");
-      }
-    } catch {
-      toast.error("Could not delete note.");
-    }
-  }, [activeNote, handleSelectScratch, fetchNotes]);
-
-  // Global keyboard shortcuts: Ctrl+Alt+M (Copy Markdown), Ctrl+Shift+C (Copy Selection Markdown), & Ctrl+S (Save as note / save now)
+  // Global keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      // Ctrl+Alt+M: Copy page as Markdown
       if (e.ctrlKey && e.altKey && (e.key === "m" || e.key === "M")) {
         e.preventDefault();
         handleCopyAsMarkdown();
       }
 
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "c" || e.key === "C")) {
+      // Ctrl+Alt+N: New page
+      if (e.ctrlKey && e.altKey && (e.key === "n" || e.key === "N")) {
+        e.preventDefault();
+        handleNewPage(null);
+      }
+
+      // Ctrl+Shift+C: Copy selection as Markdown
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.shiftKey &&
+        (e.key === "c" || e.key === "C")
+      ) {
         if (editorRef.current && !editorRef.current.state.selection.empty) {
           e.preventDefault();
           const slice = editorRef.current.state.selection.content();
@@ -956,19 +1243,76 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         }
       }
 
+      // Ctrl+S: Save as page / Save page
       if (e.ctrlKey && (e.key === "s" || e.key === "S")) {
         e.preventDefault();
         if (activeNoteIdRef.current) {
           triggerNoteSave();
         } else {
-          handleSaveAsNote();
+          handleSaveAsPage();
+        }
+      }
+
+      // Alt+1 ... Alt+9: Switch tabs
+      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        if (e.key >= "1" && e.key <= "9") {
+          e.preventDefault();
+          const num = parseInt(e.key, 10);
+          if (num === 1) {
+            handleSelectScratch();
+          } else {
+            const targetId = openTabsRef.current[num - 2];
+            if (targetId) {
+              handleSelectNote(targetId);
+            }
+          }
+        } else if (e.key === "w" || e.key === "W") {
+          if (activeNoteIdRef.current) {
+            e.preventDefault();
+            handleCloseTab(activeNoteIdRef.current);
+          }
         }
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleCopyAsMarkdown, handleSaveAsNote, triggerNoteSave]);
+  }, [
+    handleCopyAsMarkdown,
+    handleSaveAsPage,
+    handleNewPage,
+    handleSelectScratch,
+    handleSelectNote,
+    handleCloseTab,
+    triggerNoteSave,
+  ]);
+
+  // Breadcrumbs calculation
+  const breadcrumbs = useMemo(() => {
+    if (!activeNote || !activeNote.parentId) return [];
+    const crumbs: Array<{ id: string; title: string }> = [];
+    let currId: string | null = activeNote.parentId;
+    while (currId) {
+      const parent = notes.find((n) => n.id === currId);
+      if (!parent) break;
+      crumbs.unshift({ id: parent.id, title: parent.title });
+      currId = parent.parentId || null;
+    }
+    return crumbs;
+  }, [activeNote, notes]);
+
+  // Tree and active node calculation
+  const tree = useMemo(() => buildTree(notes), [notes]);
+  const activeNode = useMemo(() => {
+    if (!activeNote) return null;
+    return findNodeInTree(tree, activeNote.id);
+  }, [activeNote, tree]);
+
+  // Direct child pages calculation
+  const childPages = useMemo(() => {
+    if (!activeNote) return [];
+    return notes.filter((n) => n.parentId === activeNote.id);
+  }, [activeNote, notes]);
 
   return (
     <div className="canvas-main flex-1 w-full max-w-[1440px] mx-auto p-4 md:p-8">
@@ -987,7 +1331,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         <Banner variant="danger" className="mb-4">
           <AlertCircle className="w-4 h-4 stroke-[2]" />
           <span>
-            Browser storage is full. Save Scratch as a note or clear it.
+            Browser storage is full. Save Scratch as a page or clear it.
           </span>
         </Banner>
       )}
@@ -1010,7 +1354,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         <Banner variant="warn" className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 stroke-[2] flex-none" />
-            <span>This note changed somewhere else.</span>
+            <span>This page changed somewhere else.</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -1019,9 +1363,12 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
               onClick={() => {
                 if (editor) {
                   if (staleConflictNote.doc) {
-                    editor.commands.setContent(staleConflictNote.doc);
+                    editor.commands.setContent(staleConflictNote.doc, { emitUpdate: false });
                   } else {
-                    editor.commands.setContent(staleConflictNote.bodyMd || "");
+                    editor.commands.setContent(staleConflictNote.bodyMd || "", {
+                      contentType: "markdown",
+                      emitUpdate: false,
+                    });
                   }
                 }
                 setActiveNote(staleConflictNote);
@@ -1036,7 +1383,6 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
               type="button"
               className="px-2.5 py-1 text-xs font-bold bg-accent text-accent-ink rounded hover:bg-accent-hover cursor-pointer"
               onClick={() => {
-                // Re-send with the server's updatedAt as baseUpdatedAt
                 if (editor) {
                   performNoteSave(
                     activeNote!.id,
@@ -1059,11 +1405,59 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
           {activeNoteId ? (
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <IconButton
-                aria-label="Back to Notes"
-                onClick={handleSelectScratch}
+                aria-label="Back to Pages"
+                onClick={() => setMobileTab("notes")}
               >
                 <ArrowLeft className="w-4 h-4" />
               </IconButton>
+
+              {/* Mobile Tab Switcher Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1.5 text-xs font-bold bg-surface border border-line px-2 py-1 rounded max-w-[140px] truncate cursor-pointer"
+                  >
+                    <span className="truncate">{activeNoteTitle || "Untitled"}</span>
+                    <ChevronDown className="w-3 h-3 text-ink-3 flex-none" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem
+                    onClick={handleSelectScratch}
+                    className="flex items-center gap-2 cursor-pointer font-semibold"
+                  >
+                    <ClipboardPaste className="w-4 h-4" />
+                    <span>Scratch</span>
+                  </DropdownMenuItem>
+                  {openTabs.map((tid) => {
+                    const n = notes.find((item) => item.id === tid);
+                    return (
+                      <DropdownMenuItem
+                        key={tid}
+                        onClick={() => handleSelectNote(tid)}
+                        className={clsx(
+                          "flex items-center justify-between cursor-pointer",
+                          activeNoteId === tid && "bg-accent-soft text-accent-text font-bold"
+                        )}
+                      >
+                        <span className="truncate">{n?.title || "Untitled"}</span>
+                        <button
+                          type="button"
+                          className="w-4 h-4 text-ink-3 hover:text-ink cursor-pointer ml-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCloseTab(tid);
+                          }}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <input
                 type="text"
                 value={activeNoteTitle}
@@ -1076,11 +1470,11 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                   }
                 }}
                 className="ntitle text-sm font-bold bg-transparent border-b border-transparent focus:border-frame focus:outline-none flex-1 truncate"
-                placeholder="Untitled note"
+                placeholder="Untitled page"
               />
             </div>
           ) : (
-            /* Mobile Segmented Control (Scratch / Notes) */
+            /* Mobile Segmented Control (Scratch / Pages) */
             <div className="seg block flex-1 flex bg-surface border border-line rounded-md p-0.5">
               <button
                 type="button"
@@ -1104,7 +1498,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                 )}
                 onClick={() => setMobileTab("notes")}
               >
-                Notes <span className="c text-ink-3">{notes.length}</span>
+                Pages <span className="c text-ink-3">{notes.length}</span>
               </button>
             </div>
           )}
@@ -1124,8 +1518,33 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                 </IconButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {activeNoteId ? (
+                {activeNoteId && activeNote ? (
                   <>
+                    {activeNode && activeNode.depth < 3 && (
+                      <DropdownMenuItem
+                        onClick={() => handleNewPage(activeNote.id)}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>New sub-page</span>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      onClick={() => handlePinToggle(activeNote.id, !activeNote.pinned)}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      {activeNote.pinned ? (
+                        <>
+                          <PinOff className="w-4 h-4" />
+                          <span>Unpin</span>
+                        </>
+                      ) : (
+                        <>
+                          <Pin className="w-4 h-4" />
+                          <span>Pin</span>
+                        </>
+                      )}
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleCopyToScratch}
                       className="flex items-center gap-2 cursor-pointer"
@@ -1133,23 +1552,24 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                       <CopyPlus className="w-4 h-4" />
                       <span>Copy to Scratch</span>
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => setIsDeleteDialogOpen(true)}
                       className="text-danger flex items-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
-                      <span>Delete note</span>
+                      <span>Delete page</span>
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <>
                     <DropdownMenuItem
-                      onClick={handleSaveAsNote}
+                      onClick={handleSaveAsPage}
                       className="flex items-center gap-2 cursor-pointer"
                       disabled={isReadOnly}
                     >
-                      <BookmarkPlus className="w-4 h-4" />
-                      <span>Save as note</span>
+                      <FilePlus className="w-4 h-4" />
+                      <span>Save as page</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleClearScratch}
@@ -1165,6 +1585,24 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
             </DropdownMenu>
           </div>
         </div>
+
+        {/* Mobile Breadcrumb */}
+        {activeNoteId && breadcrumbs.length > 0 && (
+          <nav className="m-crumbs flex items-center gap-1 text-xs text-ink-3 px-1" aria-label="Breadcrumb">
+            {breadcrumbs.map((b) => (
+              <React.Fragment key={b.id}>
+                <button
+                  type="button"
+                  onClick={() => handleSelectNote(b.id)}
+                  className="text-ink-2 hover:underline cursor-pointer"
+                >
+                  {b.title}
+                </button>
+                <span>›</span>
+              </React.Fragment>
+            ))}
+          </nav>
+        )}
 
         {/* Mobile Status Row */}
         {(mobileTab === "scratch" || activeNoteId) && (
@@ -1223,54 +1661,155 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
             activeNoteId={activeNoteId}
             onSelectScratch={handleSelectScratch}
             onSelectNote={handleSelectNote}
+            onNewPage={handleNewPage}
+            onPinToggle={handlePinToggle}
+            onMoveTo={handleMoveTo}
+            onDeleteNote={(id) => {
+              if (activeNoteId === id) {
+                handleDeleteNoteConfirm();
+              } else {
+                fetch(`/api/notes/${id}`, { method: "DELETE" }).then(() => {
+                  toast("Page deleted");
+                  setOpenTabs((prev) => prev.filter((t) => t !== id));
+                  fetchNotes();
+                });
+              }
+            }}
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
+            userId={userId}
           />
         </div>
 
-        {/* Editor Card (Desktop: Always visible / Mobile: Visible when 'scratch' tab is active or editing note) */}
+        {/* Desktop Tab Bar & Editor Card */}
         <div
           className={clsx(
-            "md:block min-w-0",
+            "md:flex md:flex-col gap-2.5 min-w-0",
             mobileTab === "scratch" || activeNoteId ? "block" : "hidden"
           )}
         >
+          {/* Tab Bar (Desktop >= 768px) */}
+          <div className="ptabs hidden md:flex" role="tablist" aria-label="Open pages">
+            {/* Scratch tab */}
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeNoteId === null}
+              onClick={handleSelectScratch}
+              className={clsx(
+                "ptab scratch cursor-pointer",
+                activeNoteId === null && "on"
+              )}
+            >
+              <ClipboardPaste className="w-3.5 h-3.5" />
+              <span>Scratch</span>
+            </button>
+
+            {/* Page tabs */}
+            {openTabs.map((tid) => {
+              const noteSummary = notes.find((n) => n.id === tid);
+              const title =
+                activeNoteId === tid && activeNoteTitle
+                  ? activeNoteTitle
+                  : noteSummary?.title || "Untitled";
+              const isSelected = activeNoteId === tid;
+
+              return (
+                <div
+                  key={tid}
+                  role="tab"
+                  aria-selected={isSelected}
+                  onClick={() => handleSelectNote(tid)}
+                  onAuxClick={(e) => {
+                    if (e.button === 1) {
+                      e.preventDefault();
+                      handleCloseTab(tid);
+                    }
+                  }}
+                  className={clsx(
+                    "ptab cursor-pointer select-none group",
+                    isSelected && "on"
+                  )}
+                >
+                  <FileText className="w-3.5 h-3.5 flex-none" />
+                  <span title={title}>{title}</span>
+                  <button
+                    type="button"
+                    className="x"
+                    aria-label={`Close ${title}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCloseTab(tid);
+                    }}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
+
+            <span className="count">
+              {openTabs.length} / 8 · <kbd>Alt 1–9</kbd>
+            </span>
+          </div>
+
+          {/* Editor Card */}
           <section
             className="ecard bg-surface border border-frame rounded-lg shadow-md flex flex-col overflow-hidden"
-            aria-label={activeNoteId ? "Note editor" : "Scratch"}
+            aria-label={activeNoteId ? "Page editor" : "Scratch"}
           >
             {/* Desktop Ecard Head (>= 768px) */}
             <div className="ecard-head hidden md:flex items-center gap-3 px-5 py-3 border-b border-frame select-none">
-              {activeNoteId ? (
-                <input
-                  type="text"
-                  value={activeNoteTitle}
-                  onChange={(e) => setActiveNoteTitle(e.target.value)}
-                  onBlur={() => {
-                    if (!activeNoteTitle.trim() && activeNote) {
-                      setActiveNoteTitle(activeNote.title);
-                    } else {
-                      triggerNoteSave();
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.currentTarget.blur();
-                    }
-                  }}
-                  className="ntitle text-base font-bold bg-transparent border border-transparent hover:border-line-strong rounded px-2 py-0.5 focus:border-frame focus:outline-none"
-                  placeholder="Untitled note"
-                />
-              ) : (
-                <h2 className="font-display font-extrabold text-sm uppercase tracking-tight">
-                  Scratch
-                </h2>
-              )}
+              <div className="title-col flex-1 min-w-0">
+                {/* Breadcrumbs */}
+                {activeNoteId && breadcrumbs.length > 0 && (
+                  <nav className="crumbs" aria-label="Breadcrumb">
+                    {breadcrumbs.map((b) => (
+                      <React.Fragment key={b.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectNote(b.id)}
+                          className="hover:underline cursor-pointer"
+                        >
+                          {b.title}
+                        </button>
+                        <span>›</span>
+                      </React.Fragment>
+                    ))}
+                  </nav>
+                )}
+
+                {activeNoteId ? (
+                  <input
+                    type="text"
+                    value={activeNoteTitle}
+                    onChange={(e) => setActiveNoteTitle(e.target.value)}
+                    onBlur={() => {
+                      if (!activeNoteTitle.trim() && activeNote) {
+                        setActiveNoteTitle(activeNote.title);
+                      } else {
+                        triggerNoteSave();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    className="ntitle text-base font-bold bg-transparent border border-transparent hover:border-line-strong rounded px-2 py-0.5 focus:border-frame focus:outline-none w-full"
+                    placeholder="Untitled page"
+                  />
+                ) : (
+                  <h2 className="font-display font-extrabold text-sm uppercase tracking-tight">
+                    Scratch
+                  </h2>
+                )}
+              </div>
 
               {activeNoteId ? (
                 <span
                   className={clsx(
-                    "save-status",
+                    "save-status flex-none",
                     noteSaveStatus === "saving" && "busy",
                     noteSaveStatus === "error" && "err",
                     noteSaveStatus === "offline" && "off"
@@ -1296,7 +1835,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
               ) : (
                 <span
                   className={clsx(
-                    "save-status",
+                    "save-status flex-none",
                     scratchSaveStatus === "saving" && "busy"
                   )}
                 >
@@ -1307,13 +1846,11 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                 </span>
               )}
 
-              <span className="spacer flex-1" />
-
               {/* Action Buttons */}
               <button
                 type="button"
                 id="copy-markdown-btn"
-                className="btn btn-primary inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded shadow-[2px_2px_0_var(--signal)] bg-accent text-accent-ink hover:bg-accent-hover cursor-pointer"
+                className="btn btn-primary inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded shadow-[2px_2px_0_var(--signal)] bg-accent text-accent-ink hover:bg-accent-hover cursor-pointer flex-none"
                 onClick={handleCopyAsMarkdown}
               >
                 <Copy className="w-3.5 h-3.5" />
@@ -1324,24 +1861,49 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                 <button
                   type="button"
                   id="save-as-note-btn"
-                  className="btn btn-secondary inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded border border-frame bg-surface hover:bg-surface-2 cursor-pointer"
-                  onClick={handleSaveAsNote}
+                  className="btn btn-secondary inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded border border-frame bg-surface hover:bg-surface-2 cursor-pointer flex-none"
+                  onClick={handleSaveAsPage}
                   disabled={isReadOnly}
                 >
-                  <BookmarkPlus className="w-3.5 h-3.5" />
-                  <span>Save as note</span>
+                  <FilePlus className="w-3.5 h-3.5" />
+                  <span>Save as page</span>
                 </button>
               )}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <IconButton aria-label="More options">
+                  <IconButton aria-label="More options" className="flex-none">
                     <MoreHorizontal className="w-4 h-4" />
                   </IconButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {activeNoteId ? (
+                  {activeNoteId && activeNote ? (
                     <>
+                      {activeNode && activeNode.depth < 3 && (
+                        <DropdownMenuItem
+                          onClick={() => handleNewPage(activeNote.id)}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>New sub-page</span>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        onClick={() => handlePinToggle(activeNote.id, !activeNote.pinned)}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        {activeNote.pinned ? (
+                          <>
+                            <PinOff className="w-4 h-4" />
+                            <span>Unpin</span>
+                          </>
+                        ) : (
+                          <>
+                            <Pin className="w-4 h-4" />
+                            <span>Pin</span>
+                          </>
+                        )}
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleCopyToScratch}
                         className="flex items-center gap-2 cursor-pointer"
@@ -1349,12 +1911,13 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
                         <CopyPlus className="w-4 h-4" />
                         <span>Copy to Scratch</span>
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => setIsDeleteDialogOpen(true)}
                         className="text-danger flex items-center gap-2 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
-                        <span>Delete note</span>
+                        <span>Delete page</span>
                       </DropdownMenuItem>
                     </>
                   ) : (
@@ -1393,24 +1956,74 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
               }}
             >
               <div className="prose w-full cursor-text focus:outline-none">
-                <EditorContent editor={editor} className="min-h-[500px] cursor-text focus:outline-none" />
+                <EditorContent
+                  editor={editor}
+                  className="min-h-[500px] cursor-text focus:outline-none"
+                />
+
+                {/* Sub-pages list (only for depth 1 or 2) */}
+                {activeNote && activeNode && activeNode.depth < 3 && (
+                  <div className="subpages">
+                    <div className="lbl">Sub-pages</div>
+                    {childPages.map((child) => {
+                      const grandChildren = notes.filter(
+                        (n) => n.parentId === child.id
+                      );
+                      return (
+                        <button
+                          key={child.id}
+                          type="button"
+                          onClick={() => handleSelectNote(child.id)}
+                          className="w-full text-left cursor-pointer"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>{child.title}</span>
+                          <span className="d">
+                            {grandChildren.length > 0
+                              ? `${grandChildren.length} ${
+                                  grandChildren.length === 1
+                                    ? "sub-page"
+                                    : "sub-pages"
+                                } · ${formatRelativeDate(child.updatedAt)}`
+                              : formatRelativeDate(child.updatedAt)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => handleNewPage(activeNote.id)}
+                      className="add cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>New sub-page</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </section>
         </div>
       </div>
 
-      {/* Delete Note Confirmation Dialog */}
+      {/* Delete Page Confirmation Dialog */}
       <Dialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete note</DialogTitle>
+            <DialogTitle>Delete page</DialogTitle>
             <DialogDescription>
-              Delete &ldquo;{activeNote?.title}&rdquo;? Its images are deleted
-              too.
+              {activeNote && (() => {
+                const subCount = notes.filter((n) => n.parentId === activeNote.id).length;
+                if (subCount > 0) {
+                  return `Delete “${activeNote.title}” and its ${subCount} ${
+                    subCount === 1 ? "sub-page" : "sub-pages"
+                  }? Their images are deleted too.`;
+                }
+                return `Delete “${activeNote.title}”? Its images are deleted too.`;
+              })()}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1427,7 +2040,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
               className="px-4 py-2 text-xs font-bold rounded bg-danger text-white hover:opacity-90 cursor-pointer"
               onClick={handleDeleteNoteConfirm}
             >
-              Delete note
+              Delete page
             </button>
           </DialogFooter>
         </DialogContent>

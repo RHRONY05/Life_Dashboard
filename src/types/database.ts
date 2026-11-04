@@ -214,6 +214,12 @@ export type Database = {
           created_by: string
           doc: Json | null
           id: string
+          parent_id: string | null
+          pinned: boolean
+          prev_at: string | null
+          prev_body_md: string | null
+          prev_by: string | null
+          prev_doc: Json | null
           title: string
           updated_at: string
           user_id: string
@@ -224,6 +230,12 @@ export type Database = {
           created_by?: string
           doc?: Json | null
           id?: string
+          parent_id?: string | null
+          pinned?: boolean
+          prev_at?: string | null
+          prev_body_md?: string | null
+          prev_by?: string | null
+          prev_doc?: Json | null
           title: string
           updated_at?: string
           user_id?: string
@@ -234,11 +246,25 @@ export type Database = {
           created_by?: string
           doc?: Json | null
           id?: string
+          parent_id?: string | null
+          pinned?: boolean
+          prev_at?: string | null
+          prev_body_md?: string | null
+          prev_by?: string | null
+          prev_doc?: Json | null
           title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notes_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       people: {
         Row: {

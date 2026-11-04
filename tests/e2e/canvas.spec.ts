@@ -24,7 +24,7 @@ test.describe("Canvas Scratch E2E", () => {
     // 1. Check UI elements
     await expect(page.locator(".ecard-head h2")).toContainText("Scratch");
     await expect(page.locator(".save-status").first()).toContainText("Saved · this browser");
-    await expect(page.locator(".npane-empty")).toContainText("No saved notes yet");
+    await expect(page.locator(".npane-empty")).toContainText(/No (saved )?(notes|pages) yet/i);
 
     // 2. Type text into the editor
     const prose = page.locator(".prose .tiptap");
@@ -48,7 +48,6 @@ test.describe("Canvas Scratch E2E", () => {
     expect(scratchLeaked).toBe(false);
 
     // 4. Test "Copy as Markdown"
-    // Grant clipboard permissions
     await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
 
     const copyBtn = page.locator("#copy-markdown-btn");
@@ -93,12 +92,12 @@ test.describe("Canvas Scratch E2E", () => {
     const prose = page.locator(".prose .tiptap");
     await expect(prose).toBeVisible();
 
-    // Switch to Notes tab
-    const notesTabBtn = page.getByRole("button", { name: /Notes/i });
-    await notesTabBtn.click();
+    // Switch to Pages tab
+    const pagesTabBtn = page.getByRole("button", { name: /Pages/i });
+    await pagesTabBtn.click();
 
-    // Notes list empty state is shown, prose editor is hidden
-    await expect(page.locator(".npane-empty")).toBeVisible();
+    // Pages list empty state or tree is shown, prose editor is hidden
+    await expect(page.locator(".npane")).toBeVisible();
     await expect(prose).toBeHidden();
 
     // Switch back to Scratch
@@ -107,7 +106,7 @@ test.describe("Canvas Scratch E2E", () => {
     await expect(prose).toBeVisible();
   });
 
-  test("Mobile: Save as note via menu, tap note to open full width with back button", async ({
+  test("Mobile: Save as page via menu, tap page to open full width with back button", async ({
     page,
     isMobile,
   }) => {
@@ -132,8 +131,8 @@ test.describe("Canvas Scratch E2E", () => {
       .getByRole("button", { name: "More options" });
     await moreBtn.click();
 
-    const saveAsNoteItem = page.getByRole("menuitem", { name: "Save as note" });
-    await saveAsNoteItem.click();
+    const saveAsPageItem = page.getByRole("menuitem", { name: /Save as (page|note)/i });
+    await saveAsPageItem.click();
 
     // Toast appears
     await expect(
@@ -142,25 +141,25 @@ test.describe("Canvas Scratch E2E", () => {
       })
     ).toBeVisible();
 
-    // Switch to Notes tab
-    const notesTabBtn = page.getByRole("button", { name: /Notes/i });
-    await notesTabBtn.click();
+    // Switch to Pages tab
+    const pagesTabBtn = page.getByRole("button", { name: /Pages/i });
+    await pagesTabBtn.click();
 
-    const noteCard = page.locator(".nlist .nrow", {
+    const pageCard = page.locator(".tree .trow, .nlist .nrow", {
       hasText: "Mobile Lecture Notes",
-    });
-    await expect(noteCard).toBeVisible();
+    }).first();
+    await expect(pageCard).toBeVisible();
 
-    // Tap note to open full width
-    await noteCard.click();
+    // Tap page to open full width
+    await pageCard.click();
 
     // Header shows back button
-    const backBtn = page.getByRole("button", { name: "Back to Notes" });
+    const backBtn = page.getByRole("button", { name: "Back to Pages" });
     await expect(backBtn).toBeVisible();
 
-    // Click Back to Notes
+    // Click Back to Pages
     await backBtn.click();
-    await expect(page.locator(".ecard-head h2")).toHaveText("Scratch");
+    await expect(page.locator(".npane")).toBeVisible();
   });
 
   test("Multi-tab Web Lock: second tab is read-only with 'Use here' banner", async ({
@@ -198,7 +197,7 @@ test.describe("Canvas Scratch E2E", () => {
     await page2.close();
   });
 
-  test("Desktop: Save as note, open note, edit with autosave, search notes, delete note", async ({
+  test("Desktop: Save as page, open page, edit with autosave, search pages, delete page", async ({
     page,
     isMobile,
   }) => {
@@ -210,7 +209,7 @@ test.describe("Canvas Scratch E2E", () => {
     const prose = page.locator(".prose .tiptap");
     await expect(prose).toBeVisible();
 
-    // 1. Enter text in Scratch and click "Save as note"
+    // 1. Enter text in Scratch and click "Save as page"
     await prose.click();
     await page.keyboard.press("Control+A");
     await page.keyboard.press("Backspace");
@@ -218,9 +217,9 @@ test.describe("Canvas Scratch E2E", () => {
 
     await page.waitForTimeout(600);
 
-    const saveAsNoteBtn = page.locator("#save-as-note-btn");
-    await expect(saveAsNoteBtn).toBeVisible();
-    await saveAsNoteBtn.click();
+    const saveAsPageBtn = page.locator("#save-as-note-btn");
+    await expect(saveAsPageBtn).toBeVisible();
+    await saveAsPageBtn.click();
 
     // Toast appears: "Saved as “Operating System Notes”"
     const toast = page.locator("[data-sonner-toast]", {
@@ -228,26 +227,26 @@ test.describe("Canvas Scratch E2E", () => {
     });
     await expect(toast).toBeVisible();
 
-    // The note appears in the Notes list
-    const noteRow = page.locator(".nlist .nrow", {
+    // The page appears in the Pages tree
+    const pageRow = page.locator(".tree .trow", {
       hasText: "Operating System Notes",
-    });
-    await expect(noteRow).toBeVisible();
+    }).first();
+    await expect(pageRow).toBeVisible();
 
     // Scratch content is still present in editor
     await expect(page.locator(".ecard-head h2")).toHaveText("Scratch");
     await expect(prose).toContainText("Processes vs Threads");
 
-    // 2. Open the note by clicking its card in the notes pane
-    await noteRow.click();
+    // 2. Open the page by clicking its row
+    await pageRow.click();
 
-    // Editor head now displays editable note title input instead of "SCRATCH"
+    // Editor head now displays editable page title input instead of "SCRATCH"
     const titleInput = page.locator(".ecard-head .ntitle");
     await expect(titleInput).toBeVisible();
     await expect(titleInput).toHaveValue("Operating System Notes");
     await expect(page.locator(".save-status").first()).toContainText("Saved");
 
-    // 3. Edit note text and verify 800ms autosave
+    // 3. Edit page text and verify 800ms autosave
     await prose.click();
     await page.keyboard.type("\n- Virtual Memory and Paging");
 
@@ -257,37 +256,37 @@ test.describe("Canvas Scratch E2E", () => {
       timeout: 5000,
     });
 
-    // 4. Test search in notes pane
-    const searchInput = page.getByRole("searchbox", { name: "Search notes" });
+    // 4. Test search in pages pane
+    const searchInput = page.getByRole("searchbox", { name: /Search pages|Search notes/i });
     await searchInput.fill("Operating");
     await expect(page.locator(".nlist .nrow", { hasText: "Operating System Notes" })).toBeVisible();
 
     await searchInput.fill("NonExistentKeyword");
-    await expect(page.locator(".npane-empty")).toContainText("No notes match “NonExistentKeyword”");
+    await expect(page.locator(".npane-empty")).toContainText(/No pages match|No notes match/);
 
     await searchInput.clear();
-    await expect(page.locator(".nlist .nrow", { hasText: "Operating System Notes" })).toBeVisible();
+    await expect(page.locator(".tree .trow", { hasText: "Operating System Notes" }).first()).toBeVisible();
 
-    // 5. Delete note with confirm dialog
+    // 5. Delete page with confirm dialog
     const moreBtn = page.locator(".ecard-head").getByRole("button", { name: "More options" });
     await moreBtn.click();
 
-    const deleteMenuItem = page.getByRole("menuitem", { name: "Delete note" });
+    const deleteMenuItem = page.getByRole("menuitem", { name: /Delete page|Delete note/i });
     await deleteMenuItem.click();
 
     // Confirm dialog is shown
     await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(page.getByText(/Delete “Operating System Notes”\? Its images are deleted too/)).toBeVisible();
+    await expect(page.getByText(/Delete “Operating System Notes”/)).toBeVisible();
 
     const confirmDeleteBtn = page.locator("#confirm-delete-note-btn");
     await confirmDeleteBtn.click();
 
-    // Toast "Note deleted" appears
-    await expect(page.locator("[data-sonner-toast]", { hasText: "Note deleted" })).toBeVisible();
+    // Toast "Page deleted" appears
+    await expect(page.locator("[data-sonner-toast]", { hasText: /Page deleted|Note deleted/ })).toBeVisible();
 
-    // View returns to Scratch and note is gone from list
+    // View returns to Scratch and page is gone from list
     await expect(page.locator(".ecard-head h2")).toHaveText("Scratch");
-    await expect(page.locator(".nlist .nrow", { hasText: "Operating System Notes" })).toBeHidden();
+    await expect(page.locator(".tree .trow", { hasText: "Operating System Notes" })).toBeHidden();
   });
 
   test("Desktop: typing continuously with 1.5s delayed PATCH causes no conflict", async ({
@@ -317,16 +316,16 @@ test.describe("Canvas Scratch E2E", () => {
 
     await page.waitForTimeout(600);
 
-    const saveAsNoteBtn = page.locator("#save-as-note-btn");
-    await saveAsNoteBtn.click();
+    const saveAsPageBtn = page.locator("#save-as-note-btn");
+    await saveAsPageBtn.click();
 
     await expect(
       page.locator("[data-sonner-toast]", { hasText: "Saved as “Stress Test Concurrency”" })
     ).toBeVisible();
 
-    // Open note
-    const noteRow = page.locator(".nlist .nrow", { hasText: "Stress Test Concurrency" });
-    await noteRow.click();
+    // Open page
+    const pageRow = page.locator(".tree .trow", { hasText: "Stress Test Concurrency" }).first();
+    await pageRow.click();
 
     await expect(page.locator(".ecard-head .ntitle")).toHaveValue("Stress Test Concurrency");
 
@@ -348,8 +347,72 @@ test.describe("Canvas Scratch E2E", () => {
     // Clean up
     const moreBtn = page.locator(".ecard-head").getByRole("button", { name: "More options" });
     await moreBtn.click();
-    await page.getByRole("menuitem", { name: "Delete note" }).click();
+    await page.getByRole("menuitem", { name: /Delete page|Delete note/i }).click();
     await page.locator("#confirm-delete-note-btn").click();
-    await expect(page.locator("[data-sonner-toast]", { hasText: "Note deleted" })).toBeVisible();
+    await expect(page.locator("[data-sonner-toast]", { hasText: /Page deleted|Note deleted/ })).toBeVisible();
+  });
+
+  test("Desktop: Canvas v2 tabs bar, LRU eviction, Alt shortcuts, sub-pages & tree hierarchy", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "Desktop test only");
+
+    await page.goto("/canvas");
+    await page.waitForLoadState("networkidle");
+
+    // 1. Create a parent page "DevTools Parent"
+    const newPageBtn = page.getByRole("button", { name: "New page" });
+    await newPageBtn.click();
+    await expect(page.locator("[data-sonner-toast]", { hasText: "Page created" })).toBeVisible();
+
+    const titleInput = page.locator(".ecard-head .ntitle");
+    await titleInput.fill("DevTools Parent");
+    await titleInput.blur();
+    await page.waitForTimeout(1000);
+
+    // Verify tab bar shows Scratch + DevTools Parent
+    await expect(page.locator(".ptabs .ptab")).toHaveCount(2);
+    await expect(page.locator(".ptabs .ptab.on")).toContainText("DevTools Parent");
+
+    // 2. In Sub-pages list at bottom, click "New sub-page"
+    const newSubPageBtn = page.locator(".subpages .add");
+    await expect(newSubPageBtn).toBeVisible();
+    await newSubPageBtn.click();
+    await expect(page.locator("[data-sonner-toast]", { hasText: "Page created" })).toBeVisible();
+
+    // Set title of child to "Backend Tips"
+    await expect(titleInput).toBeVisible();
+    await titleInput.fill("Backend Tips");
+    await titleInput.blur();
+    await page.waitForTimeout(1000);
+
+    // Verify breadcrumb shows "DevTools Parent ›"
+    await expect(page.locator(".crumbs")).toContainText("DevTools Parent");
+
+    // Verify tabs count: Scratch + DevTools Parent + Backend Tips = 3
+    await expect(page.locator(".ptabs .ptab")).toHaveCount(3);
+
+    // Switch to Scratch via Alt+1
+    await page.keyboard.press("Alt+1");
+    await expect(page.locator(".ptabs .ptab.scratch.on")).toBeVisible();
+    await expect(page.locator(".ecard-head h2")).toHaveText("Scratch");
+
+    // Switch to Backend Tips via Alt+3
+    await page.keyboard.press("Alt+3");
+    await expect(titleInput).toHaveValue("Backend Tips");
+
+    // Close tab via Alt+W
+    await page.keyboard.press("Alt+W");
+    await page.waitForTimeout(500);
+
+    // Clean up created pages
+    const moreBtn = page.locator(".ecard-head").getByRole("button", { name: "More options" });
+    if (await moreBtn.isVisible()) {
+      await moreBtn.click();
+      await page.getByRole("menuitem", { name: /Delete page/i }).click();
+      await page.locator("#confirm-delete-note-btn").click();
+      await page.waitForTimeout(500);
+    }
   });
 });
