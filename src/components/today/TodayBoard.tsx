@@ -24,6 +24,9 @@ interface TodayBoardProps {
   initialTrackers?: TrackerSummaryDto[];
   initialSpendingSummary?: SpendingSummaryDto;
   initialMoneyTotals?: MoneyTotalsDto;
+  initialToPayTotal?: number;
+  initialToPayCount?: number;
+  initialHasOverdueToPay?: boolean;
 }
 
 export function TodayBoard({
@@ -32,6 +35,9 @@ export function TodayBoard({
   initialTrackers = [],
   initialSpendingSummary,
   initialMoneyTotals,
+  initialToPayTotal,
+  initialToPayCount,
+  initialHasOverdueToPay,
 }: TodayBoardProps) {
   const [board, setBoard] = useState<BoardResponse>(initialBoard);
   const [lists, setLists] = useState<TaskListDto[]>(initialLists);
@@ -825,6 +831,9 @@ export function TodayBoard({
           trackers={trackers}
           spendingSummary={spendingSummary}
           moneyTotals={moneyTotals}
+          toPayTotal={initialToPayTotal}
+          toPayCount={initialToPayCount}
+          hasOverdueToPay={initialHasOverdueToPay}
         />
       </div>
     </>

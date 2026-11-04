@@ -15,12 +15,18 @@ interface TodayRailProps {
   trackers?: TrackerSummaryDto[];
   spendingSummary?: SpendingSummaryDto;
   moneyTotals?: MoneyTotalsDto;
+  toPayTotal?: number;
+  toPayCount?: number;
+  hasOverdueToPay?: boolean;
 }
 
 export function TodayRail({
   trackers = [],
   spendingSummary,
   moneyTotals,
+  toPayTotal,
+  toPayCount = 0,
+  hasOverdueToPay = false,
 }: TodayRailProps) {
   const activeTrackers = trackers.filter((t) => !t.archived);
 
@@ -33,7 +39,9 @@ export function TodayRail({
   const hasIOUs =
     moneyTotals && (moneyTotals.owedToMe > 0 || moneyTotals.iOwe > 0);
 
-  const showMoneyBlock = hasSpending || hasIOUs;
+  const hasToPay = toPayCount > 0;
+
+  const showMoneyBlock = hasSpending || hasIOUs || hasToPay;
 
   return (
     <aside className="rail hidden lg:flex flex-col gap-4 w-[320px] flex-none">
@@ -120,6 +128,37 @@ export function TodayRail({
                   </span>
                 )}
               </div>
+            )}
+
+            {hasToPay && (
+              <>
+                {(hasSpending || hasIOUs) && (
+                  <div className="border-t border-[var(--line)]" />
+                )}
+                <Link
+                  href="/money?tab=topay"
+                  className="flex items-center justify-between text-[var(--text-sm)] group hover:underline"
+                >
+                  <span className="text-[var(--ink-2)] group-hover:text-[var(--ink)]">
+                    To pay
+                  </span>
+                  <span className="font-semibold">
+                    <span
+                      className={
+                        hasOverdueToPay
+                          ? "text-[var(--danger-text)] font-semibold"
+                          : "text-[var(--ink)]"
+                      }
+                    >
+                      {formatTaka(toPayTotal ?? 0)}
+                    </span>
+                    <span className="text-[var(--ink-3)] font-normal">
+                      {" · "}
+                      {toPayCount}
+                    </span>
+                  </span>
+                </Link>
+              </>
             )}
           </div>
         </section>

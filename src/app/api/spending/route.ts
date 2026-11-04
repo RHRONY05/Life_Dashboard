@@ -10,7 +10,9 @@ export async function GET(req: NextRequest) {
   try {
     const ctx = await requireOwner();
     const before = req.nextUrl.searchParams.get("before") || undefined;
-    const result = await listExpenses(ctx, before);
+    const month = req.nextUrl.searchParams.get("month") || undefined;
+    const q = req.nextUrl.searchParams.get("q") || undefined;
+    const result = await listExpenses(ctx, { beforeDate: before, month, q });
     return NextResponse.json(result);
   } catch (err) {
     return handleApiError(err);

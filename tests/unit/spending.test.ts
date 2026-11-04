@@ -93,4 +93,27 @@ describe("Spending domain logic (07-LOGIC.md §3b)", () => {
     expect(summary.budgetPct).toBeNull();
     expect(budgetState(summary.budgetPct)).toBeNull();
   });
+
+  it("handles past month parameter in summariseSpending (07 §3b)", () => {
+    const expenses: ExpenseLike[] = [
+      { spentOn: "2026-10-15", category: "food", amount: 1200 },
+      { spentOn: "2026-10-20", category: "giving", amount: 800 },
+      { spentOn: "2026-11-02", category: "food", amount: 300 },
+    ];
+
+    const today = "2026-11-04";
+    const summary = summariseSpending(expenses, today, 5000, "2026-10");
+
+    // today and week reflect today's current week/day
+    expect(summary.today).toBe(0);
+    // month reflects October 2026
+    expect(summary.month).toBe(2000);
+    expect(summary.monthLabel).toBe("October 2026");
+    expect(summary.budgetLeft).toBe(3000);
+    expect(summary.budgetPct).toBe(40);
+    expect(summary.byCategory).toEqual([
+      { category: "food", amount: 1200, pct: 60 },
+      { category: "giving", amount: 800, pct: 40 },
+    ]);
+  });
 });

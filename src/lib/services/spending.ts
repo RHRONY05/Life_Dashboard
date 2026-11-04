@@ -14,7 +14,9 @@ import {
   weekRange,
   monthRange,
   Category,
+  CATEGORY_META,
 } from "@/lib/domain/spending";
+import { SpendingCsvRow } from "@/lib/domain/csv";
 import { todayIn, addDays } from "@/lib/domain/dates";
 import { InvalidInputError, NotFoundError } from "@/lib/errors";
 
@@ -35,13 +37,21 @@ function mapExpense(row: ExpenseRow): ExpenseDto {
 
 export async function getSpendingSummary(
   ctx: Ctx,
-  clock = new Date()
+  clock = new Date(),
+  monthParam?: string | null
 ): Promise<SpendingSummaryDto> {
   assertScope(ctx, "money:read");
 
   const todayIso = todayIn(clock, APP_TIMEZONE);
+  const currentMonth = todayIso.slice(0, 7);
+
+  if (monthParam && monthParam > currentMonth) {
+    throw new InvalidInputError("Future month is not allowed");
+  }
+
   const wRange = weekRange(todayIso);
-  const mRange = monthRange(todayIso);
+  const targetIso = monthParam ? `${monthParam}-01` : todayIso;
+  const mRange = monthRange(targetIso);
 
   const minDate = wRange.from < mRange.from ? wRange.from : mRange.from;
   const maxDate = wRange.to > mRange.to ? wRange.to : mRange.to;
@@ -55,7 +65,20 @@ export async function getSpendingSummary(
 
   const budget = settings?.monthly_budget_bdt ?? null;
 
-  // 2. Fetch expenses that could fall into week or month
+  // 2. Fetch oldest expense to determine firstMonth
+  const { data: oldestExpense } = await ctx.db
+    .from("expenses")
+    .select("spent_on")
+    .eq("user_id", ctx.userId)
+    .order("spent_on", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  const firstMonth = oldestExpense?.spent_on
+    ? oldestExpense.spent_on.slice(0, 7)
+    : null;
+
+  // 3. Fetch expenses that could fall into week or month
   const { data: expenses, error } = await ctx.db
     .from("expenses")
     .select("*")
@@ -73,27 +96,99 @@ export async function getSpendingSummary(
     spentOn: e.spent_on,
   }));
 
-  return summariseSpending(expenseLikes, todayIso, budget);
+  const summary = summariseSpending(expenseLikes, todayIso, budget, monthParam);
+  return {
+    ...summary,
+    firstMonth,
+  };
+}
+
+export interface ListExpensesOptions {
+  beforeDate?: string;
+  limitDays?: number;
+  month?: string;
+  q?: string;
 }
 
 export async function listExpenses(
   ctx: Ctx,
-  beforeDate?: string,
-  limitDays = 14,
+  optionsOrBeforeDate?: string | ListExpensesOptions,
+  limitDaysParam = 14,
   clock = new Date()
 ): Promise<SpendingDaysResponseDto> {
   assertScope(ctx, "money:read");
 
-  const effectiveBefore =
-    beforeDate || addDays(todayIn(clock, APP_TIMEZONE), 1);
+  const opts: ListExpensesOptions =
+    typeof optionsOrBeforeDate === "object"
+      ? optionsOrBeforeDate
+      : { beforeDate: optionsOrBeforeDate, limitDays: limitDaysParam };
 
-  // We want up to limitDays days that have entries
-  // To avoid fetching everything, fetch expenses where spent_on < effectiveBefore
-  const { data: rawExpenses, error } = await ctx.db
+  const effectiveLimitDays = opts.limitDays || 14;
+
+  // Search mode (all-time, debounced query)
+  if (opts.q && opts.q.trim()) {
+    const qTerm = opts.q.trim().toLowerCase();
+    const { data: allRaw, error } = await ctx.db
+      .from("expenses")
+      .select("*")
+      .eq("user_id", ctx.userId)
+      .order("spent_on", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    const matched = (allRaw || []).filter((e) => {
+      const noteMatch = e.note && e.note.toLowerCase().includes(qTerm);
+      const catKeyMatch = e.category.toLowerCase().includes(qTerm);
+      const catMeta = CATEGORY_META[e.category as Category];
+      const catLabelMatch = catMeta?.label.toLowerCase().includes(qTerm);
+      return Boolean(noteMatch || catKeyMatch || catLabelMatch);
+    });
+
+    const daysMap = new Map<string, ExpenseDto[]>();
+    for (const exp of matched) {
+      if (!daysMap.has(exp.spent_on)) {
+        daysMap.set(exp.spent_on, []);
+      }
+      daysMap.get(exp.spent_on)!.push(mapExpense(exp));
+    }
+
+    const days: SpendingDayGroupDto[] = Array.from(daysMap.entries()).map(
+      ([day, items]) => ({
+        day,
+        total: items.reduce((sum, item) => sum + item.amount, 0),
+        expenses: items,
+      })
+    );
+
+    const matchCount = matched.length;
+    const matchTotal = matched.reduce((sum, item) => sum + item.amount_bdt, 0);
+
+    return {
+      days,
+      hasMore: false,
+      matchCount,
+      matchTotal,
+    };
+  }
+
+  const effectiveBefore =
+    opts.beforeDate || addDays(todayIn(clock, APP_TIMEZONE), 1);
+
+  let query = ctx.db
     .from("expenses")
     .select("*")
     .eq("user_id", ctx.userId)
-    .lt("spent_on", effectiveBefore)
+    .lt("spent_on", effectiveBefore);
+
+  if (opts.month) {
+    const mRange = monthRange(`${opts.month}-01`);
+    query = query.gte("spent_on", mRange.from).lte("spent_on", mRange.to);
+  }
+
+  const { data: rawExpenses, error } = await query
     .order("spent_on", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -107,7 +202,7 @@ export async function listExpenses(
   for (const exp of rawExpenses || []) {
     const day = exp.spent_on;
     if (!daysMap.has(day)) {
-      if (daysMap.size >= limitDays) {
+      if (daysMap.size >= effectiveLimitDays) {
         hasMore = true;
         break;
       }
@@ -128,6 +223,31 @@ export async function listExpenses(
     days,
     hasMore,
   };
+}
+
+export async function listAllExpensesForExport(
+  ctx: Ctx
+): Promise<SpendingCsvRow[]> {
+  assertScope(ctx, "money:read");
+
+  const { data, error } = await ctx.db
+    .from("expenses")
+    .select("*")
+    .eq("user_id", ctx.userId)
+    .order("spent_on", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data || []).map((e) => ({
+    spentOn: e.spent_on,
+    category: e.category,
+    amount: e.amount_bdt,
+    note: e.note,
+    createdBy: e.created_by,
+  }));
 }
 
 export async function createExpense(

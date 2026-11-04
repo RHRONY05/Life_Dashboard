@@ -266,6 +266,72 @@ export type Database = {
           },
         ]
       }
+      payment_todos: {
+        Row: {
+          amount_bdt: number
+          category: string
+          created_at: string
+          created_by: string
+          due_on: string | null
+          expense_id: string | null
+          id: string
+          next_id: string | null
+          note: string | null
+          paid_on: string | null
+          repeat: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_bdt: number
+          category?: string
+          created_at?: string
+          created_by?: string
+          due_on?: string | null
+          expense_id?: string | null
+          id?: string
+          next_id?: string | null
+          note?: string | null
+          paid_on?: string | null
+          repeat?: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          amount_bdt?: number
+          category?: string
+          created_at?: string
+          created_by?: string
+          due_on?: string | null
+          expense_id?: string | null
+          id?: string
+          next_id?: string | null
+          note?: string | null
+          paid_on?: string | null
+          repeat?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_todos_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_todos_next_id_fkey"
+            columns: ["next_id"]
+            isOneToOne: false
+            referencedRelation: "payment_todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       people: {
         Row: {
           created_at: string

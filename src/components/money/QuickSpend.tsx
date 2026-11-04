@@ -9,6 +9,7 @@ import {
   HeartPulse,
   ShoppingBag,
   Gamepad2,
+  HandHeart,
   CircleDot,
   Plus,
   Calendar,
@@ -38,6 +39,7 @@ const CATEGORY_CONFIG: Record<
   health: { label: "Health", icon: HeartPulse },
   shopping: { label: "Shopping", icon: ShoppingBag },
   fun: { label: "Fun", icon: Gamepad2 },
+  giving: { label: "Giving", icon: HandHeart },
   other: { label: "Other", icon: CircleDot },
 };
 

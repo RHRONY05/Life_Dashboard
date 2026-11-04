@@ -23,7 +23,9 @@ import {
   reminderTask,
   parseIouText,
   ImportLine,
+  signedAmount,
 } from "@/lib/domain/money";
+import { IouCsvRow } from "@/lib/domain/csv";
 import { todayIn } from "@/lib/domain/dates";
 import { ConflictError, InvalidInputError, NotFoundError } from "@/lib/errors";
 
@@ -608,4 +610,60 @@ export async function settlePerson(
     entry: mapEntry(newEntry),
     person: updatedPerson,
   };
+}
+
+export async function listAllIouEntriesForExport(
+  ctx: Ctx
+): Promise<IouCsvRow[]> {
+  assertScope(ctx, "money:read");
+
+  // Fetch all people
+  const { data: people, error: pError } = await ctx.db
+    .from("people")
+    .select("*")
+    .eq("user_id", ctx.userId)
+    .order("name", { ascending: true });
+
+  if (pError) throw pError;
+
+  // Fetch all entries
+  const { data: rawEntries, error: eError } = await ctx.db
+    .from("iou_entries")
+    .select("*")
+    .eq("user_id", ctx.userId)
+    .order("occurred_on", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (eError) throw eError;
+
+  const entriesByPerson = new Map<string, IouEntryRow[]>();
+  for (const entry of rawEntries || []) {
+    if (!entriesByPerson.has(entry.person_id)) {
+      entriesByPerson.set(entry.person_id, []);
+    }
+    entriesByPerson.get(entry.person_id)!.push(entry);
+  }
+
+  const exportRows: IouCsvRow[] = [];
+
+  for (const person of people || []) {
+    const personRawEntries = entriesByPerson.get(person.id) || [];
+    const dtos = personRawEntries.map(mapEntry);
+    const withBals = withBalances(dtos);
+
+    for (const e of withBals) {
+      exportRows.push({
+        occurredOn: e.occurredOn,
+        personName: person.name,
+        kind: e.kind,
+        amount: e.amount,
+        signed: signedAmount(e.kind, e.amount),
+        balanceAfter: e.balanceAfter ?? 0,
+        note: e.note,
+        createdBy: e.createdBy,
+      });
+    }
+  }
+
+  return exportRows;
 }

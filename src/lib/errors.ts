@@ -63,6 +63,8 @@ export const ERROR_MESSAGES: Record<string, string> = {
   ALREADY_SETTLED: "That balance is already settled.",
   INVALID_AMOUNT: "Please enter a valid amount in taka.",
   FUTURE_EXPENSE_FORBIDDEN: "Expenses cannot be recorded for future dates.",
+  limit_reached: "100 open payments is the maximum. Mark some paid first.",
+  already_paid: "This payment has already been marked as paid.",
 
   // Renewals
   RENEWAL_NOT_FOUND: "That renewal was not found.",

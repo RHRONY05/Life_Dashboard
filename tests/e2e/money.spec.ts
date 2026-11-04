@@ -10,6 +10,27 @@ test.describe("Money (IOUs) E2E", () => {
         await request.delete(`/api/money/people/${p.id}`);
       }
     }
+
+    // Delete all payment_todos
+    const todoRes = await request.get("/api/payment-todos");
+    if (todoRes.ok()) {
+      const todoData = await todoRes.json();
+      const allTodos = [...(todoData.open || []), ...(todoData.paid || [])];
+      for (const t of allTodos) {
+        await request.delete(`/api/payment-todos/${t.id}`);
+      }
+    }
+
+    // Delete all expenses
+    const expRes = await request.get("/api/spending");
+    if (expRes.ok()) {
+      const expData = await expRes.json();
+      for (const d of expData.days || []) {
+        for (const exp of d.expenses || []) {
+          await request.delete(`/api/spending/${exp.id}`);
+        }
+      }
+    }
   });
 
   test("desktop: adds entries, checks balances and totals, and settles person", async ({
@@ -158,5 +179,93 @@ test.describe("Money (IOUs) E2E", () => {
     const mobileRows = page.locator(".lrow2:visible");
     await expect(mobileRows.first()).toBeVisible();
     await expect(mobileRows.first()).toContainText("You borrowed ৳600");
+  });
+
+  test("desktop: V5b To pay tab (add items, tile total, rail line, mark paid with monthly copy, undo, and search)", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "Desktop test");
+
+    await page.goto("/money?tab=topay");
+    await page.waitForLoadState("networkidle");
+
+    // 1. Add "Mahfil LED lights" ৳500
+    await page.getByRole("button", { name: /Add payment/i }).first().click();
+    await expect(page.getByRole("heading", { name: "Add payment" })).toBeVisible();
+
+    await page.locator("#todo-title-input").fill("Mahfil LED lights");
+    await page.locator("#todo-amount-input").fill("500");
+    await page.locator("#todo-note-input").fill("collect in the group first");
+    await page.getByRole("dialog").getByRole("button", { name: "Add" }).click();
+
+    // 2. Add "Home" ৳3,000 every month
+    await page.getByRole("button", { name: /Add payment/i }).first().click();
+    await expect(page.getByRole("heading", { name: "Add payment" })).toBeVisible();
+
+    await page.locator("#todo-title-input").fill("Home");
+    await page.locator("#todo-amount-input").fill("3000");
+    await page.locator("#todo-monthly-checkbox").check();
+    await page.locator("#todo-note-input").fill("for Ammu");
+    await page.getByRole("dialog").getByRole("button", { name: "Add" }).click();
+
+    // 3. Add "Ranggashimulia foundation" ৳200
+    await page.getByRole("button", { name: /Add payment/i }).first().click();
+    await expect(page.getByRole("heading", { name: "Add payment" })).toBeVisible();
+
+    await page.locator("#todo-title-input").fill("Ranggashimulia foundation");
+    await page.locator("#todo-amount-input").fill("200");
+    await page.getByRole("dialog").getByRole("button", { name: "Add" }).click();
+
+    // 4. Verify tile "Still to pay ৳3,700 · 3 items"
+    await expect(page.locator(".tile-k", { hasText: "Still to pay" })).toBeVisible();
+    await expect(page.locator(".tile-v")).toContainText("3,700");
+    await expect(page.locator(".tile-s")).toContainText("3 items");
+
+    // 5. Check Today rail line
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    const railLink = page.locator("a[href='/money?tab=topay']");
+    await expect(railLink).toBeVisible();
+    await expect(railLink).toContainText("3,700");
+    await expect(railLink).toContainText("3");
+
+    // 6. Return to To pay and mark Home paid
+    await page.goto("/money?tab=topay");
+    await page.waitForLoadState("networkidle");
+
+    const homeRow = page.locator(".todo", { hasText: "Home" }).first();
+    await homeRow.getByRole("button", { name: /Mark paid|Paid/i }).click();
+
+    // Toast appears: "Paid ৳3,000 · logged in Spending" with Undo button
+    const toast = page.locator(".toast").filter({ hasText: /Paid ৳3,000/i }).first();
+    await expect(toast).toBeVisible();
+
+    // In Spending, ৳3,000 appears
+    await page.goto("/money");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator(".tiles")).toContainText("3,000");
+
+    // 7. Test Search in Spending
+    const searchInput = page.locator(".spend-search input");
+    await searchInput.fill("Home");
+    await expect(page.locator(".results-head")).toContainText("results · all time");
+    await expect(page.locator(".spend b, .spend .t").first()).toContainText("Home");
+    await searchInput.fill("");
+
+    // 8. Test CSV Exports from Money menu
+    await page.getByRole("button", { name: "Money menu" }).click();
+    const [downloadSpending] = await Promise.all([
+      page.waitForEvent("download"),
+      page.getByRole("menuitem", { name: /Export spending/i }).click(),
+    ]);
+    expect(downloadSpending.suggestedFilename()).toMatch(/spending/);
+
+    await page.getByRole("button", { name: "Money menu" }).click();
+    const [downloadIous] = await Promise.all([
+      page.waitForEvent("download"),
+      page.getByRole("menuitem", { name: /Export IOUs/i }).click(),
+    ]);
+    expect(downloadIous.suggestedFilename()).toMatch(/ious/);
   });
 });

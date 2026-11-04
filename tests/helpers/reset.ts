@@ -40,6 +40,7 @@ export async function resetUserData(targetUserId: string): Promise<void> {
   await admin.from("task_lists").delete().eq("user_id", targetUserId);
   await admin.from("tracker_items").delete().eq("user_id", targetUserId);
   await admin.from("trackers").delete().eq("user_id", targetUserId);
+  await admin.from("payment_todos").delete().eq("user_id", targetUserId);
   await admin.from("expenses").delete().eq("user_id", targetUserId);
   await admin.from("user_settings").delete().eq("user_id", targetUserId);
   await admin.from("iou_entries").delete().eq("user_id", targetUserId);

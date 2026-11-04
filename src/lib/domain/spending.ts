@@ -11,6 +11,7 @@ export const CATEGORIES = [
   "health",
   "shopping",
   "fun",
+  "giving",
   "other",
 ] as const;
 
@@ -27,6 +28,7 @@ export const CATEGORY_META: Record<
   health: { label: "Health", icon: "heart-pulse" },
   shopping: { label: "Shopping", icon: "shopping-bag" },
   fun: { label: "Fun", icon: "gamepad-2" },
+  giving: { label: "Giving", icon: "hand-heart" },
   other: { label: "Other", icon: "circle-dot" },
 };
 
@@ -127,10 +129,12 @@ export function getMonthLabel(todayIso: string): string {
 export function summariseSpending(
   expenses: ExpenseLike[],
   todayIso: string,
-  budget: number | null
+  budget: number | null,
+  monthParam?: string | null
 ): SpendingSummary {
   const wRange = weekRange(todayIso);
-  const mRange = monthRange(todayIso);
+  const targetIso = monthParam ? `${monthParam}-01` : todayIso;
+  const mRange = monthRange(targetIso);
 
   let todayTotal = 0;
   let weekTotal = 0;
@@ -169,7 +173,7 @@ export function summariseSpending(
     week: weekTotal,
     month: monthTotal,
     weekRange: wRange,
-    monthLabel: getMonthLabel(todayIso),
+    monthLabel: getMonthLabel(targetIso),
     budget,
     budgetLeft,
     budgetPct,

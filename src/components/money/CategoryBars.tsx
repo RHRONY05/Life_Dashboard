@@ -9,6 +9,7 @@ import {
   HeartPulse,
   ShoppingBag,
   Gamepad2,
+  HandHeart,
   CircleDot,
 } from "lucide-react";
 import { SpendingSummaryDto, SpendingCategory } from "@/lib/schemas";
@@ -29,6 +30,7 @@ const CATEGORY_ICONS: Record<
   health: HeartPulse,
   shopping: ShoppingBag,
   fun: Gamepad2,
+  giving: HandHeart,
   other: CircleDot,
 };
 
@@ -40,6 +42,7 @@ const CATEGORY_LABELS: Record<SpendingCategory, string> = {
   health: "Health",
   shopping: "Shopping",
   fun: "Fun",
+  giving: "Giving",
   other: "Other",
 };
 

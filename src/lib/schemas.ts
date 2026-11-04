@@ -339,6 +339,7 @@ export const SpendingCategories = [
   "health",
   "shopping",
   "fun",
+  "giving",
   "other",
 ] as const;
 
@@ -417,6 +418,7 @@ export interface SpendingSummaryDto {
   budgetLeft: number | null;
   budgetPct: number | null;
   byCategory: { category: SpendingCategory; amount: number; pct: number }[];
+  firstMonth?: string | null;
 }
 
 export interface SpendingDayGroupDto {
@@ -428,6 +430,93 @@ export interface SpendingDayGroupDto {
 export interface SpendingDaysResponseDto {
   days: SpendingDayGroupDto[];
   hasMore: boolean;
+  matchCount?: number;
+  matchTotal?: number;
+}
+
+// ─── TO PAY (Payment Todos) ───
+
+export const PaymentTodoRepeat = ["none", "monthly"] as const;
+export type PaymentTodoRepeatType = (typeof PaymentTodoRepeat)[number];
+
+export const CreatePaymentTodoSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(80, "Title must be 80 characters or less"),
+  amount: z
+    .number()
+    .int("Amount must be a whole number")
+    .min(1, "Amount must be at least ৳1")
+    .max(10_000_000, "Amount must be ৳10,000,000 or less"),
+  category: z.enum(SpendingCategories).default("giving"),
+  dueOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)")
+    .nullable()
+    .optional(),
+  repeat: z.enum(PaymentTodoRepeat).default("none"),
+  note: z
+    .string()
+    .max(200, "Note must be 200 characters or less")
+    .trim()
+    .nullable()
+    .optional(),
+});
+
+export type CreatePaymentTodoInput = z.input<typeof CreatePaymentTodoSchema>;
+
+export const UpdatePaymentTodoSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(80, "Title must be 80 characters or less")
+    .optional(),
+  amount: z
+    .number()
+    .int("Amount must be a whole number")
+    .min(1, "Amount must be at least ৳1")
+    .max(10_000_000, "Amount must be ৳10,000,000 or less")
+    .optional(),
+  category: z.enum(SpendingCategories).optional(),
+  dueOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)")
+    .nullable()
+    .optional(),
+  repeat: z.enum(PaymentTodoRepeat).optional(),
+  note: z
+    .string()
+    .max(200, "Note must be 200 characters or less")
+    .trim()
+    .nullable()
+    .optional(),
+});
+
+export type UpdatePaymentTodoInput = z.infer<typeof UpdatePaymentTodoSchema>;
+
+export interface PaymentTodoDto {
+  id: string;
+  title: string;
+  amount: number;
+  category: SpendingCategory;
+  dueOn: string | null;
+  repeat: PaymentTodoRepeatType;
+  note: string | null;
+  paidOn: string | null;
+  expenseId: string | null;
+  nextId: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaymentTodosResponseDto {
+  open: PaymentTodoDto[];
+  paid: PaymentTodoDto[];
+  openTotal: number;
 }
 
 // ─── MONEY (IOUs) ───

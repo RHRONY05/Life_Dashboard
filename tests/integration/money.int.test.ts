@@ -10,6 +10,12 @@ import {
   setBudget,
 } from "@/lib/services/spending";
 import {
+  listPaymentTodos,
+  createPaymentTodo,
+  markPaymentPaid,
+  undoPaymentPaid,
+} from "@/lib/services/payment-todos";
+import {
   createEntry,
   getMoneyOverview,
   settlePerson,
@@ -365,6 +371,175 @@ Saimun dibe = 100
 
       const jumanEntries = await getPersonEntries(ctx, juman.id);
       expect(jumanEntries.entries[0].balanceAfter).toBe(280);
+    });
+  });
+
+  describe("To pay Integration (09)", () => {
+    it("orders open list overdue first, creates expense and monthly copy on mark paid, and undos cleanly", async () => {
+      const clock = new Date("2026-11-04T12:00:00Z");
+
+      // 1. Create 3 todos: overdue, future, monthly
+      const overdueTodo = await createPaymentTodo(ctx, {
+        title: "Mahfil LED lights",
+        amount: 500,
+        category: "giving",
+        dueOn: "2026-11-02",
+      });
+
+      const futureTodo = await createPaymentTodo(ctx, {
+        title: "Ranggashimulia foundation",
+        amount: 200,
+        category: "giving",
+        dueOn: "2026-12-01",
+      });
+
+      const monthlyTodo = await createPaymentTodo(ctx, {
+        title: "Home",
+        amount: 3000,
+        category: "giving",
+        repeat: "monthly",
+        dueOn: "2026-11-08",
+      });
+
+      // Verify listPaymentTodos ordering: overdue first
+      const listed = await listPaymentTodos(ctx, clock);
+      expect(listed.open.length).toBe(3);
+      expect(listed.open[0].id).toBe(overdueTodo.id);
+      expect(listed.open.find((t) => t.id === futureTodo.id)).toBeDefined();
+      expect(listed.openTotal).toBe(3700);
+
+      // 2. Mark monthlyTodo paid
+      const { todo: paidMonthly, expense, next: newTodo } = await markPaymentPaid(
+        ctx,
+        monthlyTodo.id,
+        clock
+      );
+      expect(paidMonthly.paidOn).toBe("2026-11-04");
+      expect(expense.id).toBeDefined();
+      expect(newTodo).toBeDefined();
+      expect(newTodo?.dueOn).toBe("2026-12-08");
+      expect(newTodo?.repeat).toBe("monthly");
+
+      // Check that an expense was logged in Spending
+      const summary = await getSpendingSummary(ctx, clock);
+      expect(summary.month).toBe(3000);
+      expect(summary.byCategory.find((c) => c.category === "giving")?.amount).toBe(3000);
+
+      // 3. Mark paid twice throws ConflictError
+      await expect(markPaymentPaid(ctx, monthlyTodo.id, clock)).rejects.toThrow(
+        ConflictError
+      );
+
+      // 4. Undo paid: expense and new monthly copy are removed
+      await undoPaymentPaid(ctx, monthlyTodo.id, clock);
+      const afterUndoList = await listPaymentTodos(ctx, clock);
+      const restored = afterUndoList.open.find((t) => t.id === monthlyTodo.id);
+      expect(restored).toBeDefined();
+      expect(restored?.paidOn).toBeNull();
+      // Untouched next copy is gone
+      expect(afterUndoList.open.find((t) => t.id === newTodo?.id)).toBeUndefined();
+
+      // Spending summary is back to 0
+      const summaryAfterUndo = await getSpendingSummary(ctx, clock);
+      expect(summaryAfterUndo.month).toBe(0);
+    });
+
+    it("enforces 100 open payments limit with ConflictError", async () => {
+      // Batch insert 100 rows directly into database to test limit fast
+      const batch = Array.from({ length: 100 }, (_, i) => ({
+        user_id: ctx.userId,
+        title: `Payment ${i + 1}`,
+        amount_bdt: 100,
+        category: "giving" as const,
+        due_on: "2026-11-10",
+        repeat: "none" as const,
+        created_by: "owner",
+      }));
+
+      await ctx.db.from("payment_todos").insert(batch);
+
+      // 101st open todo should throw ConflictError limit_reached
+      await expect(
+        createPaymentTodo(ctx, {
+          title: "Over limit",
+          amount: 50,
+          category: "bills",
+        })
+      ).rejects.toThrow(ConflictError);
+    });
+
+    it("stamps created_by with agent name when called via agent ctx", async () => {
+      const agentCtx: Ctx = {
+        ...ctx,
+        actor: {
+          type: "agent",
+          keyId: "key-123",
+          name: "Muse",
+          scopes: ["money:read", "money:write"],
+        },
+      };
+
+      const todo = await createPaymentTodo(agentCtx, {
+        title: "Server fee",
+        amount: 1500,
+        category: "bills",
+      });
+
+      expect(todo.createdBy).toBe("Muse");
+    });
+  });
+
+  describe("Spending v2 Integration (09)", () => {
+    it("supports past month summary and filters by month correctly", async () => {
+      const clock = new Date("2026-11-04T12:00:00Z");
+
+      // Insert October and November expenses
+      await createExpense(
+        ctx,
+        { amount: 400, category: "food", spentOn: "2026-10-15" },
+        clock
+      );
+      await createExpense(
+        ctx,
+        { amount: 150, category: "transport", spentOn: "2026-11-04" },
+        clock
+      );
+
+      // Get October summary
+      const octSummary = await getSpendingSummary(ctx, clock, "2026-10");
+      expect(octSummary.month).toBe(400);
+      expect(octSummary.monthLabel).toContain("October 2026");
+      expect(octSummary.today).toBe(150); // Today stays current!
+
+      // Requesting a future month throws InvalidInputError
+      await expect(
+        getSpendingSummary(ctx, clock, "2026-12")
+      ).rejects.toThrow(InvalidInputError);
+    });
+
+    it("searches expenses by query note case-insensitively with matchCount/matchTotal", async () => {
+      const clock = new Date("2026-11-04T12:00:00Z");
+
+      await createExpense(
+        ctx,
+        { amount: 120, category: "food", note: "Lunch at canteen", spentOn: "2026-11-04" },
+        clock
+      );
+      await createExpense(
+        ctx,
+        { amount: 140, category: "food", note: "lunch with Rafi", spentOn: "2026-10-29" },
+        clock
+      );
+      await createExpense(
+        ctx,
+        { amount: 60, category: "transport", note: "Rickshaw to campus", spentOn: "2026-11-03" },
+        clock
+      );
+
+      const results = await listExpenses(ctx, { q: "lunch" });
+      expect(results.matchCount).toBe(2);
+      expect(results.matchTotal).toBe(260);
+      expect(results.days.length).toBe(2);
     });
   });
 });

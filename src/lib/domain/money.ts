@@ -3,6 +3,8 @@
  * Single source of truth for balances, signs, totals, and formatting.
  */
 
+import { addDays } from "@/lib/domain/dates";
+
 export type IouKind = "lent" | "paid" | "borrowed" | "received";
 
 export class AlreadySettledError extends Error {
@@ -475,3 +477,83 @@ export function parseIouText(text: string): ImportLine[] {
 
   return result;
 }
+
+// ─── TO PAY (Payment Todos) ───
+
+export type DueState = "paid" | "no_date" | "overdue" | "due_soon" | "upcoming";
+
+function diffCalendarDays(fromIso: string, toIso: string): number {
+  const [y1, m1, d1] = fromIso.split("-").map(Number);
+  const [y2, m2, d2] = toIso.split("-").map(Number);
+  const t1 = Date.UTC(y1, m1 - 1, d1);
+  const t2 = Date.UTC(y2, m2 - 1, d2);
+  return Math.round((t1 - t2) / 86400000);
+}
+
+export function dueState(
+  todo: { paidOn?: string | null; dueOn?: string | null },
+  today: string
+): DueState {
+  if (todo.paidOn) return "paid";
+  if (!todo.dueOn) return "no_date";
+  if (todo.dueOn < today) return "overdue";
+  const in3Days = addDays(today, 3);
+  if (todo.dueOn <= in3Days) return "due_soon";
+  return "upcoming";
+}
+
+export function dueLabel(
+  dueOn: string | null,
+  today: string,
+  state: DueState
+): string {
+  if (state === "paid") return "paid";
+  if (state === "no_date" || !dueOn) return "";
+
+  if (dueOn === today) return "due today";
+  if (dueOn === addDays(today, 1)) return "due tomorrow";
+
+  if (state === "overdue") {
+    const days = diffCalendarDays(today, dueOn);
+    return days === 1 ? "1 day overdue" : `${days} days overdue`;
+  }
+
+  if (state === "due_soon") {
+    const days = diffCalendarDays(dueOn, today);
+    return `due in ${days} days`;
+  }
+
+  // upcoming: e.g. "Tue 1 Dec", "Fri 20 Nov"
+  const [y, m, d] = dueOn.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const MON = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
+  return `${DOW[date.getUTCDay()]} ${d} ${MON[date.getUTCMonth()]}`;
+}
+
+export function nextMonthly(dueOn: string | null, today: string): string {
+  if (dueOn) {
+    const [y, m, d] = dueOn.split("-").map(Number);
+    const nextYear = m === 12 ? y + 1 : y;
+    const nextMonth = m === 12 ? 1 : m + 1;
+    // Day 0 of nextMonth+1 gives last day of nextMonth
+    const daysInTargetMonth = new Date(Date.UTC(nextYear, nextMonth, 0)).getUTCDate();
+    const clampedDay = Math.min(d, daysInTargetMonth);
+    return `${nextYear}-${String(nextMonth).padStart(2, "0")}-${String(clampedDay).padStart(2, "0")}`;
+  }
+
+  const [y, m] = today.split("-").map(Number);
+  const nextYear = m === 12 ? y + 1 : y;
+  const nextMonth = m === 12 ? 1 : m + 1;
+  return `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
+}
+
+export function openTotal(todos: { paidOn?: string | null; amount: number }[]): number {
+  return todos
+    .filter((t) => !t.paidOn)
+    .reduce((sum, t) => sum + t.amount, 0);
+}
+

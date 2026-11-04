@@ -15,6 +15,10 @@ import {
   reminderText,
   reminderTask,
   parseIouText,
+  dueState,
+  dueLabel,
+  nextMonthly,
+  openTotal,
 } from "@/lib/domain/money";
 
 describe("Money (IOUs) domain logic (07-LOGIC.md §3)", () => {
@@ -195,6 +199,75 @@ hello
 
       // 9. hello -> error no_amount
       expect(lines[8].error).toBe("no_amount");
+    });
+  });
+
+  describe("To pay domain logic (07-LOGIC.md §3d)", () => {
+    const today = "2026-11-04";
+
+    it("evaluates dueState and dueLabel per worked examples", () => {
+      // due 2026-11-02 -> overdue ("2 days overdue")
+      const overdueTodo = { dueOn: "2026-11-02" };
+      expect(dueState(overdueTodo, today)).toBe("overdue");
+      expect(dueLabel(overdueTodo.dueOn, today, "overdue")).toBe("2 days overdue");
+
+      // 1 day overdue
+      const overdue1 = { dueOn: "2026-11-03" };
+      expect(dueLabel(overdue1.dueOn, today, "overdue")).toBe("1 day overdue");
+
+      // due today
+      const todayTodo = { dueOn: "2026-11-04" };
+      expect(dueState(todayTodo, today)).toBe("due_soon");
+      expect(dueLabel(todayTodo.dueOn, today, "due_soon")).toBe("due today");
+
+      // due tomorrow
+      const tomorrowTodo = { dueOn: "2026-11-05" };
+      expect(dueState(tomorrowTodo, today)).toBe("due_soon");
+      expect(dueLabel(tomorrowTodo.dueOn, today, "due_soon")).toBe("due tomorrow");
+
+      // due 2026-11-07 -> due_soon ("due in 3 days")
+      const dueSoonTodo = { dueOn: "2026-11-07" };
+      expect(dueState(dueSoonTodo, today)).toBe("due_soon");
+      expect(dueLabel(dueSoonTodo.dueOn, today, "due_soon")).toBe("due in 3 days");
+
+      // due 2026-11-20 -> upcoming
+      const upcomingTodo = { dueOn: "2026-11-20" };
+      expect(dueState(upcomingTodo, today)).toBe("upcoming");
+      expect(dueLabel(upcomingTodo.dueOn, today, "upcoming")).toBe("Fri 20 Nov");
+
+      // no date
+      const noDateTodo = { dueOn: null };
+      expect(dueState(noDateTodo, today)).toBe("no_date");
+      expect(dueLabel(noDateTodo.dueOn, today, "no_date")).toBe("");
+
+      // paid
+      const paidTodo = { paidOn: "2026-11-01", dueOn: "2026-11-02" };
+      expect(dueState(paidTodo, today)).toBe("paid");
+      expect(dueLabel(paidTodo.dueOn, today, "paid")).toBe("paid");
+    });
+
+    it("calculates nextMonthly clamping per worked examples", () => {
+      // nextMonthly("2026-01-31") = 2026-02-28
+      expect(nextMonthly("2026-01-31", today)).toBe("2026-02-28");
+
+      // Leap year 2028: nextMonthly("2028-01-31") = 2028-02-29
+      expect(nextMonthly("2028-01-31", today)).toBe("2028-02-29");
+
+      // Year boundary: nextMonthly("2026-12-15") = 2027-01-15
+      expect(nextMonthly("2026-12-15", today)).toBe("2027-01-15");
+
+      // nextMonthly(null, "2026-11-04") = 2026-12-01
+      expect(nextMonthly(null, "2026-11-04")).toBe("2026-12-01");
+      expect(nextMonthly(null, "2026-12-25")).toBe("2027-01-01");
+    });
+
+    it("calculates openTotal summing open items only", () => {
+      const items = [
+        { amount: 500, paidOn: null },
+        { amount: 3000, paidOn: null },
+        { amount: 200, paidOn: "2026-11-01" },
+      ];
+      expect(openTotal(items)).toBe(3500);
     });
   });
 });

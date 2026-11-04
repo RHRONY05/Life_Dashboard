@@ -17,7 +17,8 @@ export type IllustrationName =
   | "error"
   | "lost"
   | "offline"
-  | "lists-empty";
+  | "lists-empty"
+  | "topay-empty";
 
 interface IllustrationProps extends React.SVGProps<SVGSVGElement> {
   name: IllustrationName;
@@ -207,6 +208,23 @@ export function Illustration({ name, size = "md", className, ...props }: Illustr
           {...props}
         >
           <ellipse cx="80" cy="72" rx="66" ry="38" style={{"fill":"var(--illus-a)"}}/><rect x="26" y="40" width="40" height="50" rx="3" transform="rotate(-8 46 65)" style={{"fill":"var(--illus-b)","stroke":"var(--illus-line)","strokeWidth":"2.5","strokeLinejoin":"round"}}/><rect x="60" y="30" width="40" height="54" rx="3" style={{"fill":"var(--illus-paper)","stroke":"var(--illus-line)","strokeWidth":"2.5","strokeLinejoin":"round"}}/><rect x="96" y="38" width="40" height="50" rx="3" transform="rotate(7 116 63)" style={{"fill":"var(--illus-a)","stroke":"var(--illus-line)","strokeWidth":"2.5","strokeLinejoin":"round"}}/><circle cx="80" cy="32" r="4" style={{"fill":"var(--illus-c)"}}/><circle cx="44" cy="42" r="3.5" style={{"fill":"var(--illus-c)"}}/><circle cx="114" cy="40" r="3.5" style={{"fill":"var(--illus-c)"}}/><path d="M68 46H92M68 56H88M68 66H90M68 76H82" style={{"fill":"none","stroke":"var(--illus-line)","strokeWidth":"2.5","strokeLinecap":"round","strokeLinejoin":"round"}}/><path d="M140 22V30M136 26H144" style={{"fill":"none","stroke":"var(--illus-line)","strokeWidth":"2.5","strokeLinecap":"round","strokeLinejoin":"round"}}/>
+        </svg>
+      );
+    case "topay-empty":
+      return (
+        <svg
+          viewBox="0 0 160 120"
+          aria-hidden="true"
+          className={clsx("illus", sizeClasses[size], className)}
+          {...props}
+        >
+          <ellipse cx="80" cy="74" rx="66" ry="36" style={{ fill: "var(--illus-a)" }} />
+          <rect x="46" y="22" width="68" height="84" rx="8" style={{ fill: "var(--illus-paper)", stroke: "var(--illus-line)", strokeWidth: "2.5", strokeLinejoin: "round" }} />
+          <path d="M58 42h30M58 58h24M58 74h28" style={{ fill: "none", stroke: "var(--illus-line)", strokeWidth: "2.5", strokeLinejoin: "round", strokeLinecap: "round" }} />
+          <path d="M94 38l4 4 7-8" style={{ fill: "none", stroke: "var(--illus-line)", strokeWidth: "2.5", strokeLinejoin: "round", strokeLinecap: "round" }} />
+          <circle cx="100" cy="58" r="4" style={{ fill: "none", stroke: "var(--illus-line)", strokeWidth: "2.5", strokeLinejoin: "round" }} />
+          <circle cx="100" cy="74" r="4" style={{ fill: "none", stroke: "var(--illus-line)", strokeWidth: "2.5", strokeLinejoin: "round" }} />
+          <path d="M110 92c6-8 18-8 20 2 2 8-10 14-20 18-10-4-22-10-20-18 2-10 14-10 20-2Z" style={{ fill: "var(--illus-c)", stroke: "var(--illus-line)", strokeWidth: "2.5", strokeLinejoin: "round" }} />
         </svg>
       );
     default:
