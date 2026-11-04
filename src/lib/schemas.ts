@@ -803,10 +803,10 @@ export const CreateLinkSchema = z.object({
     .url("Invalid URL")
     .max(500, "URL must be 500 characters or less")
     .regex(/^https?:\/\//, "URL must start with http:// or https://"),
-  icon: z.enum(LinkIcons).default("link"),
+  icon: z.enum(LinkIcons).optional().default("link"),
 });
 
-export type CreateLinkInput = z.infer<typeof CreateLinkSchema>;
+export type CreateLinkInput = z.input<typeof CreateLinkSchema>;
 
 export const UpdateLinkSchema = z.object({
   title: z.string().trim().min(1).max(40).optional(),
@@ -828,3 +828,68 @@ export interface LinkDto {
 
 
 
+
+// ============ API Keys & Scopes ============
+export const SCOPES = [
+  "tasks:read",
+  "tasks:write",
+  "trackers:read",
+  "trackers:write",
+  "money:read",
+  "money:write",
+  "renewals:read",
+  "renewals:write",
+  "links:read",
+  "notes:read",
+  "notes:write",
+] as const;
+
+export type Scope = (typeof SCOPES)[number];
+
+export const CreateKeySchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(40, "Name must be 40 characters or less"),
+  scopes: z
+    .array(z.enum(SCOPES))
+    .min(1, "Select at least one scope"),
+});
+
+export type CreateKeyInput = z.infer<typeof CreateKeySchema>;
+
+export interface ApiKeyDto {
+  id: string;
+  name: string;
+  prefix: string;
+  scopes: Scope[];
+  createdAt: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+}
+
+export interface CreateKeyResponseDto {
+  key: ApiKeyDto;
+  secret: string;
+}
+
+// ============ Agent Audit ============
+export const AuditResults = ["ok", "denied", "error", "rate_limited"] as const;
+export type AuditResultType = (typeof AuditResults)[number];
+
+export interface AuditRowDto {
+  id: number;
+  createdAt: string;
+  keyName: string;
+  tool: string;
+  result: AuditResultType;
+  summary: string;
+  durationMs: number;
+  error: string | null;
+}
+
+export interface AuditListResponseDto {
+  rows: AuditRowDto[];
+  hasMore: boolean;
+}

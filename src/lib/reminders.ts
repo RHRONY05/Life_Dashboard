@@ -50,38 +50,42 @@ export async function processRemindersAndCleanup(
   let totalRemindersCount = 0;
 
   for (const [userId, userRenewals] of byUser.entries()) {
-    // Fetch reminder_log for this user
-    const { data: logs, error: logsErr } = await admin
+    // 2a. Fetch existing reminder_log for this user
+    const { data: userLogs, error: logErr } = await admin
       .from("reminder_log")
       .select("renewal_id, renews_on, stage")
       .eq("user_id", userId);
 
-    if (logsErr) {
-      console.error(`Failed to fetch reminder_log for user ${userId}:`, logsErr);
+    if (logErr) {
+      console.error(`Failed to fetch reminder_log for user ${userId}:`, logErr);
       continue;
     }
 
-    const loggedSet = new Set(
-      ((logs as Array<{ renewal_id: string; renews_on: string; stage: string }> | null) || []).map(
-        (l) => `${l.renewal_id}:${l.renews_on}:${l.stage}`
-      )
+    const sentStages = new Set(
+      (userLogs || []).map((l) => `${l.renewal_id}:${l.renews_on}:${l.stage}`)
     );
 
-    const itemsToRemind: DigestRenewalItem[] = [];
+    const itemsToNotify: DigestRenewalItem[] = [];
+    const logsToInsert: {
+      renewal_id: string;
+      user_id: string;
+      renews_on: string;
+      stage: string;
+    }[] = [];
 
     for (const r of userRenewals) {
-      if (!r.renews_on) continue;
       const days = diffDays(r.renews_on, today);
       if (days === null) continue;
 
-      const stage = reminderStage(days, r.remind_days_before);
+      const stage = reminderStage(days, r.remind_days_before ?? 7);
       if (!stage) continue;
 
-      const key = `${r.id}:${r.renews_on}:${stage}`;
-      if (loggedSet.has(key)) continue;
+      // Check idempotency: if already logged for this renewal cycle and stage, skip
+      if (sentStages.has(`${r.id}:${r.renews_on}:${stage}`)) {
+        continue;
+      }
 
-      const amount = r.amount !== null ? Number(r.amount) : null;
-      itemsToRemind.push({
+      itemsToNotify.push({
         id: r.id,
         name: r.name,
         renewsOn: r.renews_on,
@@ -91,61 +95,70 @@ export async function processRemindersAndCleanup(
         actionLine: actionLine({
           autoRenew: r.auto_renew,
           renewsOn: r.renews_on,
-          amount,
+          amount: r.amount !== null ? Number(r.amount) : null,
           currency: r.currency as RenewalCurrency,
           cycle: r.cycle as RenewalCycle,
-          notes: r.notes,
         }),
+      });
+
+      logsToInsert.push({
+        renewal_id: r.id,
+        user_id: userId,
+        renews_on: r.renews_on,
+        stage,
       });
     }
 
-    if (itemsToRemind.length > 0) {
-      const digest = buildDigestEmail(itemsToRemind, appUrl);
-      try {
-        await sendEmail({
-          subject: digest.subject,
-          text: digest.text,
-          html: digest.html,
-        });
+    if (itemsToNotify.length === 0) {
+      continue;
+    }
 
-        // Insert into reminder_log ONLY after email send succeeds
-        const logEntries = itemsToRemind.map((item) => ({
-          user_id: userId,
-          renewal_id: item.id,
-          renews_on: item.renewsOn,
-          stage: item.stage,
-        }));
+    // 2b. Build digest
+    const digest = buildDigestEmail(itemsToNotify, appUrl);
+    const recipient = process.env.REMINDER_TO || env.ALLOWED_EMAIL;
 
+    try {
+      await sendEmail({
+        to: recipient,
+        subject: digest.subject,
+        text: digest.text,
+        html: digest.html,
+      });
+
+      // Insert reminder logs only if email succeeded
+      if (logsToInsert.length > 0) {
         const { error: insertErr } = await admin
           .from("reminder_log")
-          .insert(logEntries);
-
+          .insert(logsToInsert);
         if (insertErr) {
-          console.error("Failed to insert into reminder_log:", insertErr);
+          console.error("Failed to insert reminder_log:", insertErr);
         }
-
-        totalEmailsSent += 1;
-        totalRemindersCount += itemsToRemind.length;
-      } catch (emailErr) {
-        console.error(`Failed to send reminder email to user ${userId}:`, emailErr);
-        // Do not insert reminder_log rows so next day's run retries
       }
+
+      totalEmailsSent += 1;
+      totalRemindersCount += itemsToNotify.length;
+    } catch (sendErr) {
+      console.error(`Failed to send reminder email to ${recipient}:`, sendErr);
     }
   }
 
   // 3. Delete agent_audit rows older than 90 days
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 86_400_000).toISOString();
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  const cutoffIso = ninetyDaysAgo.toISOString();
+
+  let auditDeleted = 0;
   const { data: deletedAudit, error: auditErr } = await admin
     .from("agent_audit")
     .delete()
-    .lt("created_at", ninetyDaysAgo)
+    .lt("created_at", cutoffIso)
     .select("id");
 
   if (auditErr) {
-    console.error("Failed to clean up old agent_audit rows:", auditErr);
+    console.error("Failed to clean up old agent_audit logs:", auditErr);
+  } else {
+    auditDeleted = deletedAudit?.length || 0;
   }
-
-  const auditDeleted = deletedAudit?.length ?? 0;
 
   return {
     ok: true,

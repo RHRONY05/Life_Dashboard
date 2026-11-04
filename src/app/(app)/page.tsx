@@ -7,6 +7,7 @@ import { getSpendingSummary } from "@/lib/services/spending";
 import { getMoneyOverview } from "@/lib/services/money";
 import { listPaymentTodos } from "@/lib/services/payment-todos";
 import { listRenewals } from "@/lib/services/renewals";
+import { listLinks } from "@/lib/services/links";
 import { todayIn } from "@/lib/domain/dates";
 import { TodayBoard } from "@/components/today/TodayBoard";
 
@@ -22,6 +23,7 @@ export default async function TodayPage() {
     moneyOverview,
     paymentTodos,
     upcomingRenewals,
+    links,
   ] = await Promise.all([
     getBoard(ctx),
     getLists(ctx),
@@ -30,6 +32,7 @@ export default async function TodayPage() {
     getMoneyOverview(ctx),
     listPaymentTodos(ctx),
     listRenewals(ctx, "active", 14),
+    listLinks(ctx).catch(() => []),
   ]);
 
   const today = todayIn(new Date(), APP_TIMEZONE);
@@ -58,6 +61,7 @@ export default async function TodayPage() {
         initialToPayCount={paymentTodos.open.length}
         initialHasOverdueToPay={hasOverdueToPay}
         initialUpcomingRenewals={upcomingRenewals.renewals}
+        initialLinks={links}
       />
     </div>
   );

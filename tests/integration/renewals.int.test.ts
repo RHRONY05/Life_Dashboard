@@ -210,7 +210,7 @@ describe("Renewals & Cron Integration Tests (09)", () => {
     ]);
 
     // 3. Run cron
-    const cronResult = await processRemindersAndCleanup();
+    const cronResult = await processRemindersAndCleanup(admin);
     expect(cronResult.ok).toBe(true);
     expect(cronResult.sent).toBe(1);
     expect(cronResult.reminders).toBe(4);
@@ -243,7 +243,7 @@ describe("Renewals & Cron Integration Tests (09)", () => {
     expect(logs?.length).toBe(4);
 
     // 6. Running again is idempotent: 0 emails, 0 reminders
-    const secondRun = await processRemindersAndCleanup();
+    const secondRun = await processRemindersAndCleanup(admin);
     expect(secondRun.ok).toBe(true);
     expect(secondRun.sent).toBe(0);
     expect(secondRun.reminders).toBe(0);
