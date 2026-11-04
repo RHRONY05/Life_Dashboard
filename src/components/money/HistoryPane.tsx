@@ -5,7 +5,11 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   MoreHorizontal,
-  Trash2,
+  Plus,
+  MessageSquareText,
+  CalendarPlus,
+  ChevronDown,
+  Check,
   Bot,
 } from "lucide-react";
 import { PersonDto, EntryDto } from "@/lib/schemas";
@@ -19,33 +23,57 @@ import {
   DialogFooter,
 } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/DropdownMenu";
+import clsx from "clsx";
 
 interface HistoryPaneProps {
   person: PersonDto | null;
   entries: EntryDto[];
   loadingEntries?: boolean;
+  onOpenAddEntry: (person: PersonDto) => void;
+  onOpenEditEntry: (entry: EntryDto) => void;
   onSettle: (personId: string) => Promise<void>;
   onDeleteEntry: (entryId: string) => Promise<void>;
   onRenamePerson: (personId: string, newName: string) => Promise<void>;
   onDeletePerson: (personId: string) => Promise<void>;
+  onCopyReminder: (personId: string) => Promise<void>;
+  onRemindMe: (person: PersonDto, when: "today" | "tomorrow") => Promise<void>;
+}
+
+const DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MON_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+function formatDayShort(ymd: string): string {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return `${DOW_SHORT[date.getUTCDay()]} ${d} ${MON_SHORT[date.getUTCMonth()]}`;
 }
 
 export function HistoryPane({
   person,
   entries,
   loadingEntries = false,
+  onOpenAddEntry,
+  onOpenEditEntry,
   onSettle,
   onDeleteEntry,
   onRenamePerson,
   onDeletePerson,
+  onCopyReminder,
+  onRemindMe,
 }: HistoryPaneProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deletePersonOpen, setDeletePersonOpen] = useState(false);
   const [settleOpen, setSettleOpen] = useState(false);
-  const [deleteEntryTarget, setDeleteEntryTarget] = useState<EntryDto | null>(
-    null
-  );
+  const [deleteEntryTarget, setDeleteEntryTarget] = useState<EntryDto | null>(null);
 
   const [newName, setNewName] = useState("");
   const [renameError, setRenameError] = useState<string | null>(null);
@@ -120,81 +148,105 @@ export function HistoryPane({
 
   return (
     <section className="card overflow-hidden">
-      {/* Header */}
-      <div className="card-head flex items-center gap-3 p-4 border-b border-[var(--line)]">
-        <span className="pav flex-none">{initial}</span>
-        <div className="flex-1 min-w-0">
-          <b className="block text-[var(--text-md)] font-bold text-[var(--ink)] truncate">
-            {person.name}
-          </b>
+      {/* Ledger Header */}
+      <div className="ledger-head">
+        <span className="pav" style={{ width: 36, height: 36 }}>
+          {initial}
+        </span>
+        <div className="who">
+          <b style={{ fontSize: "var(--text-md)" }}>{person.name}</b>
           <div
-            className={`num text-[var(--text-sm)] font-semibold ${
-              balance > 0
-                ? "text-[var(--success-text)]"
-                : balance < 0
-                ? "text-[var(--danger-text)]"
-                : "text-[var(--ink-3)]"
-            }`}
+            className={clsx(
+              "num font-semibold",
+              balance > 0 ? "pos" : balance < 0 ? "neg" : "muted"
+            )}
+            style={{ fontSize: "var(--text-sm)", fontWeight: 600 }}
           >
             {balanceSentence(balance, person.name)}
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-none">
-          {!isSettled && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setSettleOpen(true)}
-            >
-              Settle
-            </Button>
-          )}
+        <div className="acts">
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => onOpenAddEntry(person)}
+          >
+            <Plus className="w-3.5 h-3.5 mr-1" />
+            Add
+          </button>
 
-          <div className="relative">
+          {balance > 0 && (
             <button
               type="button"
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="iconbtn p-1.5 text-[var(--ink-3)] hover:text-[var(--ink)]"
-              aria-label="Person options"
+              className="btn btn-secondary btn-sm"
+              onClick={() => onCopyReminder(person.id)}
             >
-              <MoreHorizontal className="w-4 h-4" />
+              <MessageSquareText className="w-3.5 h-3.5 mr-1" />
+              Copy reminder
             </button>
+          )}
 
-            {menuOpen && (
-              <div
-                className="dropdown-menu absolute right-0 top-full mt-1 w-36 bg-[var(--surface)] border border-[var(--frame)] rounded-md shadow-lg z-20 py-1"
-                onMouseLeave={() => setMenuOpen(false)}
+          {!isSettled && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                >
+                  <CalendarPlus className="w-3.5 h-3.5 mr-1" />
+                  Remind me
+                  <ChevronDown className="w-3 h-3 ml-1" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-32">
+                <DropdownMenuItem onClick={() => onRemindMe(person, "today")}>
+                  Today
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onRemindMe(person, "tomorrow")}>
+                  Tomorrow
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="iconbtn"
+                aria-label="Person menu"
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewName(person.name);
-                    setRenameError(null);
-                    setRenameOpen(true);
-                    setMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-[var(--text-sm)] hover:bg-[var(--surface-2)] text-[var(--ink)]"
-                >
-                  Rename
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDeletePersonOpen(true);
-                    setMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-[var(--text-sm)] hover:bg-[var(--surface-2)] text-[var(--danger-text)]"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-36">
+              {!isSettled && (
+                <DropdownMenuItem onClick={() => setSettleOpen(true)}>
+                  Settle
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() => {
+                  setNewName(person.name);
+                  setRenameError(null);
+                  setRenameOpen(true);
+                }}
+              >
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                danger
+                onClick={() => setDeletePersonOpen(true)}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      {/* Entries */}
+      {/* Ledger Rows */}
       <div className="entries-list">
         {loadingEntries ? (
           <div className="p-6 text-center text-[var(--ink-3)] text-[var(--text-sm)]">
@@ -207,7 +259,7 @@ export function HistoryPane({
         ) : (
           entries.map((entry) => {
             const isPos = entry.kind === "lent" || entry.kind === "paid";
-            const isAgent = !!entry.createdBy && entry.createdBy !== "owner";
+            const isAgent = Boolean(entry.createdBy && entry.createdBy !== "owner");
 
             let phrase = "";
             if (entry.kind === "lent") {
@@ -221,44 +273,75 @@ export function HistoryPane({
             }
 
             return (
-              <div
-                key={entry.id}
-                className="entry flex items-start gap-3 p-3.5 border-t border-[var(--line)] hover:bg-[var(--surface-2)] transition-colors group"
-              >
-                <span
-                  className={`k ${
-                    isPos ? "pos bg-[var(--success-soft)]" : "neg bg-[var(--danger-soft)]"
-                  } w-7 h-7 rounded grid place-items-center flex-none mt-0.5`}
-                >
-                  {isPos ? (
-                    <ArrowUpRight className="w-3.5 h-3.5 text-[var(--success-text)]" />
-                  ) : (
-                    <ArrowDownLeft className="w-3.5 h-3.5 text-[var(--danger-text)]" />
-                  )}
-                </span>
-                <div className="t flex-1 min-w-0">
-                  <b className="block text-[var(--text-sm)] font-semibold text-[var(--ink)]">
-                    {phrase}
-                  </b>
-                  <span className="text-[var(--text-xs)] text-[var(--ink-3)] flex items-center gap-1.5 flex-wrap">
-                    {entry.occurredOn}
-                    {entry.note ? ` · ${entry.note}` : ""}
-                    {isAgent && (
-                      <span className="badge b-agent inline-flex items-center gap-1 text-[10px] px-1 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent-text)] font-semibold">
-                        <Bot className="w-3 h-3" />
-                        via {entry.createdBy}
-                      </span>
+              <div key={entry.id}>
+                <div className="lrow2">
+                  <span
+                    className={clsx(
+                      "k",
+                      isPos ? "pos" : "neg"
+                    )}
+                  >
+                    {isPos ? (
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    ) : (
+                      <ArrowDownLeft className="w-3.5 h-3.5" />
                     )}
                   </span>
+
+                  <div className="t">
+                    <b>{phrase}</b>
+                    <span className="d flex items-center gap-1.5 flex-wrap">
+                      {formatDayShort(entry.occurredOn)}
+                      {isAgent && (
+                        <span className="badge b-agent inline-flex items-center gap-1 text-[10px] px-1 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent-text)] font-semibold">
+                          <Bot className="w-3 h-3" />
+                          via {entry.createdBy}
+                        </span>
+                      )}
+                    </span>
+                    {entry.note && <span className="n">{entry.note}</span>}
+                  </div>
+
+                  <div className="v">
+                    <b className={clsx(isPos ? "pos" : "neg")}>
+                      {isPos ? "+" : "−"}
+                      {new Intl.NumberFormat("en-IN").format(entry.amount)}
+                    </b>
+                    <small>
+                      bal {formatTaka(entry.balanceAfter ?? 0)}
+                    </small>
+                  </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="iconbtn sm p-1 text-[var(--ink-3)] hover:text-[var(--ink)]"
+                        aria-label="Entry menu"
+                      >
+                        <MoreHorizontal className="w-3.5 h-3.5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-28">
+                      <DropdownMenuItem onClick={() => onOpenEditEntry(entry)}>
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        danger
+                        onClick={() => setDeleteEntryTarget(entry)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setDeleteEntryTarget(entry)}
-                  className="iconbtn sm opacity-0 group-hover:opacity-100 p-1 text-[var(--ink-3)] hover:text-[var(--danger-text)] transition-opacity"
-                  aria-label="Delete entry"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+
+                {entry.balanceAfter === 0 && (
+                  <div className="settled-line">
+                    <Check className="sm w-3.5 h-3.5 inline mr-1" />
+                    Settled · {formatDayShort(entry.occurredOn)}
+                  </div>
+                )}
               </div>
             );
           })
@@ -284,12 +367,8 @@ export function HistoryPane({
             >
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              onClick={handleSettle}
-              busy={actionBusy}
-            >
-              Settle up
+            <Button variant="primary" onClick={handleSettle} busy={actionBusy}>
+              Settle
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -297,34 +376,31 @@ export function HistoryPane({
 
       {/* Rename Dialog */}
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
-        <DialogContent className="max-w-[420px]">
+        <DialogContent className="max-w-[380px]">
           <form onSubmit={handleRename}>
             <DialogHeader>
               <DialogTitle>Rename person</DialogTitle>
-              <DialogDescription>Change this person&apos;s display name.</DialogDescription>
+              <DialogDescription>
+                Change the display name for this person across all IOUs.
+              </DialogDescription>
             </DialogHeader>
-            <div className="my-4">
-              <div className="input flex items-center h-10 px-3">
-                <input
-                  type="text"
-                  maxLength={60}
-                  value={newName}
-                  onChange={(e) => {
-                    setNewName(e.target.value);
-                    setRenameError(null);
-                  }}
-                  className="w-full bg-transparent border-0 outline-none text-[var(--text-sm)]"
-                  autoFocus
-                  required
-                />
-              </div>
+            <div className="my-3">
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                maxLength={60}
+                className="input w-full px-3 py-2 text-[var(--text-sm)]"
+                autoFocus
+                required
+              />
               {renameError && (
-                <p className="text-[var(--danger-text)] text-[var(--text-xs)] mt-1">
+                <p className="mt-1 text-[var(--danger-text)] text-[var(--text-xs)]">
                   {renameError}
                 </p>
               )}
             </div>
-            <DialogFooter className="flex justify-end gap-2">
+            <DialogFooter className="flex justify-end gap-2 mt-4">
               <Button
                 type="button"
                 variant="secondary"
@@ -334,7 +410,7 @@ export function HistoryPane({
                 Cancel
               </Button>
               <Button type="submit" variant="primary" busy={actionBusy}>
-                Save
+                Rename
               </Button>
             </DialogFooter>
           </form>
@@ -347,8 +423,7 @@ export function HistoryPane({
           <DialogHeader>
             <DialogTitle>Delete person?</DialogTitle>
             <DialogDescription>
-              Delete {person.name} and their {entries.length} entries? This
-              cannot be undone.
+              Delete {person.name} and their {entries.length} entries? This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 flex justify-end gap-2">
@@ -379,9 +454,8 @@ export function HistoryPane({
           <DialogHeader>
             <DialogTitle>Delete entry?</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this {deleteEntryTarget?.kind} entry
-              of {deleteEntryTarget ? formatTaka(deleteEntryTarget.amount) : ""}?
-              This cannot be undone.
+              Are you sure you want to delete this {deleteEntryTarget ? formatTaka(deleteEntryTarget.amount) : ""}{" "}
+              entry?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 flex justify-end gap-2">

@@ -6,6 +6,12 @@ import { formatTaka } from "@/lib/domain/money";
 import { Illustration } from "@/components/illustrations/Illustration";
 import { Button } from "@/components/ui/Button";
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/DropdownMenu";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -13,7 +19,17 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/Dialog";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Plus,
+  MessageSquareText,
+  CalendarPlus,
+  MoreHorizontal,
+  Check,
+  Bot,
+  ChevronDown,
+} from "lucide-react";
 import clsx from "clsx";
 
 interface PeopleListProps {
@@ -21,24 +37,25 @@ interface PeopleListProps {
   selectedPersonId: string | null;
   onSelectPerson: (id: string) => void;
   onSettle: (personId: string) => Promise<void>;
-  onOpenAddEntry: (personName?: string) => void;
+  onOpenAddEntry: (person?: PersonDto) => void;
+  onOpenEditEntry?: (entry: EntryDto) => void;
+  onDeleteEntry?: (entryId: string) => Promise<void>;
+  onCopyReminder?: (personId: string) => Promise<void>;
+  onRemindMe?: (person: PersonDto, when: "today" | "tomorrow") => Promise<void>;
   // Mobile inline expansion entries
   mobileExpandedEntries?: EntryDto[];
 }
 
-const MONTH_SHORT = [
+const DOW_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MON_SHORT = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
-const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function formatLastEntry(ymd: string | null): string {
-  if (!ymd) return "No entries";
+function formatDayShort(ymd: string): string {
   const [y, m, d] = ymd.split("-").map(Number);
   const date = new Date(Date.UTC(y, m - 1, d));
-  const dow = DAY_SHORT[date.getUTCDay()];
-  const mon = MONTH_SHORT[date.getUTCMonth()];
-  return `Last entry ${dow} ${d} ${mon}`;
+  return `${DOW_SHORT[date.getUTCDay()]} ${d} ${MON_SHORT[date.getUTCMonth()]}`;
 }
 
 export function PeopleList({
@@ -47,10 +64,15 @@ export function PeopleList({
   onSelectPerson,
   onSettle,
   onOpenAddEntry,
+  onOpenEditEntry,
+  onDeleteEntry,
+  onCopyReminder,
+  onRemindMe,
   mobileExpandedEntries = [],
 }: PeopleListProps) {
   const [settleTarget, setSettleTarget] = useState<PersonDto | null>(null);
   const [settling, setSettling] = useState(false);
+  const [deleteEntryTarget, setDeleteEntryTarget] = useState<EntryDto | null>(null);
 
   const activePeople = people.filter((p) => p.balance !== 0);
   const settledPeople = people.filter((p) => p.balance === 0);
@@ -65,6 +87,16 @@ export function PeopleList({
       // Handled
     } finally {
       setSettling(false);
+    }
+  };
+
+  const handleConfirmDeleteEntry = async () => {
+    if (!deleteEntryTarget || !onDeleteEntry) return;
+    try {
+      await onDeleteEntry(deleteEntryTarget.id);
+      setDeleteEntryTarget(null);
+    } catch {
+      // Handled
     }
   };
 
@@ -97,7 +129,7 @@ export function PeopleList({
           onClick={() => onSelectPerson(p.id)}
           className={clsx(
             "person flex items-center gap-3.5 px-4 py-3 border-t border-[var(--line)] cursor-pointer transition-colors group",
-            isSelected && "on bg-[var(--accent-soft)]"
+            isSelected && "on bg-[var(--surface-2)]"
           )}
           role="button"
           tabIndex={0}
@@ -113,9 +145,37 @@ export function PeopleList({
             <b className="block font-semibold text-[var(--text-sm)] text-[var(--ink)] truncate">
               {p.name}
             </b>
-            <span className="text-[var(--text-xs)] text-[var(--ink-3)] block truncate">
-              {formatLastEntry(p.lastEntryDate)}
-            </span>
+            {!isSettled && p.recent && p.recent.length > 0 ? (
+              <div className="bk flex items-center gap-1 mt-0.5 flex-wrap">
+                {p.entriesCount && p.entriesCount > p.recent.length && (
+                  <i className="text-[var(--text-2xs)] text-[var(--ink-3)] not-italic">…</i>
+                )}
+                {p.recent.map((r, idx) => {
+                  const isPos = r.signed > 0;
+                  return (
+                    <i
+                      key={idx}
+                      className={clsx(
+                        isPos ? "p text-[var(--success-text)] font-semibold" : "m text-[var(--danger-text)] font-semibold",
+                        "not-italic text-[var(--text-2xs)]"
+                      )}
+                    >
+                      {isPos ? "+" : "−"}
+                      {new Intl.NumberFormat("en-IN").format(Math.abs(r.signed))}
+                    </i>
+                  );
+                })}
+                {p.lastNote && (
+                  <em className="text-[var(--text-2xs)] text-[var(--ink-3)] not-italic">
+                    · {p.lastNote}
+                  </em>
+                )}
+              </div>
+            ) : (
+              <span className="text-[var(--text-xs)] text-[var(--ink-3)] block truncate">
+                {p.lastEntryDate ? `Last entry ${formatDayShort(p.lastEntryDate)}` : "No entries"}
+              </span>
+            )}
           </div>
 
           <div
@@ -130,13 +190,26 @@ export function PeopleList({
               "settled"
             ) : (
               <>
-                {formatTaka(balance)}
+                <span className="taka">৳</span>
+                {new Intl.NumberFormat("en-IN").format(Math.abs(balance))}
                 <small className="block text-[11px] font-medium text-[var(--ink-3)]">
                   {balance > 0 ? "owes you" : "you owe"}
                 </small>
               </>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenAddEntry(p);
+            }}
+            className="iconbtn addbtn p-1 text-[var(--ink-3)] hover:text-[var(--ink)] flex-none"
+            aria-label={`Add to ${p.name}`}
+          >
+            <Plus className="w-4 h-4" />
+          </button>
 
           {!isSettled && (
             <button
@@ -152,47 +225,158 @@ export function PeopleList({
           )}
         </div>
 
-        {/* Mobile inline expansion when selected */}
-        {isSelected && mobileExpandedEntries.length > 0 && (
-          <div className="lg:hidden bg-[var(--surface-2)] px-4 py-3 border-t border-[var(--line)]">
-            <div className="flex flex-col gap-2">
-              {mobileExpandedEntries.slice(0, 3).map((entry) => {
-                const isPos = entry.kind === "lent" || entry.kind === "paid";
-                let phrase = "";
-                if (entry.kind === "lent") phrase = `You lent ${formatTaka(entry.amount)}`;
-                else if (entry.kind === "borrowed") phrase = `You borrowed ${formatTaka(entry.amount)}`;
-                else if (entry.kind === "received") phrase = `${p.name} paid you ${formatTaka(entry.amount)}`;
-                else phrase = `You paid ${p.name} ${formatTaka(entry.amount)}`;
-
-                return (
-                  <div key={entry.id} className="flex items-center gap-2 text-[var(--text-xs)]">
-                    <span
-                      className={`w-5 h-5 rounded grid place-items-center flex-none ${
-                        isPos ? "bg-[var(--success-soft)]" : "bg-[var(--danger-soft)]"
-                      }`}
-                    >
-                      {isPos ? (
-                        <ArrowUpRight className="w-3 h-3 text-[var(--success-text)]" />
-                      ) : (
-                        <ArrowDownLeft className="w-3 h-3 text-[var(--danger-text)]" />
-                      )}
-                    </span>
-                    <span className="font-medium text-[var(--ink)] truncate">{phrase}</span>
-                    <span className="text-[var(--ink-3)] ml-auto flex-none">{entry.occurredOn}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-3 flex gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="flex-1"
-                onClick={() => setSettleTarget(p)}
-                disabled={isSettled}
+        {/* Mobile inline expansion when selected (< 1024px) */}
+        {isSelected && (
+          <div className="lg:hidden bg-[var(--surface-2)] border-t border-[var(--line)]">
+            {/* Action buttons */}
+            <div className="flex gap-1.5 p-3 flex-wrap border-b border-[var(--line)]">
+              <button
+                type="button"
+                className="btn btn-primary btn-sm h-9"
+                onClick={() => onOpenAddEntry(p)}
               >
-                Settle
-              </Button>
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                Add
+              </button>
+
+              {balance > 0 && onCopyReminder && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm h-9"
+                  onClick={() => onCopyReminder(p.id)}
+                >
+                  <MessageSquareText className="w-3.5 h-3.5 mr-1" />
+                  Reminder
+                </button>
+              )}
+
+              {!isSettled && onRemindMe && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm h-9"
+                    >
+                      <CalendarPlus className="w-3.5 h-3.5 mr-1" />
+                      Remind me
+                      <ChevronDown className="w-3 h-3 ml-1" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-32">
+                    <DropdownMenuItem onClick={() => onRemindMe(p, "today")}>
+                      Today
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onRemindMe(p, "tomorrow")}>
+                      Tomorrow
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
+              {!isSettled && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm h-9"
+                  onClick={() => setSettleTarget(p)}
+                >
+                  Settle
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Entries List */}
+            <div>
+              {mobileExpandedEntries.length === 0 ? (
+                <div className="p-4 text-center text-[var(--ink-3)] text-[var(--text-xs)]">
+                  No entries recorded with {p.name} yet.
+                </div>
+              ) : (
+                mobileExpandedEntries.map((entry) => {
+                  const isPos = entry.kind === "lent" || entry.kind === "paid";
+                  const isAgent = Boolean(entry.createdBy && entry.createdBy !== "owner");
+
+                  let phrase = "";
+                  if (entry.kind === "lent") {
+                    phrase = `You lent ${formatTaka(entry.amount)}`;
+                  } else if (entry.kind === "borrowed") {
+                    phrase = `You borrowed ${formatTaka(entry.amount)}`;
+                  } else if (entry.kind === "received") {
+                    phrase = `${p.name} paid you ${formatTaka(entry.amount)}`;
+                  } else {
+                    phrase = `You paid ${p.name} ${formatTaka(entry.amount)}`;
+                  }
+
+                  return (
+                    <div key={entry.id}>
+                      <div className="lrow2">
+                        <span className={clsx("k", isPos ? "pos" : "neg")}>
+                          {isPos ? (
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          ) : (
+                            <ArrowDownLeft className="w-3.5 h-3.5" />
+                          )}
+                        </span>
+
+                        <div className="t">
+                          <b>{phrase}</b>
+                          <span className="d flex items-center gap-1.5 flex-wrap">
+                            {formatDayShort(entry.occurredOn)}
+                            {isAgent && (
+                              <span className="badge b-agent inline-flex items-center gap-1 text-[10px] px-1 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent-text)] font-semibold">
+                                <Bot className="w-3 h-3" />
+                                via {entry.createdBy}
+                              </span>
+                            )}
+                          </span>
+                          {entry.note && <span className="n">{entry.note}</span>}
+                        </div>
+
+                        <div className="v">
+                          <b className={clsx(isPos ? "pos" : "neg")}>
+                            {isPos ? "+" : "−"}
+                            {new Intl.NumberFormat("en-IN").format(entry.amount)}
+                          </b>
+                          <small>bal {formatTaka(entry.balanceAfter ?? 0)}</small>
+                        </div>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="iconbtn sm p-1 text-[var(--ink-3)] hover:text-[var(--ink)]"
+                              aria-label="Entry menu"
+                            >
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-28">
+                            {onOpenEditEntry && (
+                              <DropdownMenuItem onClick={() => onOpenEditEntry(entry)}>
+                                Edit
+                              </DropdownMenuItem>
+                            )}
+                            {onDeleteEntry && (
+                              <DropdownMenuItem
+                                danger
+                                onClick={() => setDeleteEntryTarget(entry)}
+                              >
+                                Delete
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {entry.balanceAfter === 0 && (
+                        <div className="settled-line">
+                          <Check className="sm w-3.5 h-3.5 inline mr-1" />
+                          Settled · {formatDayShort(entry.occurredOn)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         )}
@@ -242,6 +426,36 @@ export function PeopleList({
               busy={settling}
             >
               Settle
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Entry Dialog for mobile */}
+      <Dialog
+        open={Boolean(deleteEntryTarget)}
+        onOpenChange={(open) => !open && setDeleteEntryTarget(null)}
+      >
+        <DialogContent className="max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Delete entry?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this {deleteEntryTarget ? formatTaka(deleteEntryTarget.amount) : ""}{" "}
+              entry?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex justify-end gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setDeleteEntryTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleConfirmDeleteEntry}
+            >
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

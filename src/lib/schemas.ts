@@ -461,6 +461,37 @@ export const CreateEntrySchema = z.object({
 
 export type CreateEntryInput = z.infer<typeof CreateEntrySchema>;
 
+export const UpdateEntrySchema = z.object({
+  kind: z.enum(IouKinds).optional(),
+  amount: z
+    .number()
+    .int("Amount must be a whole number")
+    .min(1, "Amount must be at least ৳1")
+    .max(10_000_000, "Amount must be ৳10,000,000 or less")
+    .optional(),
+  note: z
+    .string()
+    .max(200, "Note must be 200 characters or less")
+    .trim()
+    .nullable()
+    .optional(),
+  occurredOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)")
+    .optional(),
+});
+
+export type UpdateEntryInput = z.infer<typeof UpdateEntrySchema>;
+
+export const ImportIousSchema = z.object({
+  text: z.string().max(20_000, "Text must be 20,000 characters or less"),
+  commit: z.boolean(),
+  directions: z.record(z.string(), z.enum(["owes_me", "i_owe"])).optional(),
+  include: z.array(z.number().int()).optional(),
+});
+
+export type ImportIousInput = z.infer<typeof ImportIousSchema>;
+
 export const UpdatePersonSchema = z.object({
   name: z
     .string()
@@ -471,12 +502,20 @@ export const UpdatePersonSchema = z.object({
 
 export type UpdatePersonInput = z.infer<typeof UpdatePersonSchema>;
 
+export interface PersonRecentChipDto {
+  signed: number;
+  note: string | null;
+  occurredOn: string;
+}
+
 export interface PersonDto {
   id: string;
   name: string;
   balance: number;
   lastEntryDate: string | null;
   entriesCount?: number;
+  recent?: PersonRecentChipDto[];
+  lastNote?: string | null;
 }
 
 export interface EntryDto {
@@ -488,6 +527,7 @@ export interface EntryDto {
   occurredOn: string;
   createdBy: string;
   createdAt: string;
+  balanceAfter?: number;
 }
 
 export interface MoneyTotalsDto {

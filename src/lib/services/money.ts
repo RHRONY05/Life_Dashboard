@@ -3,6 +3,8 @@ import { Database } from "@/types/database";
 import {
   CreateEntryInput,
   UpdatePersonInput,
+  UpdateEntryInput,
+  ImportIousInput,
   PersonDto,
   EntryDto,
   MoneyOverviewDto,
@@ -14,6 +16,13 @@ import {
   settleEntry,
   IouKind,
   AlreadySettledError,
+  withBalances,
+  sinceSettled,
+  extractRecentAndLastNote,
+  reminderText,
+  reminderTask,
+  parseIouText,
+  ImportLine,
 } from "@/lib/domain/money";
 import { todayIn } from "@/lib/domain/dates";
 import { ConflictError, InvalidInputError, NotFoundError } from "@/lib/errors";
@@ -66,10 +75,11 @@ export async function getMoneyOverview(ctx: Ctx): Promise<MoneyOverviewDto> {
 
   const personDtos: PersonDto[] = (people || []).map((p) => {
     const pEntries = entriesByPerson.get(p.id) || [];
+    const mappedEntries = pEntries.map(mapEntry);
     const balance = personBalance(
-      pEntries.map((e) => ({
+      mappedEntries.map((e) => ({
         kind: e.kind as IouKind,
-        amount: e.amount_bdt,
+        amount: e.amount,
       }))
     );
 
@@ -82,12 +92,16 @@ export async function getMoneyOverview(ctx: Ctx): Promise<MoneyOverviewDto> {
       lastEntryDate = sorted[0].occurred_on;
     }
 
+    const { recent, lastNote } = extractRecentAndLastNote(mappedEntries);
+
     return {
       id: p.id,
       name: p.name,
       balance,
       lastEntryDate,
       entriesCount: pEntries.length,
+      recent,
+      lastNote,
     };
   });
 
@@ -144,9 +158,20 @@ export async function getPersonEntries(
 
   if (entriesError) throw entriesError;
 
-  const entries = (rawEntries || []).map(mapEntry);
+  const mappedEntries = (rawEntries || []).map(mapEntry);
+  const withB = withBalances(mappedEntries);
+  // Sort newest first
+  const sortedNewest = [...withB].sort((a, b) => {
+    const cmp = b.occurredOn.localeCompare(a.occurredOn);
+    if (cmp !== 0) return cmp;
+    const aCreated = a.createdAt || "";
+    const bCreated = b.createdAt || "";
+    return bCreated.localeCompare(aCreated);
+  });
+
+  const { recent, lastNote } = extractRecentAndLastNote(mappedEntries);
   const balance = personBalance(
-    entries.map((e) => ({
+    mappedEntries.map((e) => ({
       kind: e.kind as IouKind,
       amount: e.amount,
     }))
@@ -156,13 +181,15 @@ export async function getPersonEntries(
     id: person.id,
     name: person.name,
     balance,
-    lastEntryDate: entries[0]?.occurredOn ?? null,
-    entriesCount: entries.length,
+    lastEntryDate: sortedNewest[0]?.occurredOn ?? null,
+    entriesCount: sortedNewest.length,
+    recent,
+    lastNote,
   };
 
   return {
     person: personDto,
-    entries,
+    entries: sortedNewest,
   };
 }
 
@@ -256,6 +283,224 @@ export async function deleteEntry(
   if (error) {
     throw error;
   }
+}
+
+export async function updateEntry(
+  ctx: Ctx,
+  entryId: string,
+  input: UpdateEntryInput,
+  clock = new Date()
+): Promise<{ entry: EntryDto; person: PersonDto }> {
+  assertScope(ctx, "money:write");
+
+  const todayIso = todayIn(clock, APP_TIMEZONE);
+  if (input.occurredOn && input.occurredOn > todayIso) {
+    throw new InvalidInputError("Cannot log entries for future dates");
+  }
+
+  const { data: existing, error: fetchErr } = await ctx.db
+    .from("iou_entries")
+    .select("*")
+    .eq("id", entryId)
+    .eq("user_id", ctx.userId)
+    .maybeSingle();
+
+  if (fetchErr) throw fetchErr;
+  if (!existing) {
+    throw new NotFoundError("Entry not found");
+  }
+
+  const updates: Partial<IouEntryRow> = {};
+  if (input.kind !== undefined) updates.kind = input.kind;
+  if (input.amount !== undefined) updates.amount_bdt = input.amount;
+  if (input.note !== undefined) updates.note = input.note ? input.note.trim() : null;
+  if (input.occurredOn !== undefined) updates.occurred_on = input.occurredOn;
+
+  const { data: updated, error: updateErr } = await ctx.db
+    .from("iou_entries")
+    .update(updates)
+    .eq("id", entryId)
+    .eq("user_id", ctx.userId)
+    .select()
+    .single();
+
+  if (updateErr || !updated) {
+    throw updateErr || new Error("Failed to update entry");
+  }
+
+  const { person, entries } = await getPersonEntries(ctx, existing.person_id);
+  const updatedEntryDto = entries.find((e) => e.id === entryId) || mapEntry(updated);
+
+  return {
+    entry: updatedEntryDto,
+    person,
+  };
+}
+
+export async function getPersonReminder(
+  ctx: Ctx,
+  personId: string
+): Promise<{ text: string; task: { title: string } }> {
+  assertScope(ctx, "money:read");
+
+  const { person, entries } = await getPersonEntries(ctx, personId);
+
+  if (person.balance === 0) {
+    throw new ConflictError("already_settled");
+  }
+
+  const since = sinceSettled(entries);
+  const text = person.balance > 0 ? reminderText(person.name, person.balance, since) : "";
+  const task = reminderTask(person.name, person.balance);
+
+  return { text, task };
+}
+
+export interface ImportLineWithExisting extends ImportLine {
+  existing: { personId: string; balance: number } | null;
+}
+
+export async function importIous(
+  ctx: Ctx,
+  input: ImportIousInput,
+  clock = new Date()
+): Promise<
+  | { lines: ImportLineWithExisting[] }
+  | { people: number; entries: number }
+> {
+  assertScope(ctx, "money:write");
+
+  const parsedLines = parseIouText(input.text);
+
+  // Fetch all existing people to know who already exists and their balances
+  const { data: peopleRows, error: pErr } = await ctx.db
+    .from("people")
+    .select("id, name")
+    .eq("user_id", ctx.userId);
+
+  if (pErr) throw pErr;
+
+  const { data: allEntries, error: eErr } = await ctx.db
+    .from("iou_entries")
+    .select("person_id, kind, amount_bdt")
+    .eq("user_id", ctx.userId);
+
+  if (eErr) throw eErr;
+
+  const entriesByPerson = new Map<string, { kind: IouKind; amount: number }[]>();
+  for (const e of allEntries || []) {
+    if (!entriesByPerson.has(e.person_id)) {
+      entriesByPerson.set(e.person_id, []);
+    }
+    entriesByPerson.get(e.person_id)!.push({
+      kind: e.kind as IouKind,
+      amount: e.amount_bdt,
+    });
+  }
+
+  const existingMap = new Map<string, { personId: string; balance: number }>();
+  for (const p of peopleRows || []) {
+    const pEnt = entriesByPerson.get(p.id) || [];
+    const bal = personBalance(pEnt);
+    existingMap.set(p.name.toLowerCase().trim(), { personId: p.id, balance: bal });
+  }
+
+  // Preview mode
+  if (!input.commit) {
+    const linesWithExisting: ImportLineWithExisting[] = parsedLines.map((line) => {
+      const existing = line.name ? existingMap.get(line.name.toLowerCase().trim()) || null : null;
+      let effectiveDirection = line.direction;
+      if (input.directions && input.directions[line.lineNo]) {
+        effectiveDirection = input.directions[line.lineNo];
+      }
+      let balance = 0;
+      for (const t of line.terms) {
+        balance += t.sign * t.amount;
+      }
+      if (effectiveDirection === "i_owe") {
+        balance = -balance;
+      }
+      return {
+        ...line,
+        direction: effectiveDirection,
+        balance,
+        existing,
+      };
+    });
+
+    return { lines: linesWithExisting };
+  }
+
+  // Commit mode
+  let linesToImport: ImportLine[] = [];
+  if (input.include && input.include.length > 0) {
+    linesToImport = parsedLines.filter(
+      (l) => !l.error && input.include!.includes(l.lineNo)
+    );
+  } else {
+    linesToImport = parsedLines.filter(
+      (l) => !l.error && !existingMap.has(l.name.toLowerCase().trim())
+    );
+  }
+
+  let peopleCreated = 0;
+  let entriesCreated = 0;
+  const todayIso = todayIn(clock, APP_TIMEZONE);
+  const createdBy = ctx.actor.type === "agent" ? ctx.actor.name : "owner";
+
+  for (const line of linesToImport) {
+    const trimmedName = line.name.trim();
+    if (!trimmedName) continue;
+
+    let personId: string;
+    const existing = existingMap.get(trimmedName.toLowerCase());
+    if (existing) {
+      personId = existing.personId;
+    } else {
+      const { data: newPerson, error: createPErr } = await ctx.db
+        .from("people")
+        .insert({
+          user_id: ctx.userId,
+          name: trimmedName,
+        })
+        .select()
+        .single();
+
+      if (createPErr || !newPerson) throw createPErr || new Error("Failed to create person");
+      personId = newPerson.id;
+      existingMap.set(trimmedName.toLowerCase(), { personId, balance: 0 });
+      peopleCreated++;
+    }
+
+    const direction =
+      (input.directions && input.directions[line.lineNo]) ||
+      line.direction ||
+      "owes_me";
+
+    for (const term of line.terms) {
+      let kind: IouKind;
+      if (direction === "owes_me") {
+        kind = term.sign === 1 ? "lent" : "received";
+      } else {
+        kind = term.sign === 1 ? "borrowed" : "paid";
+      }
+
+      const { error: insErr } = await ctx.db.from("iou_entries").insert({
+        user_id: ctx.userId,
+        person_id: personId,
+        kind,
+        amount_bdt: term.amount,
+        note: term.note || "imported",
+        occurred_on: todayIso,
+        created_by: createdBy,
+      });
+
+      if (insErr) throw insErr;
+      entriesCreated++;
+    }
+  }
+
+  return { people: peopleCreated, entries: entriesCreated };
 }
 
 export async function renamePerson(

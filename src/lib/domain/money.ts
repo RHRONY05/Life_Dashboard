@@ -121,3 +121,357 @@ export function netSentence(net: number): string {
   }
   return "all settled";
 }
+
+// ============ V5a: IOU Ledger, Reminders, Import (07-LOGIC.md §3c) ============
+
+export interface EntryWithDate extends EntryLike {
+  occurredOn: string;
+  createdAt?: string;
+  id?: string;
+  note?: string | null;
+  createdBy?: string;
+}
+
+export interface EntryWithBalance extends EntryWithDate {
+  balanceAfter: number;
+}
+
+/**
+ * Calculates running balance for entries ordered chronologically:
+ * oldest -> newest by occurredOn, then createdAt.
+ */
+export function withBalances<T extends EntryWithDate>(entries: T[]): (T & { balanceAfter: number })[] {
+  // Stable sort: occurredOn asc, then createdAt asc
+  const sorted = [...entries].sort((a, b) => {
+    const cmp = a.occurredOn.localeCompare(b.occurredOn);
+    if (cmp !== 0) return cmp;
+    const aCreated = a.createdAt || "";
+    const bCreated = b.createdAt || "";
+    return aCreated.localeCompare(bCreated);
+  });
+
+  let running = 0;
+  return sorted.map((entry) => {
+    running += signedAmount(entry.kind, entry.amount);
+    return {
+      ...entry,
+      balanceAfter: running,
+    };
+  });
+}
+
+/**
+ * Returns entries after the last one whose balanceAfter = 0
+ * (or all of them if balance was never 0).
+ */
+export function sinceSettled<T extends EntryWithDate>(entries: T[]): (T & { balanceAfter: number })[] {
+  const balanced = withBalances(entries);
+  let lastZeroIndex = -1;
+  for (let i = 0; i < balanced.length; i++) {
+    if (balanced[i].balanceAfter === 0) {
+      lastZeroIndex = i;
+    }
+  }
+
+  if (lastZeroIndex >= 0) {
+    return balanced.slice(lastZeroIndex + 1);
+  }
+  return balanced;
+}
+
+export interface PersonRecentChip {
+  signed: number;
+  note: string | null;
+  occurredOn: string;
+}
+
+/**
+ * Extracts recent chips (last 6 of sinceSettled, oldest first) and lastNote (newest non-empty note).
+ */
+export function extractRecentAndLastNote<T extends EntryWithDate>(entries: T[]): {
+  recent: PersonRecentChip[];
+  lastNote: string | null;
+} {
+  const since = sinceSettled(entries);
+  const recentSlice = since.slice(-6);
+
+  const recent: PersonRecentChip[] = recentSlice.map((e) => ({
+    signed: signedAmount(e.kind, e.amount),
+    note: e.note ?? null,
+    occurredOn: e.occurredOn,
+  }));
+
+  let lastNote: string | null = null;
+  for (let i = since.length - 1; i >= 0; i--) {
+    const n = since[i].note?.trim();
+    if (n) {
+      lastNote = n;
+      break;
+    }
+  }
+
+  return { recent, lastNote };
+}
+
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+export function formatShortDate(ymd: string): string {
+  const parts = ymd.split("-");
+  if (parts.length < 3) return ymd;
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const monthStr = MONTH_NAMES[monthIdx] || parts[1];
+  return `${day} ${monthStr}`;
+}
+
+/**
+ * Builds reminder text for a person who owes you money (balance > 0).
+ * "Hi <name>, a quick reminder: you owe me ৳<balance> (<parts>). Thanks!"
+ */
+export function reminderText(
+  name: string,
+  balance: number,
+  since: { kind: IouKind; amount: number; occurredOn: string }[]
+): string {
+  if (balance <= 0) return "";
+
+  if (since.length === 1 && since[0].kind === "lent") {
+    return `Hi ${name}, a quick reminder: you owe me ${formatTaka(balance)} (from ${formatShortDate(since[0].occurredOn)}). Thanks!`;
+  }
+
+  const parts = since.map((e) => {
+    const dateStr = formatShortDate(e.occurredOn);
+    if (e.kind === "received") {
+      return `${formatTaka(e.amount)} paid back on ${dateStr}`;
+    }
+    return `${formatTaka(e.amount)} on ${dateStr}`;
+  });
+
+  let partsStr = "";
+  if (parts.length > 6) {
+    const last6 = parts.slice(-6);
+    partsStr = `…, ${last6.join(", ")}`;
+  } else {
+    partsStr = parts.join(", ");
+  }
+
+  return `Hi ${name}, a quick reminder: you owe me ${formatTaka(balance)} (${partsStr}). Thanks!`;
+}
+
+export function reminderTask(name: string, balance: number): { title: string } {
+  if (balance > 0) {
+    return { title: `Ask ${name} for ${formatTaka(balance)}` };
+  }
+  if (balance < 0) {
+    return { title: `Pay ${name} ${formatTaka(Math.abs(balance))}` };
+  }
+  return { title: `Settled with ${name}` };
+}
+
+export interface ImportTerm {
+  amount: number;
+  sign: 1 | -1;
+  note: string | null;
+}
+
+export interface ImportLine {
+  lineNo: number;
+  raw: string;
+  name: string;
+  direction: "owes_me" | "i_owe" | null;
+  terms: ImportTerm[];
+  balance: number;
+  error: string | null;
+}
+
+/**
+ * Parses IOU note text into structured import lines per 07-LOGIC.md §3c.
+ */
+export function parseIouText(text: string): ImportLine[] {
+  const rawLines = text.split(/\r?\n/);
+  const result: ImportLine[] = [];
+
+  let lineNo = 0;
+  for (const rawLine of rawLines) {
+    lineNo++;
+    const trimmed = rawLine.trim().replace(/\s+/g, " ");
+    if (!trimmed) continue;
+
+    // Detect separator and name
+    // Separator can be:
+    // 1. dibe / pabe keyword (case-insensitive) optionally followed by spaces, =, :, or -
+    // 2. = or :
+    // 3. " - " or "-" followed by a space, digit, or sign (+/-)
+    const sepRegex = /(?:(\b(?:dibe|pabe)\b[\s=:–-]*)|(=|:)|(\s*-\s*(?=[+\-\d]|\s)))/i;
+    const match = sepRegex.exec(trimmed);
+
+    if (!match) {
+      // No separator found; check if line has name and amounts or error
+      result.push({
+        lineNo,
+        raw: rawLine,
+        name: "",
+        direction: null,
+        terms: [],
+        balance: 0,
+        error: "no_amount",
+      });
+      continue;
+    }
+
+    const namePart = trimmed.slice(0, match.index).trim().replace(/_/g, " ");
+    if (!namePart || namePart.length > 60) {
+      result.push({
+        lineNo,
+        raw: rawLine,
+        name: namePart,
+        direction: null,
+        terms: [],
+        balance: 0,
+        error: "no_name",
+      });
+      continue;
+    }
+
+    // Determine direction
+    let direction: "owes_me" | "i_owe" | null = null;
+    const matchedSep = match[0].toLowerCase();
+    if (matchedSep.includes("dibe")) {
+      direction = "owes_me";
+    } else if (matchedSep.includes("pabe")) {
+      direction = "i_owe";
+    }
+
+    let rest = trimmed.slice(match.index + match[0].length).trim();
+    // Strip leading =, :, or dashes if leftover
+    rest = rest.replace(/^[=:–-]+\s*/, "");
+    // A leading - right after the separator is part of the separator, not a sign
+    if (rest.startsWith("- ") || rest.startsWith("-\t")) {
+      rest = rest.slice(1).trim();
+    } else if (rest.startsWith("-") && /^[-\d]/.test(rest.slice(1))) {
+      // e.g. -280 -> 280
+      rest = rest.slice(1).trim();
+    }
+
+    // Split rest into terms on + or - signs preceding numbers
+    // e.g. "2200 tk + 200 - 600 tk"
+    // Regex splits before + or - that is followed by optional space and digit or k
+    const termChunks = rest.split(/(?=[+-]\s*(?:\d|k|৳))/i).map((c) => c.trim()).filter(Boolean);
+
+    if (termChunks.length === 0) {
+      result.push({
+        lineNo,
+        raw: rawLine,
+        name: namePart,
+        direction,
+        terms: [],
+        balance: 0,
+        error: "no_amount",
+      });
+      continue;
+    }
+
+    const terms: ImportTerm[] = [];
+    let lineError: string | null = null;
+
+    for (const chunk of termChunks) {
+      let sign: 1 | -1 = 1;
+      let cleanChunk = chunk;
+
+      if (cleanChunk.startsWith("-")) {
+        sign = -1;
+        cleanChunk = cleanChunk.slice(1).trim();
+      } else if (cleanChunk.startsWith("+")) {
+        sign = 1;
+        cleanChunk = cleanChunk.slice(1).trim();
+      }
+
+      // Extract optional note in parentheses: (note)
+      let note: string | null = null;
+      const noteMatch = /\(([^)]+)\)/.exec(cleanChunk);
+      if (noteMatch) {
+        note = noteMatch[1].trim();
+        cleanChunk = cleanChunk.replace(noteMatch[0], "").trim();
+      }
+
+      // Remove tk / taka / ৳ (without word boundary so 350tk works)
+      cleanChunk = cleanChunk.replace(/(?:taka|tk|৳)/gi, "").trim();
+
+      // Check for 'k' or 'K' multiplier
+      let isThousands = false;
+      if (/k$/i.test(cleanChunk)) {
+        isThousands = true;
+        cleanChunk = cleanChunk.replace(/k$/i, "").trim();
+      }
+
+      // Remove commas
+      cleanChunk = cleanChunk.replace(/,/g, "").trim();
+
+      const numVal = Number(cleanChunk);
+      if (!cleanChunk || isNaN(numVal) || !Number.isInteger(numVal) || numVal <= 0) {
+        lineError = `bad_amount: "${chunk}"`;
+        break;
+      }
+
+      const finalAmount = isThousands ? numVal * 1000 : numVal;
+      terms.push({
+        amount: finalAmount,
+        sign,
+        note,
+      });
+    }
+
+    if (lineError) {
+      result.push({
+        lineNo,
+        raw: rawLine,
+        name: namePart,
+        direction,
+        terms: [],
+        balance: 0,
+        error: lineError,
+      });
+      continue;
+    }
+
+    if (terms.length === 0) {
+      result.push({
+        lineNo,
+        raw: rawLine,
+        name: namePart,
+        direction,
+        terms: [],
+        balance: 0,
+        error: "no_amount",
+      });
+      continue;
+    }
+
+    // Compute balance
+    // If owes_me: + means lent (+), - means received (-)
+    // If i_owe: + means borrowed (- debt), - means paid (+ payback)
+    // If null: assume owes_me for initial preview
+    let balance = 0;
+    for (const t of terms) {
+      balance += t.sign * t.amount;
+    }
+    if (direction === "i_owe") {
+      balance = -balance;
+    }
+
+    result.push({
+      lineNo,
+      raw: rawLine,
+      name: namePart,
+      direction,
+      terms,
+      balance,
+      error: null,
+    });
+  }
+
+  return result;
+}

@@ -13,6 +13,10 @@ import {
   createEntry,
   getMoneyOverview,
   settlePerson,
+  updateEntry,
+  getPersonEntries,
+  getPersonReminder,
+  importIous,
 } from "@/lib/services/money";
 import { ConflictError, InvalidInputError } from "@/lib/errors";
 
@@ -282,6 +286,85 @@ describe("Money & Spending Integration Tests (09)", () => {
       await expect(settlePerson(ctx, karimId, clock)).rejects.toThrow(
         ConflictError
       );
+    });
+
+    it("handles Money v2 IOU features: updateEntry, getPersonReminder, and importIous", async () => {
+      const clock = new Date("2026-11-04T12:00:00Z");
+
+      // 1. Create entry for Saimun
+      const { entry: entry1, person: p1 } = await createEntry(
+        ctx,
+        {
+          personName: "Saimun",
+          kind: "lent",
+          amount: 500,
+          occurredOn: "2026-11-01",
+          note: "bus ticket",
+        },
+        clock
+      );
+      expect(p1.balance).toBe(500);
+
+      // 2. updateEntry: change amount to 600 and update note
+      const { entry: updatedEntry, person: updatedP } = await updateEntry(
+        ctx,
+        entry1.id,
+        {
+          amount: 600,
+          note: "bus ticket + lunch",
+        },
+        clock
+      );
+      expect(updatedEntry.amount).toBe(600);
+      expect(updatedEntry.note).toBe("bus ticket + lunch");
+      expect(updatedP.balance).toBe(600);
+
+      // 3. getPersonReminder for Saimun
+      const reminder = await getPersonReminder(ctx, p1.id);
+      expect(reminder.text).toContain("Hi Saimun, a quick reminder: you owe me ৳600");
+      expect(reminder.task.title).toBe("Ask Saimun for ৳600");
+
+      // 4. importIous preview mode
+      const notesText = `
+Juman dibe-280 tk
+Majharul pabe- 454 tk
+Saimun dibe = 100
+      `.trim();
+
+      const previewRes = await importIous(ctx, { text: notesText, commit: false }, clock);
+      if ("lines" in previewRes) {
+        expect(previewRes.lines.length).toBe(3);
+        const saimunLine = previewRes.lines.find((l) => l.name === "Saimun")!;
+        expect(saimunLine.existing).not.toBeNull();
+        expect(saimunLine.existing?.balance).toBe(600);
+
+        const jumanLine = previewRes.lines.find((l) => l.name === "Juman")!;
+        expect(jumanLine.existing).toBeNull();
+      } else {
+        throw new Error("Expected preview lines");
+      }
+
+      // 5. importIous commit mode (default includes only new people: Juman & Majharul)
+      const commitRes = await importIous(ctx, { text: notesText, commit: true }, clock);
+      if ("people" in commitRes) {
+        expect(commitRes.people).toBe(2);
+        expect(commitRes.entries).toBe(2);
+      } else {
+        throw new Error("Expected commit counts");
+      }
+
+      // Verify overview now has 3 people (Saimun, Juman, Majharul)
+      const overview = await getMoneyOverview(ctx);
+      expect(overview.people.length).toBe(3);
+
+      // Check running balance & breakdown on Juman
+      const juman = overview.people.find((p) => p.name === "Juman")!;
+      expect(juman.balance).toBe(280);
+      expect(juman.recent?.length).toBe(1);
+      expect(juman.recent?.[0].signed).toBe(280);
+
+      const jumanEntries = await getPersonEntries(ctx, juman.id);
+      expect(jumanEntries.entries[0].balanceAfter).toBe(280);
     });
   });
 });

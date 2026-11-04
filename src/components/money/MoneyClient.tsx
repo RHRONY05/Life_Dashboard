@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, MoreHorizontal, Download, ClipboardPaste } from "lucide-react";
 import { Segmented } from "@/components/ui/Segmented";
 import { showToast } from "@/components/ui/Toast";
 import {
@@ -11,21 +11,34 @@ import {
   CreateExpenseInput,
   UpdateExpenseInput,
   MoneyOverviewDto,
+  PersonDto,
   EntryDto,
   CreateEntryInput,
+  UpdateEntryInput,
 } from "@/lib/schemas";
 import { formatTaka, balanceSentence } from "@/lib/domain/money";
+import { todayIn, addDays } from "@/lib/domain/dates";
+
+const APP_TIMEZONE = "Asia/Dhaka";
 
 import { SpendTiles } from "./SpendTiles";
 import { QuickSpend, QuickSpendRef } from "./QuickSpend";
 import { CategoryBars } from "./CategoryBars";
 import { SpendList } from "./SpendList";
 import { BudgetDialog } from "./BudgetDialog";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/DropdownMenu";
 
 import { MoneyTotals } from "./MoneyTotals";
 import { PeopleList } from "./PeopleList";
 import { HistoryPane } from "./HistoryPane";
 import { EntryDialog } from "./EntryDialog";
+import { ImportDialog } from "./ImportDialog";
 
 interface MoneyClientProps {
   initialSummary: SpendingSummaryDto;
@@ -66,6 +79,9 @@ export function MoneyClient({
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [entryDialogOpen, setEntryDialogOpen] = useState(false);
   const [prefilledPersonName, setPrefilledPersonName] = useState("");
+  const [prefilledPerson, setPrefilledPerson] = useState<PersonDto | null>(null);
+  const [editingEntry, setEditingEntry] = useState<EntryDto | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const selectedPerson =
     moneyOverview.people.find((p) => p.id === selectedPersonId) ?? null;
@@ -414,6 +430,105 @@ export function MoneyClient({
     showToast("Deleted person and entries");
   };
 
+  const handleUpdateEntry = async (id: string, input: UpdateEntryInput) => {
+    const res = await fetch(`/api/money/entries/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to update entry");
+    }
+
+    const { person } = await res.json();
+
+    const overviewRes = await fetch("/api/money", { cache: "no-store" });
+    if (overviewRes.ok) {
+      const newOverview = await overviewRes.json();
+      setMoneyOverview(newOverview);
+    }
+
+    if (selectedPersonId) {
+      const entriesRes = await fetch(`/api/money/people/${selectedPersonId}`, {
+        cache: "no-store",
+      });
+      if (entriesRes.ok) {
+        const entriesData = await entriesRes.json();
+        setPersonEntries(entriesData.entries);
+      }
+    }
+
+    showToast(`Saved: ${balanceSentence(person.balance, person.name)} now`);
+  };
+
+  const handleCopyReminder = async (personId: string) => {
+    try {
+      const res = await fetch(`/api/money/people/${personId}/reminder`);
+      if (!res.ok) {
+        throw new Error("Failed to get reminder text");
+      }
+      const data = await res.json();
+      if (data.text) {
+        await navigator.clipboard.writeText(data.text);
+        showToast("Reminder copied. Paste it in WhatsApp or Messenger.");
+      }
+    } catch {
+      showToast("Couldn't copy reminder");
+    }
+  };
+
+  const handleRemindMe = async (person: PersonDto, when: "today" | "tomorrow") => {
+    try {
+      const res = await fetch(`/api/money/people/${person.id}/reminder`);
+      if (!res.ok) {
+        throw new Error("Failed to get reminder task");
+      }
+      const data = await res.json();
+      const today = todayIn(new Date(), APP_TIMEZONE);
+      const targetDate = when === "today" ? today : addDays(today, 1);
+
+      const taskRes = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: data.task.title,
+          dueOn: targetDate,
+        }),
+      });
+
+      if (!taskRes.ok) {
+        throw new Error("Failed to create reminder task");
+      }
+
+      showToast(`Added to ${when === "today" ? "Today" : "Tomorrow"}: ${data.task.title}`);
+    } catch {
+      showToast("Couldn't create reminder task");
+    }
+  };
+
+  const handleImportComplete = async (summaryRes: { people: number; entries: number }) => {
+    const overviewRes = await fetch("/api/money", { cache: "no-store" });
+    if (overviewRes.ok) {
+      const newOverview: MoneyOverviewDto = await overviewRes.json();
+      setMoneyOverview(newOverview);
+      if (newOverview.people.length > 0 && !selectedPersonId) {
+        setSelectedPersonId(newOverview.people[0].id);
+      }
+    }
+    if (selectedPersonId) {
+      const entriesRes = await fetch(`/api/money/people/${selectedPersonId}`, {
+        cache: "no-store",
+      });
+      if (entriesRes.ok) {
+        const entriesData = await entriesRes.json();
+        setPersonEntries(entriesData.entries);
+      }
+    }
+    showToast(`Imported ${summaryRes.people} ${summaryRes.people === 1 ? "person" : "people"} and ${summaryRes.entries} entries.`);
+  };
+
   // Calculate today's spend count
   const todayGroup = days.find(
     (d) => d.day === new Date().toISOString().split("T")[0]
@@ -443,12 +558,14 @@ export function MoneyClient({
             : "Who owes whom, in taka"}
         </span>
 
-        {activeTab === "ious" && (
-          <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          {activeTab === "ious" && (
             <button
               type="button"
               onClick={() => {
                 setPrefilledPersonName("");
+                setPrefilledPerson(null);
+                setEditingEntry(null);
                 setEntryDialogOpen(true);
               }}
               className="btn btn-primary h-9 px-3.5 flex items-center gap-1.5 text-[var(--text-sm)] font-medium"
@@ -459,8 +576,50 @@ export function MoneyClient({
                 A
               </kbd>
             </button>
-          </div>
-        )}
+          )}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="iconbtn p-2 text-[var(--ink-3)] hover:text-[var(--ink)]"
+                aria-label="Money menu"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuItem asChild>
+                <a
+                  href="/api/export/spending.csv"
+                  download
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4 text-[var(--ink-3)]" />
+                  Export spending (CSV)
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a
+                  href="/api/export/ious.csv"
+                  download
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4 text-[var(--ink-3)]" />
+                  Export IOUs (CSV)
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setImportDialogOpen(true)}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <ClipboardPaste className="w-4 h-4 text-[var(--ink-3)]" />
+                Import IOUs from notes
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {activeTab === "spending" ? (
@@ -515,10 +674,21 @@ export function MoneyClient({
               selectedPersonId={selectedPersonId}
               onSelectPerson={(id) => setSelectedPersonId(id)}
               onSettle={handleSettle}
-              onOpenAddEntry={(name) => {
-                setPrefilledPersonName(name || "");
+              onOpenAddEntry={(p) => {
+                setPrefilledPerson(p || null);
+                setPrefilledPersonName(p?.name || "");
+                setEditingEntry(null);
                 setEntryDialogOpen(true);
               }}
+              onOpenEditEntry={(entry) => {
+                setEditingEntry(entry);
+                setPrefilledPerson(null);
+                setPrefilledPersonName("");
+                setEntryDialogOpen(true);
+              }}
+              onDeleteEntry={handleDeleteEntry}
+              onCopyReminder={handleCopyReminder}
+              onRemindMe={handleRemindMe}
               mobileExpandedEntries={personEntries}
             />
 
@@ -527,10 +697,24 @@ export function MoneyClient({
                 person={selectedPerson}
                 entries={personEntries}
                 loadingEntries={loadingEntries}
+                onOpenAddEntry={(p) => {
+                  setPrefilledPerson(p);
+                  setPrefilledPersonName(p.name);
+                  setEditingEntry(null);
+                  setEntryDialogOpen(true);
+                }}
+                onOpenEditEntry={(entry) => {
+                  setEditingEntry(entry);
+                  setPrefilledPerson(null);
+                  setPrefilledPersonName("");
+                  setEntryDialogOpen(true);
+                }}
                 onSettle={handleSettle}
                 onDeleteEntry={handleDeleteEntry}
                 onRenamePerson={handleRenamePerson}
                 onDeletePerson={handleDeletePerson}
+                onCopyReminder={handleCopyReminder}
+                onRemindMe={handleRemindMe}
               />
             </div>
           </div>
@@ -540,7 +724,16 @@ export function MoneyClient({
             onOpenChange={setEntryDialogOpen}
             people={moneyOverview.people}
             prefilledPersonName={prefilledPersonName}
+            prefilledPerson={prefilledPerson}
+            editEntry={editingEntry}
             onSubmit={handleAddEntry}
+            onUpdate={handleUpdateEntry}
+          />
+
+          <ImportDialog
+            open={importDialogOpen}
+            onOpenChange={setImportDialogOpen}
+            onImportComplete={handleImportComplete}
           />
         </>
       )}
