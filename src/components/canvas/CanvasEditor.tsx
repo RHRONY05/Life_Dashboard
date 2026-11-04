@@ -17,7 +17,8 @@ import { toast } from "sonner";
 import { getCanvasExtensions } from "@/lib/canvas/editor";
 import { CanvasToolbar } from "@/components/canvas/CanvasToolbar";
 import { NotesPane } from "@/components/canvas/NotesPane";
-import { docToMarkdown } from "@/lib/canvas/markdown";
+import { docToMarkdown, docToPlainText } from "@/lib/canvas/markdown";
+import { enqueuePageSave, getOrCreateQueue } from "@/lib/canvas/save-queue";
 import { analyzePaste } from "@/lib/canvas/paste";
 import { processImageFile } from "@/lib/canvas/images";
 import { imageRefs, titleFromText } from "@/lib/domain/canvas";
@@ -81,21 +82,11 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
   // References
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const retryTimerRef = useRef<NodeJS.Timeout | null>(null);
   const editorRef = useRef<Editor | null>(null);
   const channelRef = useRef<BroadcastChannel | null>(null);
   const activeNoteRef = useRef<NoteDto | null>(null);
   const activeNoteTitleRef = useRef<string>(activeNoteTitle);
   const activeNoteIdRef = useRef<string | null>(activeNoteId);
-  const retrySaveRef = useRef<
-    (
-      noteId: string,
-      currentNote: NoteDto,
-      docJson: Record<string, unknown>,
-      titleText: string,
-      retryAttempt: number
-    ) => void
-  >(() => {});
   const shiftDownRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -182,8 +173,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       noteId: string,
       currentNote: NoteDto,
       docJson: Record<string, unknown>,
-      titleText: string,
-      retryAttempt = 0
+      titleText: string
     ) => {
       if (typeof navigator !== "undefined" && !navigator.onLine) {
         setNoteSaveStatus("offline");
@@ -192,74 +182,58 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
       setNoteSaveStatus("saving");
       try {
-        const md = docToMarkdown(docJson);
-        const res = await fetch(`/api/notes/${noteId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            baseUpdatedAt: currentNote.updatedAt,
+        const md = docToMarkdown(docJson, { images: "refs" });
+        await enqueuePageSave<NoteDto>(
+          noteId,
+          {
             title: titleText.trim() || currentNote.title,
             doc: docJson,
             bodyMd: md,
-          }),
-        });
+          },
+          async (id, body) => {
+            return fetch(`/api/notes/${id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body),
+            });
+          },
+          (result) => {
+            if (result.kind === "saved") {
+              const updated = result.note;
+              setActiveNote(updated);
+              setActiveNoteTitle(updated.title);
+              setStaleConflictNote(null);
+              setNoteSaveStatus("saved");
 
-        if (res.ok) {
-          const updated: NoteDto = await res.json();
-          setActiveNote(updated);
-          setActiveNoteTitle(updated.title);
-          setStaleConflictNote(null);
-          setNoteSaveStatus("saved");
-
-          // Update notes summary list in state
-          setNotes((prev) =>
-            prev.map((n) =>
-              n.id === updated.id
-                ? {
-                    ...n,
-                    title: updated.title,
-                    snippet: updated.snippet,
-                    updatedAt: updated.updatedAt,
-                  }
-                : n
-            )
-          );
-        } else if (res.status === 409) {
-          const errData = await res.json();
-          if (errData?.details?.reason === "stale") {
-            setStaleConflictNote(errData.details.note);
-            setNoteSaveStatus("error");
+              // Update notes summary list in state
+              setNotes((prev) =>
+                prev.map((n) =>
+                  n.id === updated.id
+                    ? {
+                        ...n,
+                        title: updated.title,
+                        snippet: updated.snippet,
+                        updatedAt: updated.updatedAt,
+                      }
+                    : n
+                )
+              );
+            } else if (result.kind === "stale_conflict") {
+              setStaleConflictNote(result.note);
+              setNoteSaveStatus("error");
+            } else if (result.kind === "skipped") {
+              setNoteSaveStatus("saved");
+            } else if (result.kind === "error") {
+              setNoteSaveStatus("error");
+            }
           }
-        } else {
-          throw new Error("Save failed");
-        }
+        );
       } catch {
         setNoteSaveStatus("error");
-        // Auto-retry with backoff: 2s, 5s, 10s (max 3 retries)
-        if (retryAttempt < 3) {
-          const delays = [2000, 5000, 10000];
-          const delay = delays[retryAttempt];
-          if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
-          retryTimerRef.current = setTimeout(() => {
-            if (activeNoteIdRef.current === noteId && activeNoteRef.current) {
-              retrySaveRef.current(
-                noteId,
-                activeNoteRef.current,
-                docJson,
-                titleText,
-                retryAttempt + 1
-              );
-            }
-          }, delay);
-        }
       }
     },
     []
   );
-
-  useEffect(() => {
-    retrySaveRef.current = performNoteSave;
-  }, [performNoteSave]);
 
   const triggerNoteSave = useCallback(() => {
     const currentId = activeNoteIdRef.current;
@@ -471,7 +445,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         class: "focus:outline-none outline-none min-h-[500px] cursor-text",
       },
       clipboardTextSerializer: (slice) => {
-        return docToMarkdown({ content: slice.content.toJSON() });
+        return docToPlainText(slice);
       },
       handlePaste: (view, event) => {
         if (isReadOnly) return true;
@@ -731,6 +705,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         }
 
         const noteData: NoteDto = await res.json();
+        getOrCreateQueue(noteData.id, noteData);
         setActiveNoteId(noteData.id);
         setActiveNote(noteData);
         setActiveNoteTitle(noteData.title);
@@ -740,11 +715,14 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
         if (editorRef.current) {
           if (noteData.doc) {
-            editorRef.current.commands.setContent(noteData.doc);
+            editorRef.current.commands.setContent(noteData.doc, { emitUpdate: false });
             setImageCount(imageRefs(noteData.doc).length);
           } else {
             // Agent-created note without doc: initialize from markdown
-            editorRef.current.commands.setContent(noteData.bodyMd || "");
+            editorRef.current.commands.setContent(noteData.bodyMd || "", {
+              contentType: "markdown",
+              emitUpdate: false,
+            });
             setImageCount(0);
           }
         }
@@ -955,12 +933,27 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     }
   }, [activeNote, handleSelectScratch, fetchNotes]);
 
-  // Global keyboard shortcuts: Ctrl+Alt+M (Copy Markdown) & Ctrl+S (Save as note / save now)
+  // Global keyboard shortcuts: Ctrl+Alt+M (Copy Markdown), Ctrl+Shift+C (Copy Selection Markdown), & Ctrl+S (Save as note / save now)
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.ctrlKey && e.altKey && (e.key === "m" || e.key === "M")) {
         e.preventDefault();
         handleCopyAsMarkdown();
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "c" || e.key === "C")) {
+        if (editorRef.current && !editorRef.current.state.selection.empty) {
+          e.preventDefault();
+          const slice = editorRef.current.state.selection.content();
+          const md = docToMarkdown(
+            { type: "doc", content: slice.toJSON()?.content || [] },
+            { images: "placeholder" }
+          ).trim();
+          if (md) {
+            navigator.clipboard.writeText(md);
+            toast("Copied as Markdown");
+          }
+        }
       }
 
       if (e.ctrlKey && (e.key === "s" || e.key === "S")) {

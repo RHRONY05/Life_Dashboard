@@ -1,5 +1,6 @@
 import { Node, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
 import { TaskList } from "@tiptap/extension-task-list";
 import { TaskItem } from "@tiptap/extension-task-item";
 import { Table } from "@tiptap/extension-table";
@@ -73,6 +74,20 @@ export const CanvasImage = Node.create({
   addNodeView() {
     return ReactNodeViewRenderer(CanvasImageView);
   },
+
+  markdownTokenName: "image",
+  parseMarkdown(token: { href?: string; text?: string }) {
+    return {
+      type: "canvasImage",
+      attrs: {
+        ref: token.href || "",
+        alt: token.text || "",
+        width: null,
+        height: null,
+        uploading: false,
+      },
+    };
+  },
 });
 
 export function getCanvasExtensions(placeholderText?: string) {
@@ -82,10 +97,15 @@ export function getCanvasExtensions(placeholderText?: string) {
         levels: [1, 2, 3],
       },
       dropcursor: false,
-      link: {
-        openOnClick: false,
-        autolink: true,
-        defaultProtocol: "https",
+      link: false,
+    }),
+    Link.configure({
+      openOnClick: false,
+      autolink: true,
+      linkOnPaste: true,
+      defaultProtocol: "https",
+      shouldAutoLink: (url: string) => {
+        return /^(https?:\/\/|www\.)/i.test(url.trim());
       },
     }),
     TaskList,

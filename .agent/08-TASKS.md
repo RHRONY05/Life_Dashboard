@@ -103,7 +103,7 @@ V10 Final + prod Lighthouse + walkthrough ◀─ V9 Connect agents ◀─ V8 MCP
 
 M3b (Canvas v2 + Money v2) is done after M3 and before V6, in the order V3c → V3d → V5a → V5b. The numbers say which module a task belongs to, not the build order.
 
-- [ ] **V3c Canvas v2: fixes, pages tree, tabs**
+- [ ] **V3c Canvas v2: fixes, pages tree, tabs** — in progress: Antigravity
   - **First run `/sync-docs`** (`workflows/sync-docs.md`) and commit its `docs:` fixes, so this task starts from docs that match the code (the M2–M3 fixes changed Canvas, navigation and dialogs).
   - Read 01 (CV3, CV6, CV9–CV12), 03 "Canvas pages", 04 Notes, 06 `/canvas` incl. "Canvas v2", 07 §8.3, 8.3b, 8.8, 8.9, 10-STATES Canvas, and design `desktop/08b-canvas-pages.html`, `mobile/10-canvas-notes.html`, `states.html` → "Canvas v2".
   - **Fixes first, each with a test that failed before:** (1) the save queue, 07 §8.9 rules 1–6 (`lib/canvas/save-queue.ts`); the e2e "type 10 s with a 1.5 s delayed PATCH" case must show no conflict. (2) Plain-text copy, 07 §8.3b (`docToPlainText` as the `clipboardTextSerializer`) and `Ctrl+Shift+C`. (3) Autolink only for `http(s)://` and `www.` (07 §8.3b). (4) Pages with `doc = null` load with `contentType: "markdown"` (06). Deploy these on their own (`fix(canvas): …`) before the rest.

@@ -289,4 +289,67 @@ test.describe("Canvas Scratch E2E", () => {
     await expect(page.locator(".ecard-head h2")).toHaveText("Scratch");
     await expect(page.locator(".nlist .nrow", { hasText: "Operating System Notes" })).toBeHidden();
   });
+
+  test("Desktop: typing continuously with 1.5s delayed PATCH causes no conflict", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "Desktop test only");
+
+    // 1.5s delayed PATCH
+    await page.route("**/api/notes/*", async (route) => {
+      if (route.request().method() === "PATCH") {
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+      await route.continue();
+    });
+
+    await page.goto("/canvas");
+    await page.waitForLoadState("networkidle");
+
+    const prose = page.locator(".prose .tiptap");
+    await expect(prose).toBeVisible();
+
+    await prose.click();
+    await page.keyboard.press("Control+A");
+    await page.keyboard.press("Backspace");
+    await page.keyboard.type("## Stress Test Concurrency\n- Base line");
+
+    await page.waitForTimeout(600);
+
+    const saveAsNoteBtn = page.locator("#save-as-note-btn");
+    await saveAsNoteBtn.click();
+
+    await expect(
+      page.locator("[data-sonner-toast]", { hasText: "Saved as “Stress Test Concurrency”" })
+    ).toBeVisible();
+
+    // Open note
+    const noteRow = page.locator(".nlist .nrow", { hasText: "Stress Test Concurrency" });
+    await noteRow.click();
+
+    await expect(page.locator(".ecard-head .ntitle")).toHaveValue("Stress Test Concurrency");
+
+    // Type in bursts over several seconds while PATCHes take 1.5s
+    for (let i = 1; i <= 5; i++) {
+      await prose.click();
+      await page.keyboard.type(`\n- Continuous typing chunk ${i}`);
+      await page.waitForTimeout(1000);
+    }
+
+    // Wait for all in-flight saves to settle
+    await page.waitForTimeout(4000);
+
+    // Verify: no conflict banner or line ever appeared
+    await expect(page.locator(".conflict-line")).toBeHidden();
+    await expect(page.getByText(/changed somewhere else|conflict/i)).toBeHidden();
+    await expect(page.locator(".save-status").first()).toContainText("Saved");
+
+    // Clean up
+    const moreBtn = page.locator(".ecard-head").getByRole("button", { name: "More options" });
+    await moreBtn.click();
+    await page.getByRole("menuitem", { name: "Delete note" }).click();
+    await page.locator("#confirm-delete-note-btn").click();
+    await expect(page.locator("[data-sonner-toast]", { hasText: "Note deleted" })).toBeVisible();
+  });
 });

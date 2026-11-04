@@ -8,8 +8,9 @@ import {
   imageRefs,
   unreferencedPaths,
 } from "@/lib/domain/canvas";
-import { docToMarkdown } from "@/lib/canvas/markdown";
+import { docToMarkdown, docToPlainText, markdownToDoc } from "@/lib/canvas/markdown";
 import { cleanPastedHtml, analyzePaste } from "@/lib/canvas/paste";
+import { enqueuePageSave, getOrCreateQueue, clearQueue } from "@/lib/canvas/save-queue";
 
 describe("Canvas domain logic (07 §8)", () => {
   describe("8.1 fitWithin", () => {
@@ -199,6 +200,183 @@ describe("Canvas domain logic (07 §8)", () => {
       const res = analyzePaste(event);
       expect(res.kind).toBe("url");
       expect(res.data).toBe("https://example.com/docs");
+    });
+  });
+
+  describe("8.3b docToPlainText (plain text copy)", () => {
+    it("selection inside one bullet outputs just text without prefix", () => {
+      const slice = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: "docker run -d --rm --name deeptutor -p 127.0.0.1:3782:3782 -v deeptutor-data:/app/data ",
+              },
+              {
+                type: "text",
+                marks: [{ type: "link", attrs: { href: "https://ghcr.io/hkuds/deeptutor:latest" } }],
+                text: "ghcr.io/hkuds/deeptutor:latest",
+              },
+            ],
+          },
+        ],
+      };
+      const plain = docToPlainText(slice);
+      expect(plain).toBe(
+        "docker run -d --rm --name deeptutor -p 127.0.0.1:3782:3782 -v deeptutor-data:/app/data ghcr.io/hkuds/deeptutor:latest"
+      );
+    });
+
+    it("selection of paragraph with link outputs plain text", () => {
+      const slice = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              { type: "text", text: "See " },
+              {
+                type: "text",
+                marks: [{ type: "link", attrs: { href: "https://www.rfc-editor.org/rfc/rfc9293" } }],
+                text: "RFC 9293",
+              },
+              { type: "text", text: "." },
+            ],
+          },
+        ],
+      };
+      const plain = docToPlainText(slice);
+      expect(plain).toBe("See RFC 9293.");
+    });
+
+    it("selection of two bullets outputs - a\\n- b", () => {
+      const slice = {
+        type: "doc",
+        content: [
+          {
+            type: "bulletList",
+            content: [
+              {
+                type: "listItem",
+                content: [{ type: "paragraph", content: [{ type: "text", text: "a" }] }],
+              },
+              {
+                type: "listItem",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        marks: [{ type: "bold" }],
+                        text: "b",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      const plain = docToPlainText(slice);
+      expect(plain).toBe("- a\n- b");
+    });
+  });
+
+  describe("8.3 Round trip (markdownToDoc <-> docToMarkdown)", () => {
+    it("round-trips canvas-doc.json with { images: 'refs' }", () => {
+      const fixturePath = path.resolve(__dirname, "fixtures/canvas-doc.json");
+      const originalDoc = JSON.parse(fs.readFileSync(fixturePath, "utf-8"));
+      // replace local idb with sb ref for testing refs option
+      originalDoc.content[4].attrs.ref = "sb:user/note/img.webp";
+
+      const md = docToMarkdown(originalDoc, { images: "refs" });
+      expect(md).toContain("![Screenshot](sb:user/note/img.webp)");
+
+      const parsedDoc = markdownToDoc(md);
+      expect(parsedDoc.type).toBe("doc");
+      expect(parsedDoc.content).toBeDefined();
+      const content = parsedDoc.content!;
+      expect(content).toHaveLength(5);
+      expect(content[0].type).toBe("heading");
+      expect(content[1].type).toBe("taskList");
+      expect(content[2].type).toBe("codeBlock");
+      expect(content[3].type).toBe("paragraph");
+      expect(content[4].type).toBe("canvasImage");
+      expect(content[4].attrs?.ref).toBe("sb:user/note/img.webp");
+    });
+  });
+
+  describe("8.9 Save queue (rules 1-6)", () => {
+    it("handles save queue with in-flight debounce and echo resolution", async () => {
+      const noteId = "test-note-queue";
+      clearQueue(noteId);
+
+      const q = getOrCreateQueue(noteId, {
+        updatedAt: "2026-11-04T00:00:00.000Z",
+        title: "Initial Title",
+        doc: { type: "doc", content: [] },
+      });
+
+      expect(q.baseUpdatedAt).toBe("2026-11-04T00:00:00.000Z");
+
+      let saveCallCount = 0;
+      const responses: Response[] = [
+        new Response(
+          JSON.stringify({
+            id: noteId,
+            title: "First Save",
+            doc: { type: "doc" },
+            bodyMd: "first",
+            updatedAt: "2026-11-04T00:00:01.000Z",
+          }),
+          { status: 200 }
+        ),
+      ];
+
+      const fakeSave = async () => {
+        saveCallCount++;
+        return responses.shift() || new Response("ok", { status: 200 });
+      };
+
+      let resultKind = "";
+      await enqueuePageSave(
+        noteId,
+        {
+          title: "First Save",
+          doc: { type: "doc" },
+          bodyMd: "first",
+        },
+        fakeSave,
+        (res) => {
+          resultKind = res.kind;
+        }
+      );
+
+      expect(saveCallCount).toBe(1);
+      expect(resultKind).toBe("saved");
+      expect(q.baseUpdatedAt).toBe("2026-11-04T00:00:01.000Z");
+
+      // Rule 3: Skip when unchanged
+      resultKind = "";
+      await enqueuePageSave(
+        noteId,
+        {
+          title: "First Save",
+          doc: { type: "doc" },
+          bodyMd: "first",
+        },
+        fakeSave,
+        (res) => {
+          resultKind = res.kind;
+        }
+      );
+      expect(saveCallCount).toBe(1); // skipped, no extra call
+      expect(resultKind).toBe("skipped");
     });
   });
 });

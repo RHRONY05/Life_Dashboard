@@ -8,8 +8,8 @@
 ## Now
 | | |
 |---|---|
-| **Phase** | M3 Trackers + Money (Complete — V4 & V5 shipped) · Next: M3b Canvas v2 + Money v2 |
-| **Next task** | V3c Canvas v2 (paste Goal 3b from `GOAL.md`; it starts with `/sync-docs`), then V3d, V5a, V5b |
+| **Phase** | M3b Canvas v2 + Money v2 (in progress) |
+| **Next task** | V3c Canvas v2: fixes, pages tree, tabs (in progress) |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
 | **Last updated** | 2026-11-04 by Antigravity (Goal 3b started, /sync-docs complete) |
