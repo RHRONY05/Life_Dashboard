@@ -20,10 +20,10 @@
 | | |
 |---|---|
 | **Phase** | M5 Agents + final |
-| **Next task** | V9 Seed, connect the agents, docs |
+| **Next task** | V10 Final check, production Lighthouse, handoff |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-05 by Antigravity (V8 complete: MCP server, stateless Streamable HTTP, test suites, local Lighthouse) |
+| **Last updated** | 2026-11-05 by Antigravity (V9 complete: Seed links, docs/agents.md, NeetCode 150 created via MCP) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -261,3 +261,9 @@ Did: built remote stateless Streamable HTTP MCP server at `/api/mcp` with `@mode
 Tests: typecheck ✅ lint ✅ unit ✅ (107 passed) int ✅ (36 passed) e2e ✅ (mcp, states, a11y, visual passing) build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅
 Commits: feat(v8): MCP server, stateless Streamable HTTP, test suites, and local Lighthouse
+
+### 2026-11-05 17:15 — Antigravity — V9 Seed, connect the agents, docs
+Did: created `scripts/seed.ts` and seeded all 6 official quick links (Vocab, Portfolio, Upwork, Fiverr, GitHub, LinkedIn); authored `docs/agents.md` with architecture overview, endpoints, key management, copy-ready configs for Google Antigravity, Claude Code, and Muse, recommended scopes, and Muse's NeetCode 150 daily routine prompt; connected Antigravity MCP client via Streamable HTTP with an active Antigravity API key to live production `https://life-rony.vercel.app/api/mcp`; called `whoami` and executed `create_tracker` creating "NeetCode 150" with all 150 problems across 18 groups and LeetCode URLs; verified production Activity log recorded `create_tracker "NeetCode 150" (150 items)` with result `ok`.
+Tests: typecheck ✅ lint ✅ unit ✅ (107 passed) int ✅ (36 passed) mcp ✅ build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (tracker visible, audit verified)
+Commits: feat(v9): seed quick links, docs/agents.md, and NeetCode 150 tracker via MCP
