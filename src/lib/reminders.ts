@@ -50,6 +50,22 @@ export async function processRemindersAndCleanup(
   let totalRemindersCount = 0;
 
   for (const [userId, userRenewals] of byUser.entries()) {
+    // In production, only the owner (ALLOWED_EMAIL) receives real reminder emails.
+    // Query auth user to verify email and prevent test account renewals from emailing the owner.
+    let userEmail: string | undefined;
+    try {
+      const { data: userData } = await admin.auth.admin.getUserById(userId);
+      userEmail = userData?.user?.email;
+    } catch (e) {
+      console.error(`Failed to look up auth user ${userId} for reminders:`, e);
+    }
+
+    const isMock = process.env.EMAIL_MOCK === "1" || env.EMAIL_MOCK === "1";
+    if (!isMock && userEmail !== env.ALLOWED_EMAIL) {
+      // Skip non-owner / test accounts in production
+      continue;
+    }
+
     // 2a. Fetch existing reminder_log for this user
     const { data: userLogs, error: logErr } = await admin
       .from("reminder_log")
@@ -115,7 +131,7 @@ export async function processRemindersAndCleanup(
 
     // 2b. Build digest
     const digest = buildDigestEmail(itemsToNotify, appUrl);
-    const recipient = process.env.REMINDER_TO || env.ALLOWED_EMAIL;
+    const recipient = (!isMock ? env.ALLOWED_EMAIL : userEmail) || process.env.REMINDER_TO || env.ALLOWED_EMAIL;
 
     try {
       await sendEmail({

@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { resetUserData, E2E_USER_ID } from "../helpers/reset";
 import { getAdminClient } from "@/lib/supabase/admin";
 import { Ctx } from "@/lib/ctx";
@@ -257,5 +257,9 @@ describe("Renewals & Cron Integration Tests (09)", () => {
       .select("*")
       .eq("key_name", "RecentAgent");
     expect(recentAudit?.length).toBe(1);
+  });
+
+  afterAll(async () => {
+    await resetUserData(E2E_USER_ID);
   });
 });
