@@ -127,9 +127,17 @@ export async function createTracker(
   const actorName = ctx.actor.type === "agent" ? ctx.actor.name : "owner";
 
   // Parse items if provided
-  const parsedItems = input.itemsText
+  let parsedItems = input.itemsText
     ? parseTrackerItemsText(input.itemsText)
     : [];
+  if (input.items && input.items.length > 0) {
+    parsedItems = input.items.map((i) => ({
+      title: i.title.trim().slice(0, 200),
+      groupName: i.groupName?.trim().slice(0, 80) || null,
+      url: i.url || null,
+      note: i.note?.trim().slice(0, 1000) || null,
+    }));
+  }
 
   const { data: tracker, error: createErr } = await ctx.db
     .from("trackers")
@@ -152,6 +160,7 @@ export async function createTracker(
       title: item.title,
       group_name: item.groupName,
       url: item.url,
+      note: (item as { note?: string | null }).note || null,
       status: "todo" as const,
       position: index + 1,
     }));

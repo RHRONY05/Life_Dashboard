@@ -72,7 +72,8 @@ export const TaskInput = forwardRef<HTMLInputElement, TaskInputProps>(
           placeholder={placeholder}
           autoFocus={autoFocus}
           disabled={busy}
-          className="flex-1 bg-transparent border-none outline-none text-[var(--ink)] placeholder:text-[var(--ink-4)] text-[var(--text-base)]"
+          className="flex-1 bg-transparent border-none outline-none text-[var(--ink)] placeholder:text-[var(--ink-3)] text-[var(--text-base)]"
+          aria-label={placeholder}
         />
         {shortcutKey && !isFocused && (
           <div className="ml-auto flex items-center gap-0.5">

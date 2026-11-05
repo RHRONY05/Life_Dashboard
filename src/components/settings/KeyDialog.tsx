@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Scope } from "@/lib/schemas";
-import { Dialog, DialogContent } from "@/components/ui/Dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/Dialog";
 import {
   Check,
   Copy,
@@ -215,10 +215,10 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
           {!createdSecret ? (
             /* Step 1: Create key */
             <form onSubmit={handleSubmit}>
-              <h2 className="text-xl font-bold text-ink">New key</h2>
-              <p className="text-sm text-ink-3 mt-1 mb-5">
+              <DialogTitle className="text-xl font-bold text-ink">New key</DialogTitle>
+              <DialogDescription className="text-sm text-ink-3 mt-1 mb-5">
                 Give each agent its own key. You can revoke it any time.
-              </p>
+              </DialogDescription>
 
               {error && (
                 <div className="banner banner-danger mb-4 text-xs py-2 px-3">
@@ -268,6 +268,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("tasks:read")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("tasks:read")}
+                      aria-label="Tasks read scope"
                       className={`check ${scopes.includes("tasks:read") ? "on" : ""}`}
                     >
                       {scopes.includes("tasks:read") && <Check className="w-3.5 h-3.5" />}
@@ -277,6 +280,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("tasks:write")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("tasks:write")}
+                      aria-label="Tasks write scope"
                       className={`check ${scopes.includes("tasks:write") ? "on" : ""}`}
                     >
                       {scopes.includes("tasks:write") && <Check className="w-3.5 h-3.5" />}
@@ -289,6 +295,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("trackers:read")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("trackers:read")}
+                      aria-label="Trackers read scope"
                       className={`check ${scopes.includes("trackers:read") ? "on" : ""}`}
                     >
                       {scopes.includes("trackers:read") && <Check className="w-3.5 h-3.5" />}
@@ -298,6 +307,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("trackers:write")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("trackers:write")}
+                      aria-label="Trackers write scope"
                       className={`check ${scopes.includes("trackers:write") ? "on" : ""}`}
                     >
                       {scopes.includes("trackers:write") && <Check className="w-3.5 h-3.5" />}
@@ -310,6 +322,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("money:read")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("money:read")}
+                      aria-label="Money read scope"
                       className={`check ${scopes.includes("money:read") ? "on" : ""}`}
                     >
                       {scopes.includes("money:read") && <Check className="w-3.5 h-3.5" />}
@@ -319,6 +334,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("money:write")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("money:write")}
+                      aria-label="Money write scope"
                       className={`check ${scopes.includes("money:write") ? "on" : ""}`}
                     >
                       {scopes.includes("money:write") && <Check className="w-3.5 h-3.5" />}
@@ -331,6 +349,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("renewals:read")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("renewals:read")}
+                      aria-label="Renewals read scope"
                       className={`check ${scopes.includes("renewals:read") ? "on" : ""}`}
                     >
                       {scopes.includes("renewals:read") && <Check className="w-3.5 h-3.5" />}
@@ -340,6 +361,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("renewals:write")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("renewals:write")}
+                      aria-label="Renewals write scope"
                       className={`check ${scopes.includes("renewals:write") ? "on" : ""}`}
                     >
                       {scopes.includes("renewals:write") && <Check className="w-3.5 h-3.5" />}
@@ -352,6 +376,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("notes:read")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("notes:read")}
+                      aria-label="Canvas notes read scope"
                       className={`check ${scopes.includes("notes:read") ? "on" : ""}`}
                     >
                       {scopes.includes("notes:read") && <Check className="w-3.5 h-3.5" />}
@@ -361,6 +388,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("notes:write")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("notes:write")}
+                      aria-label="Canvas notes write scope"
                       className={`check ${scopes.includes("notes:write") ? "on" : ""}`}
                     >
                       {scopes.includes("notes:write") && <Check className="w-3.5 h-3.5" />}
@@ -373,6 +403,9 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
                     <button
                       type="button"
                       onClick={() => toggleScope("links:read")}
+                      role="checkbox"
+                      aria-checked={scopes.includes("links:read")}
+                      aria-label="Quick links read scope"
                       className={`check ${scopes.includes("links:read") ? "on" : ""}`}
                     >
                       {scopes.includes("links:read") && <Check className="w-3.5 h-3.5" />}
@@ -406,7 +439,7 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
           ) : (
             /* Step 2: Show once secret */
             <div>
-              <h2 className="text-xl font-bold text-ink">Key for {createdName}</h2>
+              <DialogTitle className="text-xl font-bold text-ink">Key for {createdName}</DialogTitle>
               <div className="banner banner-warn my-3 flex items-center gap-2 text-xs py-2 px-3">
                 <KeyRound className="w-4 h-4 flex-shrink-0" />
                 <span>Copy this key now. You won&apos;t see it again.</span>
@@ -487,11 +520,11 @@ export function KeyDialog({ open, onClose, onCreated }: KeyDialogProps) {
         <DialogContent>
           <div className="flex items-center gap-3 text-warning mb-2">
             <AlertTriangle className="w-6 h-6 flex-shrink-0" />
-            <h2 className="text-lg font-bold text-ink">Did you copy the key?</h2>
+            <DialogTitle className="text-lg font-bold text-ink">Did you copy the key?</DialogTitle>
           </div>
-          <p className="text-sm text-ink-3 mb-6">
+          <DialogDescription className="text-sm text-ink-3 mb-6">
             You won&apos;t be able to see or copy this key again after closing.
-          </p>
+          </DialogDescription>
           <div className="dialog-foot flex justify-end gap-2">
             <button
               type="button"

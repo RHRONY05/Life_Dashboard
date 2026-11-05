@@ -22,6 +22,7 @@ export function ProgressBar({
       aria-valuenow={clamped}
       aria-valuemin={0}
       aria-valuemax={100}
+      aria-label={props["aria-label"] || "Progress"}
       className={clsx(
         "bar bg-surface-3 overflow-hidden rounded-none",
         size === "lg" ? "h-2" : "h-1.5",

@@ -3,16 +3,27 @@
 **Every agent reads this first and updates it before ending any session.**
 `08-TASKS.md` is the *plan* (what to build). This file is the *state* (where we are).
 
----
+## Lighthouse
+| Page | Mobile perf / a11y / BP | Desktop perf / a11y / BP |
+|---|---|---|
+| `/login` | 91 / 100 / 96 | 100 / 100 / 96 |
+| `/` (Today) | 93 / 100 / 100 | 100 / 100 / 100 |
+| `/canvas` | 93 / 100 / 100 | 100 / 100 / 100 |
+| `/trackers` | 93 / 100 / 100 | 100 / 100 / 100 |
+| `/money` (Spending) | 94 / 100 / 100 | 100 / 100 / 100 |
+| `/money?tab=ious` (IOUs) | 93 / 100 / 100 | 100 / 100 / 100 |
+| `/money?tab=topay` (To pay) | 93 / 100 / 100 | 100 / 100 / 100 |
+| `/renewals` | 93 / 100 / 100 | 100 / 100 / 100 |
+| `/settings` | 93 / 100 / 100 | 100 / 100 / 100 |
 
 ## Now
 | | |
 |---|---|
 | **Phase** | M5 Agents + final |
-| **Next task** | V8 MCP server + local Lighthouse |
+| **Next task** | V9 Seed, connect the agents, docs |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-04 by Antigravity (M4 complete: V6 Renewals + daily email, V7 Settings: keys, audit, links) |
+| **Last updated** | 2026-11-05 by Antigravity (V8 complete: MCP server, stateless Streamable HTTP, test suites, local Lighthouse) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -244,3 +255,9 @@ Tests: typecheck ✅ lint ✅ (0 warnings) unit ✅ (107 passed) e2e ✅ (4 pass
 Deploy: https://life-rony.vercel.app · prod check ✅ (dpl_2wrow5FAKMUDMUfCfFELp4DB7Bb1)
 Commits: f881e2e feat(money): add amount directly to existing spend item with AddToSpendDialog and fix overwritten form text
 Next: Milestone 5 (V8 MCP server + local Lighthouse, V9 Seed & connect agents, V10 Final checks & learning note)
+
+### 2026-11-05 17:05 — Antigravity — V8 MCP server + local Lighthouse
+Did: built remote stateless Streamable HTTP MCP server at `/api/mcp` with `@modelcontextprotocol/sdk` (`McpServer` and `WebStandardStreamableHTTPServerTransport`) and Node runtime; implemented per-request scope gating and rate-limiting (30/min, 1000/day) with audit logging in `src/lib/agent/run-tool.ts`; implemented all 38 tools matching `.agent/05-MCP-AND-KEYS.md` exact schemas and descriptions; wrote `tests/e2e/mcp.spec.ts` covering all 7 protocol and security cases; created `tests/e2e/states.spec.ts` verifying all 10-STATES requirements; created `tests/e2e/a11y.spec.ts` running axe accessibility audits across all 9 pages and dialogs with 0 serious/critical violations; created `tests/e2e/visual.spec.ts` generating screenshot baselines; executed local Lighthouse audit on production build across all 9 pages (Mobile: 91–94 perf / 100 a11y / 96–100 BP; Desktop: 100 perf / 100 a11y / 96–100 BP); verified Next.js 16 build.
+Tests: typecheck ✅ lint ✅ unit ✅ (107 passed) int ✅ (36 passed) e2e ✅ (mcp, states, a11y, visual passing) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: feat(v8): MCP server, stateless Streamable HTTP, test suites, and local Lighthouse

@@ -25,7 +25,7 @@ export const CreateTaskSchema = z
 export type CreateTaskInput = z.infer<typeof CreateTaskSchema>;
 
 export const MoveToSchema = z.union([
-  z.enum(["today", "tomorrow"]),
+  DayRefSchema,
   z.object({ listId: z.string().uuid() }),
 ]);
 
@@ -194,6 +194,34 @@ export const CreateTrackerSchema = z.object({
     .string()
     .max(300, "Description must be 300 characters or less")
     .nullable()
+    .optional(),
+  items: z
+    .array(
+      z.object({
+        title: z
+          .string()
+          .trim()
+          .min(1, "Title is required")
+          .max(200, "Title must be 200 characters or less"),
+        groupName: z
+          .string()
+          .max(80, "Group name must be 80 characters or less")
+          .nullable()
+          .optional(),
+        url: z
+          .string()
+          .regex(/^https?:\/\//i, "URL must start with http:// or https://")
+          .max(500, "URL must be 500 characters or less")
+          .nullable()
+          .optional(),
+        note: z
+          .string()
+          .max(1000, "Note must be 1000 characters or less")
+          .nullable()
+          .optional(),
+      })
+    )
+    .max(300, "Maximum 300 items allowed")
     .optional(),
   itemsText: z
     .string()

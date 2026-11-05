@@ -1,4 +1,6 @@
-import "server-only";
+if (typeof window !== "undefined") {
+  throw new Error("admin.ts can only be used on the server");
+}
 import { createClient } from "@supabase/supabase-js";
 
 /**
@@ -13,6 +15,9 @@ export function getAdminClient() {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    realtime: {
+      transport: class MockWS {} as any,
     },
   });
 }

@@ -536,6 +536,9 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
     editorProps: {
       attributes: {
         class: "focus:outline-none outline-none min-h-[500px] cursor-text",
+        "aria-label": "Canvas editor",
+        role: "textbox",
+        "tabindex": "0",
       },
       clipboardTextSerializer: (slice) => {
         return docToPlainText(slice);

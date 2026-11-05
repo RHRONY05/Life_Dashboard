@@ -79,7 +79,7 @@ export function AuditTable({
         {/* Filter dropdown */}
         <div className="relative inline-flex items-center">
           <Filter className="w-3.5 h-3.5 absolute left-2.5 text-ink-3 pointer-events-none" />
-          <select
+          <select aria-label="Filter activity by agent"
             value={agentFilter}
             onChange={(e) => onFilterChange(e.target.value)}
             className="input pl-8 pr-7 h-[34px] text-xs font-medium cursor-pointer appearance-none bg-surface"

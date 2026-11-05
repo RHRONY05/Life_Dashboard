@@ -131,7 +131,7 @@ export function rateLimit(timestamps: Date[], now: Date): RateLimitResult {
   // Filter and sort descending (newest first)
   const valid = timestamps
     .map((t) => t.getTime())
-    .filter((ms) => ms <= nowMs)
+    .filter((ms) => ms <= nowMs + 15000)
     .sort((a, b) => b - a);
 
   // Check rolling 60s

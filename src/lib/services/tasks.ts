@@ -35,6 +35,33 @@ function mapTask(t: TaskRow): TaskDto {
   };
 }
 
+export async function listTasks(
+  ctx: Ctx,
+  day: string,
+  todayParam?: string
+): Promise<{ day: string; tasks: TaskDto[] }> {
+  assertScope(ctx, "tasks:read");
+
+  const todayStr =
+    todayParam ||
+    todayIn(new Date(), process.env.APP_TIMEZONE || "Asia/Dhaka");
+  const resolvedDay = resolveDayRef(day, todayStr);
+
+  const { data, error } = await ctx.db
+    .from("tasks")
+    .select("*")
+    .eq("user_id", ctx.userId)
+    .eq("due_on", resolvedDay)
+    .order("position", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const tasks = (data || []).map(mapTask);
+  return { day: resolvedDay, tasks };
+}
+
 export async function getBoard(
   ctx: Ctx,
   todayParam?: string
@@ -235,12 +262,13 @@ export async function updateTask(
   // Group 2: Move task
   if ("moveTo" in input) {
     if (task.done_at !== null) {
-      throw new ConflictError("TASK_ALREADY_DONE", "You can't move a completed task.");
+      throw new ConflictError("task_done", "You can't move a completed task.");
     }
 
     const moveTo = input.moveTo;
     if (typeof moveTo === "string") {
       const targetDay = resolveDayRef(moveTo, todayStr);
+      assertNotPast(targetDay, todayStr);
       if (task.due_on === targetDay) {
         return mapTask(task); // No-op
       }

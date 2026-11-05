@@ -183,7 +183,12 @@ export function TodayBoard({
         }));
       }
     } catch {
-      toast.error("Couldn't add task. Try again.");
+      toast.error("Something went wrong on our side.", {
+        action: {
+          label: "Retry",
+          onClick: () => handleAddTask(title, columnOrListId),
+        },
+      });
     }
   };
 

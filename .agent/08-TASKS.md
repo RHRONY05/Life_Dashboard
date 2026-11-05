@@ -158,7 +158,7 @@ M3b (Canvas v2 + Money v2) is done after M3 and before V6, in the order V3c → 
 
 <!-- ─── end of M4: stop here and give the milestone report ─── -->
 
-- [ ] **V8 MCP server + local Lighthouse**
+- [x] **V8 MCP server + local Lighthouse** — Antigravity (2026-11-05)
   - `src/lib/agent/auth.ts` (`requireAgent`, rate limit), `agent/tools.ts` (all 38 tools of 05 §4, exact descriptions, schemas from `schemas.ts`), `agent/run-tool.ts` (05 §2 steps 3–4 and the error table), `src/app/api/mcp/route.ts` (stateless, JSON, Node runtime). Per-request tool registration by scope.
   - Write the code for learning: a short header comment in each of these 4 files explaining its job in the request flow (05 §2), no more.
   - **Tests:** e2e `mcp.spec.ts` (all 7 cases), `states.spec.ts` (10-STATES §6), `a11y.spec.ts`, `visual.spec.ts` (baselines after comparing with the design by eye).

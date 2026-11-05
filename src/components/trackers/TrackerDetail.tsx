@@ -415,7 +415,7 @@ export function TrackerDetail({
 
       {/* 100% Done celebratory banner (10-STATES) */}
       {pct === 100 && tracker.total > 0 && (
-        <div className="flex items-center gap-3 p-3 mb-4 rounded bg-[var(--success-soft)] text-[var(--success-text)] font-semibold text-sm">
+        <div className="tracker-finished-banner flex items-center gap-3 p-3 mb-4 rounded bg-[var(--success-soft)] text-[var(--success-text)] font-semibold text-sm">
           <Illustration name="tracker-done" size="sm" className="w-12 h-10 flex-none" />
           <div>
             <div className="text-[var(--success-text)] font-bold">

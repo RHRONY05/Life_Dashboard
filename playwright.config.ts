@@ -44,6 +44,7 @@ export default defineConfig({
     {
       name: "desktop",
       dependencies: ["setup"],
+      testIgnore: ["**/*.api.spec.ts", "**/mcp.spec.ts"],
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1440, height: 900 },
@@ -53,6 +54,7 @@ export default defineConfig({
     {
       name: "mobile",
       dependencies: ["setup"],
+      testIgnore: ["**/*.api.spec.ts", "**/mcp.spec.ts"],
       use: {
         ...devices["Pixel 5"],
         viewport: { width: 390, height: 844 },
@@ -63,7 +65,7 @@ export default defineConfig({
     },
     {
       name: "api",
-      testMatch: /.*\.api\.spec\.ts/,
+      testMatch: ["**/*.api.spec.ts", "**/mcp.spec.ts"],
     },
   ],
   webServer: {
