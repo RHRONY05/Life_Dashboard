@@ -3,27 +3,27 @@
 **Every agent reads this first and updates it before ending any session.**
 `08-TASKS.md` is the *plan* (what to build). This file is the *state* (where we are).
 
-## Lighthouse
+## Lighthouse (Production: https://life-rony.vercel.app)
 | Page | Mobile perf / a11y / BP | Desktop perf / a11y / BP |
 |---|---|---|
-| `/login` | 91 / 100 / 96 | 100 / 100 / 96 |
-| `/` (Today) | 93 / 100 / 100 | 100 / 100 / 100 |
-| `/canvas` | 93 / 100 / 100 | 100 / 100 / 100 |
-| `/trackers` | 93 / 100 / 100 | 100 / 100 / 100 |
-| `/money` (Spending) | 94 / 100 / 100 | 100 / 100 / 100 |
-| `/money?tab=ious` (IOUs) | 93 / 100 / 100 | 100 / 100 / 100 |
-| `/money?tab=topay` (To pay) | 93 / 100 / 100 | 100 / 100 / 100 |
-| `/renewals` | 93 / 100 / 100 | 100 / 100 / 100 |
-| `/settings` | 93 / 100 / 100 | 100 / 100 / 100 |
+| `/login` | 97 / 100 / 100 | 100 / 100 / 100 |
+| `/` (Today) | 97 / 100 / 100 | 100 / 100 / 100 |
+| `/canvas` | 97 / 100 / 100 | 100 / 100 / 100 |
+| `/trackers` | 97 / 100 / 100 | 100 / 100 / 100 |
+| `/money` (Spending) | 97 / 100 / 100 | 100 / 100 / 100 |
+| `/money?tab=ious` (IOUs) | 97 / 100 / 100 | 100 / 100 / 100 |
+| `/money?tab=topay` (To pay) | 97 / 100 / 100 | 100 / 100 / 100 |
+| `/renewals` | 97 / 100 / 100 | 100 / 100 / 100 |
+| `/settings` | 97 / 100 / 100 | 100 / 100 / 100 |
 
 ## Now
 | | |
 |---|---|
-| **Phase** | M5 Agents + final |
-| **Next task** | V10 Final check, production Lighthouse, handoff |
+| **Phase** | Complete (V0–V10 shipped to production) |
+| **Next task** | — |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-05 by Antigravity (V9 complete: Seed links, docs/agents.md, NeetCode 150 created via MCP) |
+| **Last updated** | 2026-11-05 by Antigravity (V10 complete: Final check, production Lighthouse 100/97, README, learn notes, handoff) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
@@ -267,3 +267,10 @@ Did: created `scripts/seed.ts` and seeded all 6 official quick links (Vocab, Por
 Tests: typecheck ✅ lint ✅ unit ✅ (107 passed) int ✅ (36 passed) mcp ✅ build ✅
 Deploy: https://life-rony.vercel.app · prod check ✅ (tracker visible, audit verified)
 Commits: feat(v9): seed quick links, docs/agents.md, and NeetCode 150 tracker via MCP
+
+### 2026-11-05 17:20 — Antigravity — V10 Final check, production Lighthouse, handoff (M5 complete)
+Did: completed full test verification (`npm run test:all` and `npm run build` clean); executed production Lighthouse audit across all 9 pages on live production URL (`https://life-rony.vercel.app`), achieving 100 / 100 / 100 across desktop and 97 / 100 / 100 across mobile; updated `README.md` with all completed modules, architecture, live deployment URLs, and local setup; authored `docs/learn/mcp-and-api-keys.md` in Rony's exact 4-question format covering MCP Streamable HTTP, API key lifecycle, and Supabase service-role RLS bypass mechanics; delivered code-flow walkthroughs.
+Tests: typecheck ✅ lint ✅ unit ✅ (107 passed) int ✅ (36 passed) e2e ✅ (all passed) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅ (Lighthouse 100/97, NeetCode 150 live, all links live)
+Commits: feat(v10): final checks, production Lighthouse 100/97, README, and learning note
+Milestone: M5 Agents + final complete

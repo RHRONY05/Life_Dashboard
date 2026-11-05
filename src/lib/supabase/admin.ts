@@ -17,7 +17,7 @@ export function getAdminClient() {
       persistSession: false,
     },
     realtime: {
-      transport: class MockWS {} as any,
+      transport: class MockWS {} as unknown as typeof WebSocket,
     },
   });
 }

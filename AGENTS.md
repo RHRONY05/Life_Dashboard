@@ -68,7 +68,7 @@ the finished app and reads the code-flow walkthrough; he doesn't write code.
 - [x] M3 Trackers + Money (V4–V5)
 - [x] M3b Canvas v2 + Money v2 (V3c, V3d, V5a, V5b)
 - [x] M4 Renewals + Settings (V6–V7)
-- [ ] M5 Agents + final (V8–V10)
+- [x] M5 Agents + final (V8–V10)
 
 <!-- BEGIN:nextjs-agent-rules -->
 

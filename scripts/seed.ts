@@ -33,7 +33,7 @@ const SEED_LINKS = [
     url: "https://www.linkedin.com/in/rhrony05/",
     icon: "linkedin",
   },
-];
+] as const;
 
 async function seed() {
   console.log("=== Seeding Quick Links (V9) ===");

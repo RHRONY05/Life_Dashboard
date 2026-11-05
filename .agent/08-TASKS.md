@@ -173,7 +173,7 @@ M3b (Canvas v2 + Money v2) is done after M3 and before V6, in the order V3c → 
   - Human steps added: create keys for Muse and Claude Code in Settings and paste the configs (docs/agents.md), give Muse the routine text, add renewals and money from the notes app (or ask an agent).
   - **AC:** the production Activity log shows Antigravity's `create_tracker "NeetCode 150" (150 items)` call with result ok; the tracker shows 150 items in its groups on production; links show on Today.
 
-- [ ] **V10 Final check, production Lighthouse, handoff**
+- [x] **V10 Final check, production Lighthouse, handoff** — Antigravity (2026-11-05)
   - `npm run test:all` and `npm run build` green.
   - Lighthouse on the **production URL**, mobile + desktop, 9 pages. Fix, redeploy, re-run. Final table in PROGRESS.md.
   - `README.md`: what it is, local setup, env vars, scripts, tests, deploy, MCP connection (link docs/agents.md).

@@ -5,6 +5,7 @@ import { createTestAgentKey } from "../helpers/agent-key";
 import { resetUserData, getE2EUserId } from "../helpers/reset";
 import { getAdminClient } from "@/lib/supabase/admin";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseContent(res: any): any {
   return JSON.parse(res.content[0].text);
 }
@@ -278,7 +279,8 @@ test.describe("MCP Server E2E (Streamable HTTP)", () => {
     });
 
     expect(limitedRes.isError).toBe(true);
-    const text = (limitedRes as any).content[0].text;
+    const content = (limitedRes as { content?: Array<{ type: string; text?: string }> }).content;
+    const text = content?.[0]?.text ?? "";
     expect(text).toMatch(/^rate_limited: try again in \d+ seconds$/);
 
     await client.close();
@@ -380,7 +382,8 @@ test.describe("MCP Server E2E (Streamable HTTP)", () => {
       },
     });
     expect(replaceRes.isError).toBe(true);
-    const replaceErrText = (replaceRes as any).content[0].text;
+    const replaceContent = (replaceRes as { content?: Array<{ type: string; text?: string }> }).content;
+    const replaceErrText = replaceContent?.[0]?.text ?? "";
     expect(replaceErrText).toContain("conflict: stale");
 
     await client.close();
