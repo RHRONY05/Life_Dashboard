@@ -102,6 +102,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
   const [activeNote, setActiveNote] = useState<NoteDto | null>(null);
   const [activeNoteTitle, setActiveNoteTitle] = useState<string>("");
   const initialActiveNoteIdRef = useRef<string | null>(null);
+  const isTabsRestoredRef = useRef<boolean>(false);
 
   // Tabs state: up to 8 page tabs + Scratch (Scratch is active when activeNoteId === null)
   const [openTabs, setOpenTabs] = useState<string[]>([]);
@@ -192,6 +193,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
             } catch {
               // ignore
             }
+            isTabsRestoredRef.current = true;
           }
         }
       })
@@ -203,7 +205,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
   // Persist open tabs to localStorage
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !isTabsRestoredRef.current) return;
     try {
       localStorage.setItem(
         `life-canvas-tabs-${userId}`,
@@ -675,7 +677,10 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
           triggerNoteSave();
         }, 800);
       } else {
-        // Scratch: 500ms debounce save to IndexedDB
+        // Scratch: Keep in-memory ref immediately in sync!
+        scratchDocRef.current = json;
+
+        // 500ms debounce save to IndexedDB & localStorage
         setScratchSaveStatus("saving");
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(async () => {
@@ -766,17 +771,31 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       window.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("pagehide", handleVisibility);
       window.removeEventListener("beforeunload", handleBeforeUnload);
+
+      // Flush pending Scratch save on unmount if on Scratch
+      if (!activeNoteIdRef.current && editorRef.current && !isReadOnly) {
+        try {
+          const currentDoc = editorRef.current.getJSON();
+          scratchDocRef.current = currentDoc;
+          saveScratch(userId, currentDoc);
+        } catch {}
+      }
     };
   }, [editor, isReadOnly, userId, noteSaveStatus, triggerNoteSave]);
 
   // Select Scratch
   const handleSelectScratch = useCallback(async () => {
+    const outgoingId = activeNoteIdRef.current;
+    // If already on Scratch, don't interrupt active typing or clear pending saves
+    if (outgoingId === null) {
+      setMobileTab("scratch");
+      return;
+    }
+
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
       saveTimerRef.current = null;
     }
-
-    const outgoingId = activeNoteIdRef.current;
     const outgoingNote = activeNoteRef.current;
     const outgoingTitle = activeNoteTitleRef.current;
 

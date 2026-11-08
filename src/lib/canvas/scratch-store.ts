@@ -52,11 +52,80 @@ export async function getScratchDB(userId: string): Promise<IDBPDatabase> {
   return dbInstance;
 }
 
+function getLocalStorageKey(userId: string): string {
+  return userId ? `life-scratch-backup-${userId}` : "life-scratch-backup-default";
+}
+
+function saveToLocalStorageBackup(userId: string, record: ScratchRecord): void {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    const serialized = JSON.stringify(record);
+    if (serialized.length < 2 * 1024 * 1024) {
+      window.localStorage.setItem(getLocalStorageKey(userId), serialized);
+      window.localStorage.setItem("life-scratch-backup-latest", serialized);
+    }
+  } catch {
+    // ignore quota or private browsing errors
+  }
+}
+
+function loadFromLocalStorageBackup(userId: string): ScratchRecord | null {
+  if (typeof window === "undefined" || !window.localStorage) return null;
+  try {
+    const raw =
+      window.localStorage.getItem(getLocalStorageKey(userId)) ||
+      window.localStorage.getItem("life-scratch-backup-latest");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+export function isDocEmpty(doc: unknown): boolean {
+  if (!doc || typeof doc !== "object") return true;
+  const d = doc as { content?: Array<{ type?: string; text?: string; content?: unknown[] }> };
+  if (!d.content || !Array.isArray(d.content) || d.content.length === 0) return true;
+  if (d.content.length === 1) {
+    const first = d.content[0];
+    if (first.type === "paragraph" && (!first.content || first.content.length === 0) && !first.text) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export async function loadScratch(userId: string): Promise<ScratchRecord | null> {
-  if (!isIndexedDBAvailable()) return null;
-  const db = await getScratchDB(userId);
-  const data = await db.get("scratch", "main");
-  return data || null;
+  let idbData: ScratchRecord | null = null;
+  if (isIndexedDBAvailable()) {
+    try {
+      const db = await getScratchDB(userId);
+      idbData = (await db.get("scratch", "main")) || null;
+    } catch (err) {
+      console.warn("IndexedDB load failed, falling back to localStorage", err);
+    }
+  }
+
+  const localBackup = loadFromLocalStorageBackup(userId);
+
+  if (idbData && localBackup) {
+    const isIdbEmpty = isDocEmpty(idbData.doc);
+    const isLocalEmpty = isDocEmpty(localBackup.doc);
+
+    // If IDB was wiped with an empty doc but localStorage has real content, recover from localStorage!
+    if (isIdbEmpty && !isLocalEmpty) {
+      return localBackup;
+    }
+    if (!isIdbEmpty && isLocalEmpty) {
+      return idbData;
+    }
+
+    const idbTime = new Date(idbData.updatedAt || 0).getTime();
+    const localTime = new Date(localBackup.updatedAt || 0).getTime();
+    return localTime > idbTime ? localBackup : idbData;
+  }
+
+  return idbData || localBackup || null;
 }
 
 export async function saveScratch(userId: string, doc: CanvasDocNode | unknown): Promise<ScratchRecord> {
@@ -65,20 +134,36 @@ export async function saveScratch(userId: string, doc: CanvasDocNode | unknown):
     updatedAt: new Date().toISOString(),
   };
 
+  // Synchronously mirror to localStorage as immediate fail-safe
+  saveToLocalStorageBackup(userId, record);
+
   if (!isIndexedDBAvailable()) return record;
-  const db = await getScratchDB(userId);
-  await db.put("scratch", record, "main");
+  try {
+    const db = await getScratchDB(userId);
+    await db.put("scratch", record, "main");
+  } catch (err) {
+    console.warn("IndexedDB save failed, backed up in localStorage", err);
+  }
   return record;
 }
 
 export async function clearScratch(userId: string): Promise<void> {
-  if (!isIndexedDBAvailable()) return;
-  const db = await getScratchDB(userId);
   const emptyDoc = {
     type: "doc",
     content: [{ type: "paragraph" }],
   };
-  await db.put("scratch", { doc: emptyDoc, updatedAt: new Date().toISOString() }, "main");
+  const record: ScratchRecord = {
+    doc: emptyDoc,
+    updatedAt: new Date().toISOString(),
+  };
+
+  saveToLocalStorageBackup(userId, record);
+
+  if (!isIndexedDBAvailable()) return;
+  try {
+    const db = await getScratchDB(userId);
+    await db.put("scratch", record, "main");
+  } catch {}
 }
 
 export async function saveImageToIdb(
