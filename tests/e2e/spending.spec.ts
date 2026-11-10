@@ -128,6 +128,16 @@ test.describe("Spending E2E", () => {
 
     // Verify Rickshaw amount increased from ৳25 to ৳40
     await expect(page.locator(".spend").filter({ hasText: "Rickshaw" })).toContainText("৳40");
+
+    // Verify reloading page shows days collapsed by default
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    const reloadedToggle = page.locator(".day-head button[aria-expanded]").first();
+    await expect(reloadedToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator(".spend").first()).not.toBeVisible();
+    await reloadedToggle.click();
+    await expect(reloadedToggle).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator(".spend").first()).toBeVisible();
   });
 
   test("mobile: adds and views spend", async ({ page, isMobile }) => {

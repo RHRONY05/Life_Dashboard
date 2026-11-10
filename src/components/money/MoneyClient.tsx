@@ -106,6 +106,7 @@ export function MoneyClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMatchCount, setSearchMatchCount] = useState<number | undefined>();
   const [searchMatchTotal, setSearchMatchTotal] = useState<number | undefined>();
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(() => new Set());
 
   const quickSpendRef = useRef<QuickSpendRef>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -350,6 +351,32 @@ export function MoneyClient({
     const catLabel =
       input.category.charAt(0).toUpperCase() + input.category.slice(1);
     showToast(`Added ${formatTaka(input.amount)} · ${catLabel}`);
+
+    const targetDay = input.spentOn || today;
+    setExpandedDays((prev) => {
+      const next = new Set(prev);
+      next.add(targetDay);
+      return next;
+    });
+  };
+
+  const handleToggleDay = (day: string) => {
+    setExpandedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(day)) next.delete(day);
+      else next.add(day);
+      return next;
+    });
+  };
+
+  const handleToggleAllDays = () => {
+    const allDays = days.map((d) => d.day);
+    const allExpanded = allDays.length > 0 && allDays.every((d) => expandedDays.has(d));
+    if (allExpanded) {
+      setExpandedDays(new Set());
+    } else {
+      setExpandedDays(new Set(allDays));
+    }
   };
 
   const handleUpdateExpense = async (
@@ -983,6 +1010,9 @@ export function MoneyClient({
                 searchMatchCount={searchMatchCount}
                 searchMatchTotal={searchMatchTotal}
                 searchInputRef={searchInputRef}
+                expandedDays={expandedDays}
+                onToggleDay={handleToggleDay}
+                onToggleAllDays={handleToggleAllDays}
               />
             </section>
 

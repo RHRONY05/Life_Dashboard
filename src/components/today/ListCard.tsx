@@ -74,12 +74,30 @@ export function ListCard({
 }: ListCardProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [doneExpanded, setDoneExpanded] = useState(false);
+  const [seeMoreExpanded, setSeeMoreExpanded] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [nameValue, setNameValue] = useState(list.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showClearDoneConfirm, setShowClearDoneConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isClearingDone, setIsClearingDone] = useState(false);
+
+  const INITIAL_VISIBLE_COUNT = 4;
+
+  const isSeeMoreExpanded =
+    seeMoreExpanded ||
+    Boolean(
+      focusedTaskId &&
+        list.open
+          .slice(INITIAL_VISIBLE_COUNT)
+          .some((t) => t.id === focusedTaskId)
+    );
+
+  const visibleOpenTasks = isSeeMoreExpanded
+    ? list.open
+    : list.open.slice(0, INITIAL_VISIBLE_COUNT);
+
+  const hiddenOpenCount = list.open.length - visibleOpenTasks.length;
 
   const handleSaveRename = async () => {
     const trimmed = nameValue.trim();
@@ -126,7 +144,7 @@ export function ListCard({
 
   return (
     <>
-      <section className="lcard">
+      <section className={`lcard ${collapsed ? "is-collapsed" : ""}`}>
         {/* Header */}
         <div className="col-head">
           {isRenaming ? (
@@ -231,7 +249,7 @@ export function ListCard({
               </div>
             )}
 
-            {list.open.map((t) => (
+            {visibleOpenTasks.map((t) => (
               <TaskRow
                 key={t.id}
                 task={t}
@@ -245,6 +263,28 @@ export function ListCard({
                 onReorder={onReorderTask}
               />
             ))}
+
+            {/* See more / See less button */}
+            {list.open.length > INITIAL_VISIBLE_COUNT && (
+              <button
+                type="button"
+                onClick={() => setSeeMoreExpanded(!isSeeMoreExpanded)}
+                className="see-more-btn"
+                aria-expanded={isSeeMoreExpanded}
+              >
+                {isSeeMoreExpanded ? (
+                  <>
+                    <ChevronUp className="w-3.5 h-3.5" />
+                    <span>See less</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-3.5 h-3.5" />
+                    <span>See more ({hiddenOpenCount} more)</span>
+                  </>
+                )}
+              </button>
+            )}
 
             {/* Done toggle bar */}
             {list.done.length > 0 && (

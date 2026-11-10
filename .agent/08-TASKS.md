@@ -194,6 +194,7 @@ Fixes and changes Rony asks for in chat, outside a task above. One line each, ne
 - 2026-11-04 · Canvas multi-select image highlight (`.cimg.sel`), dedicated Export as PDF button (`window.print()` / `Ctrl+P`) with clean print stylesheet, and sticky navbar navigation · `06`, `07 §8.3`
 - 2026-11-04 · Canvas multi-page content isolation fix (debounce cancellation on switch, isolated outgoing save args, active ID guard in performNoteSave callback, editor clearing on cache miss), 3-dots dropdown menu positioning fix via :has([data-state="open"]) and touch media queries in ui.css · `06`, `07 §8.9`
 - 2026-11-05 · Renewal cron reminder recipient safety check (skip non-owner/test users in production, prevent test seed rows from emailing owner), integration test teardown cleanup with afterAll · `07 §4.4`
+- 2026-11-10 · Today board & Lists compact height (min-height 280px) with initial 4 visible tasks and 'See more'/'See less' button; Money spending day groups collapsed by default and open on click / auto-expand on spend add · `06`
 
 ## Questions for the human
 (Agents add questions here; the human answers inline.)

@@ -49,6 +49,9 @@ interface SpendListProps {
   searchMatchCount?: number;
   searchMatchTotal?: number;
   searchInputRef?: React.RefObject<HTMLInputElement | null>;
+  expandedDays?: Set<string>;
+  onToggleDay?: (day: string) => void;
+  onToggleAllDays?: () => void;
 }
 
 const CATEGORY_ICONS: Record<
@@ -110,6 +113,9 @@ export function SpendList({
   searchMatchCount,
   searchMatchTotal,
   searchInputRef,
+  expandedDays: propsExpandedDays,
+  onToggleDay: propsOnToggleDay,
+  onToggleAllDays: propsOnToggleAllDays,
 }: SpendListProps) {
   const [selectedExpense, setSelectedExpense] = useState<ExpenseDto | null>(
     null
@@ -119,7 +125,9 @@ export function SpendList({
   const [addDialogDate, setAddDialogDate] = useState<string>("");
   const [addToSpendOpen, setAddToSpendOpen] = useState(false);
   const [addToSpendExpense, setAddToSpendExpense] = useState<ExpenseDto | null>(null);
-  const [collapsedDays, setCollapsedDays] = useState<Set<string>>(() => new Set());
+  const [internalExpandedDays, setInternalExpandedDays] = useState<Set<string>>(() => new Set());
+
+  const activeExpandedDays = propsExpandedDays ?? internalExpandedDays;
 
   const today = todayIn(new Date(), "Asia/Dhaka");
   const yesterday = addDays(today, -1);
@@ -128,22 +136,30 @@ export function SpendList({
   const isSearching = Boolean(searchQuery.trim());
 
   const allDays = days.map((d) => d.day);
-  const allCollapsed = allDays.length > 0 && allDays.every((d) => collapsedDays.has(d));
+  const allExpanded = allDays.length > 0 && allDays.every((d) => activeExpandedDays.has(d));
 
   const toggleDay = (day: string) => {
-    setCollapsedDays((prev) => {
-      const next = new Set(prev);
-      if (next.has(day)) next.delete(day);
-      else next.add(day);
-      return next;
-    });
+    if (propsOnToggleDay) {
+      propsOnToggleDay(day);
+    } else {
+      setInternalExpandedDays((prev) => {
+        const next = new Set(prev);
+        if (next.has(day)) next.delete(day);
+        else next.add(day);
+        return next;
+      });
+    }
   };
 
   const toggleAllDays = () => {
-    if (allCollapsed) {
-      setCollapsedDays(new Set());
+    if (propsOnToggleAllDays) {
+      propsOnToggleAllDays();
     } else {
-      setCollapsedDays(new Set(allDays));
+      if (allExpanded) {
+        setInternalExpandedDays(new Set());
+      } else {
+        setInternalExpandedDays(new Set(allDays));
+      }
     }
   };
 
@@ -155,16 +171,17 @@ export function SpendList({
   const handleAddSubmit = async (input: CreateExpenseInput) => {
     if (onAddExpense) {
       await onAddExpense(input);
-      // Auto-uncollapse the day so the user sees the newly added spend
-      setCollapsedDays((prev) => {
-        const next = new Set(prev);
-        if (input.spentOn) {
-          next.delete(input.spentOn);
-        } else {
-          next.delete(today);
-        }
-        return next;
-      });
+      // Auto-expand the day so the user sees the newly added spend
+      const targetDay = input.spentOn || today;
+      if (propsOnToggleDay && !activeExpandedDays.has(targetDay)) {
+        propsOnToggleDay(targetDay);
+      } else if (!propsOnToggleDay) {
+        setInternalExpandedDays((prev) => {
+          const next = new Set(prev);
+          next.add(targetDay);
+          return next;
+        });
+      }
     }
   };
 
@@ -250,14 +267,14 @@ export function SpendList({
                 onClick={toggleAllDays}
                 className="text-[var(--ink-3)] hover:text-[var(--ink)] font-medium transition-colors cursor-pointer"
               >
-                {allCollapsed ? "Expand all days" : "Collapse all days"}
+                {allExpanded ? "Collapse all days" : "Expand all days"}
               </button>
             </div>
           )}
 
           {days.map((dayGroup) => {
             const dayHeader = formatDayLabel(dayGroup.day, today, yesterday);
-            const isCollapsed = collapsedDays.has(dayGroup.day);
+            const isExpanded = isSearching || activeExpandedDays.has(dayGroup.day);
 
             return (
               <div key={dayGroup.day}>
@@ -266,14 +283,14 @@ export function SpendList({
                     type="button"
                     onClick={() => toggleDay(dayGroup.day)}
                     className="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer group py-0.5"
-                    aria-expanded={!isCollapsed}
-                    title={isCollapsed ? `Expand ${dayHeader}` : `Collapse ${dayHeader}`}
+                    aria-expanded={isExpanded}
+                    title={isExpanded ? `Collapse ${dayHeader}` : `Expand ${dayHeader}`}
                   >
                     <span className="p-0.5 text-[var(--ink-3)] group-hover:text-[var(--ink)] transition-colors">
-                      {isCollapsed ? (
-                        <ChevronRight className="w-3.5 h-3.5 flex-none" />
-                      ) : (
+                      {isExpanded ? (
                         <ChevronDown className="w-3.5 h-3.5 flex-none" />
+                      ) : (
+                        <ChevronRight className="w-3.5 h-3.5 flex-none" />
                       )}
                     </span>
                     <span className="font-semibold text-[var(--text-xs)] uppercase tracking-wider text-[var(--ink-3)] group-hover:text-[var(--ink)] transition-colors truncate">
@@ -305,7 +322,7 @@ export function SpendList({
                   </div>
                 </div>
 
-                {!isCollapsed && (
+                {isExpanded && (
                   <div>
                     {dayGroup.expenses.map((expense) => {
                       const Icon =

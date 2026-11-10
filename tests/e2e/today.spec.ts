@@ -134,4 +134,38 @@ test.describe("Today Board E2E", () => {
     await switcher.getByRole("button", { name: /Lists/i }).click();
     await expect(page.locator(".lists-head").getByRole("heading", { name: "Lists" })).toBeVisible();
   });
+
+  test("desktop: shows See more button when tasks exceed initial count (4) and toggles See less", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "Desktop only test");
+
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    const todayInput = page.getByPlaceholder("Add a task…").first();
+    const timestamp = Date.now();
+
+    // Add 5 tasks to Today
+    for (let i = 1; i <= 5; i++) {
+      await todayInput.fill(`Batch task ${timestamp} - ${i}`);
+      await todayInput.press("Enter");
+      await page.waitForTimeout(100);
+    }
+
+    const todayCol = page.locator(".col.is-today");
+    const seeMoreBtn = todayCol.locator("button.see-more-btn");
+    await expect(seeMoreBtn).toBeVisible();
+    await expect(seeMoreBtn).toContainText(/See more/i);
+
+    // Click See more to expand
+    await seeMoreBtn.click();
+    await expect(seeMoreBtn).toContainText(/See less/i);
+    await expect(todayCol.locator(".task", { hasText: `Batch task ${timestamp} - 5` })).toBeVisible();
+
+    // Click See less to collapse
+    await seeMoreBtn.click();
+    await expect(seeMoreBtn).toContainText(/See more/i);
+  });
 });

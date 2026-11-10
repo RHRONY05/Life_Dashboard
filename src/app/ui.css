@@ -158,7 +158,7 @@ kbd { font-family: var(--font-mono); font-size: 11px; line-height: 16px; padding
 }
 
 /* DayColumn */
-.col { background: var(--surface); border: var(--card-border); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); min-height: 560px; display: flex; flex-direction: column; }
+.col { background: var(--surface); border: var(--card-border); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); min-height: 280px; display: flex; flex-direction: column; }
 .col.is-today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow-md); }
 .col.is-past { background: color-mix(in srgb, var(--surface) 70%, var(--bg)); }
 .col-head { display: flex; align-items: baseline; gap: 8px; padding: 16px 16px 12px; }
@@ -513,12 +513,36 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
 @media (max-width: 1023px) {
   .lists-grid { display: flex; flex-direction: column; gap: 12px; }
 }
-.lcard { background: var(--surface); border: var(--card-border); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); display: flex; flex-direction: column; }
+.lcard { background: var(--surface); border: var(--card-border); border-radius: var(--radius-lg); box-shadow: var(--card-shadow); min-height: 280px; display: flex; flex-direction: column; }
+.lcard.is-collapsed { min-height: auto; }
 .lcard .col-head { padding: 12px 10px 10px 16px; align-items: center; }
 .lcard .col-title { font-size: var(--text-sm); }
 .lcard .lcount { font-size: var(--text-xs); font-weight: 600; color: var(--ink-3); }
 .lcard .lhead-actions { margin-left: auto; display: flex; gap: 2px; }
 .lcard .task-input { height: 36px; }
+.see-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 12px;
+  margin: 6px 0 2px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--line);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.see-more-btn:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
 .done-toggle { display: flex; align-items: center; gap: 6px; margin: 2px 8px 8px; padding: 0 8px; height: 32px; border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; color: var(--ink-3); }
 .done-toggle .grow { flex: 1; }
 .done-toggle a { color: var(--ink-2); font-weight: 600; }

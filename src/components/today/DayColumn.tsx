@@ -59,7 +59,10 @@ export function DayColumn({
     if (typeof window === "undefined") return false;
     return localStorage.getItem("life_older_unfinished_expanded") === "true";
   });
+  const [seeMoreExpanded, setSeeMoreExpanded] = useState(false);
   const [movingAll, setMovingAll] = useState(false);
+
+  const INITIAL_VISIBLE_COUNT = 4;
 
   const toggleOlder = () => {
     const next = !olderExpanded;
@@ -80,6 +83,33 @@ export function DayColumn({
   const openTasks = tasks.filter((t) => !t.done);
   const doneTasks = tasks.filter((t) => t.done);
   const counts = columnCounts(tasks);
+
+  const hasOverflow = tasks.length > INITIAL_VISIBLE_COUNT;
+
+  const isSeeMoreExpanded =
+    seeMoreExpanded ||
+    Boolean(
+      focusedTaskId &&
+        (openTasks.slice(INITIAL_VISIBLE_COUNT).some((t) => t.id === focusedTaskId) ||
+          doneTasks
+            .slice(Math.max(0, INITIAL_VISIBLE_COUNT - openTasks.length))
+            .some((t) => t.id === focusedTaskId))
+    );
+
+  const visibleOpenTasks = isSeeMoreExpanded
+    ? openTasks
+    : openTasks.slice(0, INITIAL_VISIBLE_COUNT);
+
+  const remainingSlotsForDone = Math.max(
+    0,
+    INITIAL_VISIBLE_COUNT - openTasks.length
+  );
+  const visibleDoneTasks = isSeeMoreExpanded
+    ? doneTasks
+    : doneTasks.slice(0, remainingSlotsForDone);
+
+  const hiddenCount =
+    tasks.length - (visibleOpenTasks.length + visibleDoneTasks.length);
 
   // Date formatted: "Mon 2 Nov"
   let formattedDate = "";
@@ -171,7 +201,7 @@ export function DayColumn({
         )}
 
         {/* Open tasks */}
-        {openTasks.map((t) => (
+        {visibleOpenTasks.map((t) => (
           <TaskRow
             key={t.id}
             task={t}
@@ -199,10 +229,10 @@ export function DayColumn({
         )}
 
         {/* Done divider and tasks */}
-        {doneTasks.length > 0 && (
+        {visibleDoneTasks.length > 0 && (
           <>
             <div className="sep-done">Done</div>
-            {doneTasks.map((t) => (
+            {visibleDoneTasks.map((t) => (
               <TaskRow
                 key={t.id}
                 task={t}
@@ -216,6 +246,28 @@ export function DayColumn({
               />
             ))}
           </>
+        )}
+
+        {/* See more / See less button */}
+        {hasOverflow && (
+          <button
+            type="button"
+            onClick={() => setSeeMoreExpanded(!isSeeMoreExpanded)}
+            className="see-more-btn"
+            aria-expanded={isSeeMoreExpanded}
+          >
+            {isSeeMoreExpanded ? (
+              <>
+                <ChevronUp className="w-3.5 h-3.5" />
+                <span>See less</span>
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3.5 h-3.5" />
+                <span>See more ({hiddenCount} more)</span>
+              </>
+            )}
+          </button>
         )}
       </div>
 
