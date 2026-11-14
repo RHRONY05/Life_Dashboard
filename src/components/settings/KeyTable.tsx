@@ -171,26 +171,26 @@ export function KeyTable({ keys, onRevoke, onNewKey }: KeyTableProps) {
         {keys.map((k) => {
           const isRevoked = k.revokedAt !== null;
           return (
-            <div key={k.id} className="p-3.5 flex flex-col gap-2">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <b className={isRevoked ? "text-ink-3 font-normal text-sm" : "font-semibold text-ink text-sm"}>
+            <div key={k.id} className="p-3.5 flex flex-col gap-2 min-w-0 overflow-hidden">
+              <div className="flex items-start justify-between gap-2 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <b className={`truncate block ${isRevoked ? "text-ink-3 font-normal text-sm" : "font-semibold text-ink text-sm"}`}>
                     {k.name}
                   </b>
-                  <div className="text-xs text-ink-3 font-mono mt-0.5">
+                  <div className="text-xs text-ink-3 font-mono mt-0.5 truncate">
                     {k.prefix}… · {isRevoked ? `revoked ${formatDate(k.revokedAt!)}` : `used ${formatRelative(k.lastUsedAt)}`}
                   </div>
                 </div>
                 {!isRevoked && (
                   <button
                     onClick={() => onRevoke(k)}
-                    className="btn btn-ghost btn-sm text-danger text-xs px-2 h-8"
+                    className="btn btn-ghost btn-sm text-danger text-xs px-2 h-8 flex-shrink-0"
                   >
                     Revoke
                   </button>
                 )}
               </div>
-              <div>{renderScopeChips(k.scopes)}</div>
+              <div className="min-w-0 max-w-full overflow-hidden">{renderScopeChips(k.scopes)}</div>
             </div>
           );
         })}

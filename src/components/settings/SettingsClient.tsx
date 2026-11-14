@@ -186,9 +186,9 @@ export function SettingsClient({
   }
 
   return (
-    <div className="settings">
+    <div className="settings w-full max-w-full min-w-0">
       {/* Mobile sub-navigation pills (< 768px) */}
-      <nav className="md:hidden flex items-center gap-2 overflow-x-auto pb-1 mb-4 scrollbar-none" aria-label="Settings sections">
+      <nav className="md:hidden flex items-center gap-2 overflow-x-auto w-full max-w-full min-w-0 pb-1 mb-4 scrollbar-none" aria-label="Settings sections">
         <a
           href="#agents"
           className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors border ${
@@ -272,9 +272,9 @@ export function SettingsClient({
       </nav>
 
       {/* Main content sections */}
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-10 w-full max-w-full min-w-0">
         {/* AGENTS */}
-        <section id="agents" className="scroll-mt-16">
+        <section id="agents" className="scroll-mt-16 w-full max-w-full min-w-0">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
               <h2 className="text-lg md:text-xl font-bold text-ink">Agents</h2>
@@ -316,8 +316,8 @@ export function SettingsClient({
           </div>
 
           {/* Mobile full-width endpoint bar */}
-          <div className="md:hidden flex items-center justify-between w-full mb-3 px-3 py-2 bg-surface-2 border border-line rounded-md text-xs font-mono">
-            <span className="truncate flex-1 text-ink-2 mr-2" suppressHydrationWarning>
+          <div className="md:hidden flex items-center justify-between w-full min-w-0 mb-3 px-3 py-2 bg-surface-2 border border-line rounded-md text-xs font-mono">
+            <span className="truncate min-w-0 flex-1 text-ink-2 mr-2" suppressHydrationWarning>
               {appUrl.replace(/^https?:\/\//, "")}/api/mcp
             </span>
             <button
@@ -338,7 +338,7 @@ export function SettingsClient({
         </section>
 
         {/* ACTIVITY */}
-        <section id="activity" className="scroll-mt-16">
+        <section id="activity" className="scroll-mt-16 w-full max-w-full min-w-0">
           <AuditTable
             rows={auditRows}
             hasMore={hasMoreAudit}
@@ -376,7 +376,7 @@ export function SettingsClient({
             </div>
           </div>
 
-          <div className="card overflow-hidden">
+          <div className="card overflow-hidden w-full max-w-full min-w-0">
             {links.length === 0 ? (
               <div className="p-8 text-center text-sm text-ink-3">
                 No quick links yet. Add up to 12 links to your tools and profiles.
@@ -384,11 +384,11 @@ export function SettingsClient({
             ) : (
               <div className="divide-y divide-[var(--line)]">
                 {links.map((link) => (
-                  <div key={link.id} className="lrow flex items-center gap-3 p-3">
+                  <div key={link.id} className="lrow flex items-center gap-3 p-3 w-full max-w-full min-w-0">
                     <span className="ic flex-shrink-0">{renderLinkIcon(link.icon)}</span>
-                    <div className="t flex-1 min-w-0">
+                    <div className="t flex-1 min-w-0 overflow-hidden">
                       <b className="truncate block font-semibold text-sm">{link.title}</b>
-                      <span className="truncate block text-xs text-ink-3">{link.url}</span>
+                      <span className="truncate block text-xs text-ink-3" title={link.url}>{link.url}</span>
                     </div>
                     <button
                       type="button"
@@ -417,7 +417,7 @@ export function SettingsClient({
         </section>
 
         {/* EMAIL REMINDERS */}
-        <section id="email" className="scroll-mt-16">
+        <section id="email" className="scroll-mt-16 w-full max-w-full min-w-0">
           <div className="mb-3">
             <h2 className="text-lg font-bold text-ink">Email reminders</h2>
             <p className="text-xs text-ink-3 mt-0.5">
@@ -426,7 +426,7 @@ export function SettingsClient({
             </p>
           </div>
 
-          <div className="card p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="card p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full max-w-full min-w-0">
             <button
               type="button"
               onClick={handleSendTestEmail}

@@ -148,13 +148,16 @@ export function AuditTable({
             {/* Mobile list */}
             <div className="md:hidden divide-y divide-[var(--line)]">
               {filteredRows.map((r) => (
-                <div key={r.id} className="p-3 flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <b className="font-mono text-xs text-ink">{r.tool}</b>
+                <div key={r.id} className="p-3 flex items-start justify-between gap-2 min-w-0 overflow-hidden">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="flex items-center gap-2 mb-0.5 min-w-0">
+                      <b className="font-mono text-xs text-ink truncate">{r.tool}</b>
                       {renderResultBadge(r.result)}
                     </div>
-                    <div className="text-xs text-ink-3">
+                    <div
+                      className="text-xs text-ink-3 truncate block"
+                      title={`${r.keyName} · ${formatAuditTime(r.createdAt)} · ${r.summary}`}
+                    >
                       {r.keyName} · {formatAuditTime(r.createdAt)} · {r.summary}
                     </div>
                   </div>

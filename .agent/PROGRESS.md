@@ -23,7 +23,7 @@
 | **Next task** | — |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-14 by Antigravity (Unified 12px mobile page side padding giving contents full width, Settings mobile responsive overhaul with sub-nav pill tabs, header and endpoint layout, URL truncation) |
+| **Last updated** | 2026-11-14 by Antigravity (Settings 357px mobile blowout fixed: viewport overflow-x containment, audit row title/time truncation, quick links URL overflow clipping, key table chips wrapping) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.
