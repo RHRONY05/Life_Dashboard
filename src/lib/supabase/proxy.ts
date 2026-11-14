@@ -46,9 +46,14 @@ export async function updateSession(request: NextRequest) {
   const isCron = pathname === "/api/cron/daily";
   const isAuthLogin = pathname === "/api/auth/login";
   const isApi = pathname.startsWith("/api/");
+  const isPublicStatic =
+    pathname === "/manifest.json" ||
+    pathname === "/robots.txt" ||
+    pathname === "/favicon.ico" ||
+    pathname.endsWith(".webmanifest");
 
-  // Exclude MCP and Cron endpoints from session check
-  if (isMcp || isCron || isAuthLogin) {
+  // Exclude MCP, Cron, and public static assets from session check
+  if (isMcp || isCron || isAuthLogin || isPublicStatic) {
     return supabaseResponse;
   }
 

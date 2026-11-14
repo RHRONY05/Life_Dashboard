@@ -22,4 +22,25 @@ describe("errors reason map", () => {
       "Something went wrong. Please try again."
     );
   });
+
+  it("ensures public static assets and manifest bypass proxy middleware matcher", async () => {
+    const { config } = await import("@/proxy");
+    const patternStr = config.matcher[0];
+    const regex = new RegExp(`^${patternStr}`);
+
+    // Public static assets that must bypass middleware (regex test is false)
+    expect(regex.test("/manifest.json")).toBe(false);
+    expect(regex.test("/robots.txt")).toBe(false);
+    expect(regex.test("/favicon.ico")).toBe(false);
+    expect(regex.test("/icon-192.png")).toBe(false);
+    expect(regex.test("/icon-512.png")).toBe(false);
+    expect(regex.test("/_next/static/chunks/main.js")).toBe(false);
+
+    // Protected application pages that must run through middleware (regex test is true)
+    expect(regex.test("/")).toBe(true);
+    expect(regex.test("/canvas")).toBe(true);
+    expect(regex.test("/money")).toBe(true);
+    expect(regex.test("/renewals")).toBe(true);
+    expect(regex.test("/settings")).toBe(true);
+  });
 });

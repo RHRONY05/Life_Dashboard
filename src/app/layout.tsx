@@ -1,9 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { fontSans, fontDisplay, fontMono, fontTaka } from "./fonts";
 import "./globals.css";
 import { Toaster } from "@/components/ui/Toast";
 import { OfflineBar } from "@/components/shell/OfflineBar";
 import { ShortcutsDialog } from "@/components/shell/ShortcutsDialog";
+
+export const viewport: Viewport = {
+  themeColor: "#FFE45C",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Life Dashboard",

@@ -274,3 +274,9 @@ Tests: typecheck ✅ lint ✅ unit ✅ (107 passed) int ✅ (36 passed) e2e ✅ 
 Deploy: https://life-rony.vercel.app · prod check ✅ (Lighthouse 100/97, NeetCode 150 live, all links live)
 Commits: feat(v10): final checks, production Lighthouse 100/97, README, and learning note
 Milestone: M5 Agents + final complete
+
+### 2026-11-14 20:45 — Antigravity — PWA mobile installation & manifest bypass fix
+Did: resolved mobile PWA installation failure ("This app cannot be installed" in Brave/Chrome) by updating `src/proxy.ts` matcher and `src/lib/supabase/proxy.ts` to exclude `/manifest.json`, `/robots.txt`, and `.webmanifest` from auth middleware interception (preventing 307 redirect to `/login` for unauthenticated browser WebAPK installers); enhanced `public/manifest.json` with standard W3C PWA properties (`id`, `scope`, `orientation`, explicit `"purpose": "any"` and `"purpose": "maskable"` icons); added `viewport` export in `src/app/layout.tsx` for `#FFE45C` themeColor; added unit test in `smoke.test.ts` verifying manifest and static assets bypass proxy; verified typecheck, unit tests, and production build; deployed to production.
+Tests: typecheck ✅ unit ✅ (108 passed) build ✅
+Deploy: https://life-rony.vercel.app · prod check ✅
+Commits: fix(pwa): allow public access to manifest.json and add maskable icon for mobile install
