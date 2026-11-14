@@ -70,14 +70,14 @@ export function AuditTable({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <div>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="min-w-0">
           <h2 className="text-lg font-bold text-ink">Activity</h2>
-          <p className="text-xs text-ink-3">Every call an agent made, newest first.</p>
+          <p className="text-xs text-ink-3 hidden sm:block">Every call an agent made, newest first.</p>
         </div>
 
         {/* Filter dropdown */}
-        <div className="relative inline-flex items-center">
+        <div className="relative inline-flex items-center flex-shrink-0">
           <Filter className="w-3.5 h-3.5 absolute left-2.5 text-ink-3 pointer-events-none" />
           <select aria-label="Filter activity by agent"
             value={agentFilter}

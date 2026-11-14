@@ -134,11 +134,17 @@ kbd { font-family: var(--font-mono); font-size: 11px; line-height: 16px; padding
 .card-body { padding: 0 16px 16px; }
 
 /* ---- Page frame ---- */
-.page { padding: 24px var(--page-pad-d); }
 @media (min-width: 768px) {
+  .page { padding: 24px var(--page-pad-d); }
   .page-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 }
 @media (max-width: 767px) {
+  .page {
+    padding: 12px 12px 24px 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
   .page-head { display: none !important; }
 }
 .page-head h1 { margin: 0; font-size: var(--text-xl); line-height: var(--leading-xl); font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); }

@@ -187,6 +187,54 @@ export function SettingsClient({
 
   return (
     <div className="settings">
+      {/* Mobile sub-navigation pills (< 768px) */}
+      <nav className="md:hidden flex items-center gap-2 overflow-x-auto pb-1 mb-4 scrollbar-none" aria-label="Settings sections">
+        <a
+          href="#agents"
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors border ${
+            activeHash === "agents"
+              ? "bg-accent-soft text-accent-text border-frame font-bold shadow-[1px_1px_0_var(--frame)]"
+              : "bg-surface text-ink-2 border-line hover:bg-surface-2"
+          }`}
+          onClick={() => setActiveHash("agents")}
+        >
+          Agents
+        </a>
+        <a
+          href="#activity"
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors border ${
+            activeHash === "activity"
+              ? "bg-accent-soft text-accent-text border-frame font-bold shadow-[1px_1px_0_var(--frame)]"
+              : "bg-surface text-ink-2 border-line hover:bg-surface-2"
+          }`}
+          onClick={() => setActiveHash("activity")}
+        >
+          Activity
+        </a>
+        <a
+          href="#links"
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors border ${
+            activeHash === "links"
+              ? "bg-accent-soft text-accent-text border-frame font-bold shadow-[1px_1px_0_var(--frame)]"
+              : "bg-surface text-ink-2 border-line hover:bg-surface-2"
+          }`}
+          onClick={() => setActiveHash("links")}
+        >
+          Quick links
+        </a>
+        <a
+          href="#email"
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors border ${
+            activeHash === "email"
+              ? "bg-accent-soft text-accent-text border-frame font-bold shadow-[1px_1px_0_var(--frame)]"
+              : "bg-surface text-ink-2 border-line hover:bg-surface-2"
+          }`}
+          onClick={() => setActiveHash("email")}
+        >
+          Email reminders
+        </a>
+      </nav>
+
       {/* Sidebar navigation (Desktop) */}
       <nav className="snav hidden md:flex">
         <a
@@ -226,15 +274,16 @@ export function SettingsClient({
       {/* Main content sections */}
       <div className="flex flex-col gap-10">
         {/* AGENTS */}
-        <section id="agents" className="scroll-mt-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+        <section id="agents" className="scroll-mt-16">
+          <div className="flex items-start justify-between gap-3 mb-3">
             <div>
-              <h2 className="text-xl font-bold text-ink">Agents</h2>
+              <h2 className="text-lg md:text-xl font-bold text-ink">Agents</h2>
               <p className="text-xs text-ink-3 mt-0.5">
                 Agents connect to your MCP server with their own key. They can&apos;t delete anything.
               </p>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            {/* Desktop New Key & Endpoint */}
+            <div className="hidden md:flex items-center gap-2">
               <span className="endpoint">
                 <span suppressHydrationWarning>{appUrl}/api/mcp</span>
                 <button
@@ -255,6 +304,30 @@ export function SettingsClient({
                 New key
               </button>
             </div>
+            {/* Mobile New Key button right-aligned */}
+            <button
+              type="button"
+              onClick={() => setKeyDialogOpen(true)}
+              className="md:hidden btn btn-primary btn-sm flex items-center gap-1.5 flex-shrink-0"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              New key
+            </button>
+          </div>
+
+          {/* Mobile full-width endpoint bar */}
+          <div className="md:hidden flex items-center justify-between w-full mb-3 px-3 py-2 bg-surface-2 border border-line rounded-md text-xs font-mono">
+            <span className="truncate flex-1 text-ink-2 mr-2" suppressHydrationWarning>
+              {appUrl.replace(/^https?:\/\//, "")}/api/mcp
+            </span>
+            <button
+              type="button"
+              onClick={handleCopyEndpoint}
+              className="iconbtn sm flex-shrink-0"
+              aria-label="Copy URL"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           <KeyTable
@@ -265,7 +338,7 @@ export function SettingsClient({
         </section>
 
         {/* ACTIVITY */}
-        <section id="activity" className="scroll-mt-6">
+        <section id="activity" className="scroll-mt-16">
           <AuditTable
             rows={auditRows}
             hasMore={hasMoreAudit}
@@ -278,15 +351,15 @@ export function SettingsClient({
         </section>
 
         {/* QUICK LINKS */}
-        <section id="links" className="scroll-mt-6">
-          <div className="flex items-center justify-between mb-3">
-            <div>
+        <section id="links" className="scroll-mt-16">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="min-w-0">
               <h2 className="text-lg font-bold text-ink">Quick links</h2>
-              <p className="text-xs text-ink-3">Shown on Today. Up to 12.</p>
+              <p className="text-xs text-ink-3 hidden sm:block">Shown on Today. Up to 12.</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {links.length >= 12 && (
-                <span className="text-xs text-ink-3">12 links is the maximum</span>
+                <span className="text-xs text-ink-3 hidden sm:inline">12 links is the maximum</span>
               )}
               <button
                 type="button"
@@ -295,7 +368,7 @@ export function SettingsClient({
                   setLinkDialogOpen(true);
                 }}
                 disabled={links.length >= 12}
-                className="btn btn-secondary"
+                className="btn btn-secondary btn-sm md:btn-md"
               >
                 <Plus className="w-4 h-4" />
                 Add link
@@ -311,11 +384,11 @@ export function SettingsClient({
             ) : (
               <div className="divide-y divide-[var(--line)]">
                 {links.map((link) => (
-                  <div key={link.id} className="lrow">
-                    <span className="ic">{renderLinkIcon(link.icon)}</span>
-                    <div className="t">
-                      <b>{link.title}</b>
-                      <span>{link.url}</span>
+                  <div key={link.id} className="lrow flex items-center gap-3 p-3">
+                    <span className="ic flex-shrink-0">{renderLinkIcon(link.icon)}</span>
+                    <div className="t flex-1 min-w-0">
+                      <b className="truncate block font-semibold text-sm">{link.title}</b>
+                      <span className="truncate block text-xs text-ink-3">{link.url}</span>
                     </div>
                     <button
                       type="button"
@@ -323,7 +396,7 @@ export function SettingsClient({
                         setLinkToEdit(link);
                         setLinkDialogOpen(true);
                       }}
-                      className="iconbtn sm"
+                      className="iconbtn sm flex-shrink-0"
                       aria-label="Edit"
                     >
                       <Pencil className="w-3.5 h-3.5" />
@@ -331,7 +404,7 @@ export function SettingsClient({
                     <button
                       type="button"
                       onClick={() => setLinkToDelete(link)}
-                      className="iconbtn sm hover:text-danger"
+                      className="iconbtn sm flex-shrink-0 hover:text-danger"
                       aria-label="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -344,21 +417,21 @@ export function SettingsClient({
         </section>
 
         {/* EMAIL REMINDERS */}
-        <section id="email" className="scroll-mt-6">
+        <section id="email" className="scroll-mt-16">
           <div className="mb-3">
             <h2 className="text-lg font-bold text-ink">Email reminders</h2>
             <p className="text-xs text-ink-3 mt-0.5">
               Every morning around 08:00, when something renews or ends, a short email goes to{" "}
-              <b className="text-ink font-semibold">{reminderEmail}</b>.
+              <b className="text-ink font-semibold break-all">{reminderEmail}</b>.
             </p>
           </div>
 
-          <div className="card p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="card p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
               type="button"
               onClick={handleSendTestEmail}
               disabled={sendingEmail}
-              className="btn btn-secondary"
+              className="btn btn-secondary w-full sm:w-auto justify-center"
             >
               <Send className="w-4 h-4" />
               {sendingEmail ? "Sending…" : "Send test email"}

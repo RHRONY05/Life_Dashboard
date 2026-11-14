@@ -865,7 +865,7 @@ export function MoneyClient({
   const todayCount = todayGroup ? todayGroup.expenses.length : 0;
 
   return (
-    <div className="page flex-1 max-w-[1200px] mx-auto w-full px-4 sm:px-6 py-6 relative">
+    <div className="page flex-1 max-w-[1200px] mx-auto w-full p-3 sm:px-6 sm:py-6 relative">
       {loadingMonth && (
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent animate-pulse z-30" />
       )}
