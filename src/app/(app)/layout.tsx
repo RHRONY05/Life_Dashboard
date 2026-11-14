@@ -28,7 +28,7 @@ export default async function AppLayout({
     <div className="min-h-screen flex flex-col bg-bg">
       <AppHeader renewalsBadge={badgeCount} hasOverdue={hasOverdue} />
       <MobileHeader />
-      <main className="flex-1 pb-20 md:pb-8">{children}</main>
+      <main className="flex-1 pb-24 md:pb-8">{children}</main>
       <TabBar renewalsBadge={badgeCount} hasOverdue={hasOverdue} />
     </div>
   );

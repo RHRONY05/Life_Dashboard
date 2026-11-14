@@ -56,7 +56,8 @@ export function SpendTiles({
   const canGoNext = nextStr <= actualCurrentMonth;
 
   return (
-    <div className="tiles">
+    <>
+      <div className="tiles">
       <div className="tile">
         <div className="tile-k">
           <Sun className="w-3.5 h-3.5" />
@@ -112,14 +113,28 @@ export function SpendTiles({
           <span className="taka">৳</span>
           {new Intl.NumberFormat("en-IN").format(Math.round(summary.month))}
         </div>
-        <BudgetBar
-          budget={summary.budget}
-          budgetLeft={summary.budgetLeft}
-          budgetPct={summary.budgetPct}
-          monthSpent={summary.month}
-          onEditBudget={onEditBudget}
-        />
+        <div className="hidden md:block">
+          <BudgetBar
+            budget={summary.budget}
+            budgetLeft={summary.budgetLeft}
+            budgetPct={summary.budgetPct}
+            monthSpent={summary.month}
+            onEditBudget={onEditBudget}
+          />
+        </div>
       </div>
     </div>
+
+    {/* On mobile (< 768px): BudgetBar is rendered full-width below tiles */}
+    <div className="md:hidden mt-2 mb-3 bg-surface border border-frame rounded-md p-2.5 shadow-sm">
+      <BudgetBar
+        budget={summary.budget}
+        budgetLeft={summary.budgetLeft}
+        budgetPct={summary.budgetPct}
+        monthSpent={summary.month}
+        onEditBudget={onEditBudget}
+      />
+    </div>
+  </>
   );
 }

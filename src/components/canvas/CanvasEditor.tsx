@@ -1696,7 +1696,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
   }, [activeNote, notes]);
 
   return (
-    <div className="canvas-main flex-1 w-full max-w-[1440px] mx-auto p-4 md:p-8">
+    <div className="canvas-main flex-1 w-full max-w-[1440px] mx-auto p-2 sm:p-4 md:p-8">
       {/* State Banners */}
       {!isIdbSupported && !activeNoteId && (
         <Banner variant="warn" className="mb-4">
@@ -2012,7 +2012,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
       </div>
 
       {/* Main Grid Layout */}
-      <div className="canvas-wrap grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] gap-6 items-start">
+      <div className="canvas-wrap w-full max-w-full min-w-0 grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] gap-6 items-start">
         {/* Left Pane (Desktop: Always visible / Mobile: Visible when 'notes' tab is active and not editing note) */}
         <div
           className={clsx(
@@ -2048,8 +2048,8 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
         {/* Desktop Tab Bar & Editor Card */}
         <div
           className={clsx(
-            "md:flex md:flex-col gap-2.5 min-w-0",
-            mobileTab === "scratch" || activeNoteId ? "block" : "hidden"
+            "w-full max-w-full min-w-0 md:flex md:flex-col gap-2.5",
+            mobileTab === "scratch" || activeNoteId ? "flex flex-col" : "hidden"
           )}
         >
           {/* Tab Bar (Desktop >= 768px) */}
@@ -2119,7 +2119,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
           {/* Editor Card */}
           <section
-            className="ecard bg-surface border border-frame rounded-lg shadow-md flex flex-col overflow-hidden relative"
+            className="ecard bg-surface border border-frame rounded-lg shadow-md flex flex-col overflow-hidden relative w-full max-w-full min-w-0"
             aria-label={activeNoteId ? "Page editor" : "Scratch"}
           >
             {loadingNoteId && (
@@ -2367,7 +2367,7 @@ export function CanvasEditor({ userId }: CanvasEditorProps) {
 
             {/* Prose Editor Content Area */}
             <div
-              className="canvas-writing-surface flex-1 min-h-[550px] w-full max-w-[840px] mx-auto p-4 md:p-8 cursor-text focus:outline-none"
+              className="canvas-writing-surface flex-1 min-h-[550px] w-full max-w-[840px] mx-auto p-2 md:p-8 cursor-text focus:outline-none"
               onClick={(e) => {
                 if (
                   e.target === e.currentTarget ||

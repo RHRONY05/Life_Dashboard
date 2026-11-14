@@ -47,7 +47,7 @@ export function TabBar({ renewalsBadge = 0, hasOverdue = false }: TabBarProps) {
 
   return (
     <nav
-      className="tabbar md:hidden fixed bottom-0 left-0 right-0 h-16 grid grid-cols-6 bg-surface border-t border-frame pb-1 z-30 select-none relative"
+      className="tabbar md:hidden fixed bottom-0 left-0 right-0 h-16 grid grid-cols-6 bg-surface border-t border-frame pb-1 z-50 select-none"
       aria-label="Mobile navigation"
     >
       {optimisticPath && optimisticPath !== pathname && (

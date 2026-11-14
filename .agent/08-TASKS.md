@@ -196,6 +196,7 @@ Fixes and changes Rony asks for in chat, outside a task above. One line each, ne
 - 2026-11-05 · Renewal cron reminder recipient safety check (skip non-owner/test users in production, prevent test seed rows from emailing owner), integration test teardown cleanup with afterAll · `07 §4.4`
 - 2026-11-10 · Today board & Lists compact height (min-height 280px) with initial 4 visible tasks and 'See more'/'See less' button; Money spending day groups collapsed by default and open on click / auto-expand on spend add · `06`
 - 2026-11-14 · PWA mobile install fix (exclude manifest.json, robots.txt, webmanifest from proxy middleware, add maskable icon and themeColor viewport) · no doc change: fixes static manifest serving for mobile installability
+- 2026-11-14 · Mobile view overhaul: fixed sticky footer TabBar (z-50, bottom-0), fixed Canvas Scratch card overflow & toolbar scroll, responsive Money spending tiles & single-column layout, responsive Renewals row cards, full-width Settings layout and select filter alignment · 06, 10-STATES
 
 ## Questions for the human
 (Agents add questions here; the human answers inline.)

@@ -23,7 +23,7 @@
 | **Next task** | — |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-05 by Antigravity (V10 complete: Final check, production Lighthouse 100/97, README, learn notes, handoff) |
+| **Last updated** | 2026-11-14 by Antigravity (Mobile view overhaul: sticky footer navbar, responsive Canvas Scratch, responsive Money spending & IOUs, responsive Renewals cards, full-width Settings, mobile screenshot verification) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.

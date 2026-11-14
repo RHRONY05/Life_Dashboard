@@ -82,7 +82,7 @@ export function AuditTable({
           <select aria-label="Filter activity by agent"
             value={agentFilter}
             onChange={(e) => onFilterChange(e.target.value)}
-            className="input pl-8 pr-7 h-[34px] text-xs font-medium cursor-pointer appearance-none bg-surface"
+            className="input !pl-8 !pr-7 h-[34px] text-xs font-medium cursor-pointer appearance-none bg-surface"
           >
             <option value="">All agents</option>
             {availableAgents.map((agent) => (
