@@ -21,6 +21,42 @@ test("Capture mobile screenshots of all views", async ({ page }) => {
   await page.waitForLoadState("networkidle");
   await page.screenshot({ path: path.join(targetDir, "01-today.png") });
 
+  // 1b. Today - Lists tab & Add Task
+  const listsTabBtn = page.getByRole("button", { name: /^Lists/i });
+  if (await listsTabBtn.isVisible()) {
+    await listsTabBtn.click();
+    await page.waitForTimeout(400);
+
+    // If no lists exist, create one first
+    const listCardInput = page.locator(".lcard .task-input input").first();
+    if (!await listCardInput.isVisible()) {
+      const newListBtn = page.getByRole("button", { name: "New list" }).first();
+      if (await newListBtn.isVisible()) {
+        await newListBtn.click();
+        const listNameInput = page.getByPlaceholder(/List name/i);
+        await listNameInput.fill("Project to complete within this week");
+        await page.getByRole("button", { name: "Create" }).click();
+        await page.waitForTimeout(500);
+      }
+    }
+
+    const taskInput = page.locator(".lcard .task-input input").first();
+    if (await taskInput.isVisible()) {
+      await taskInput.fill("Fix vibe coded project");
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: path.join(targetDir, "01b-today-lists-with-add-btn.png") });
+
+      // Click the Add button and wait for the API response
+      const addBtn = page.locator(".lcard .task-input button[aria-label='Add task']").filter({ hasText: "Add" }).first();
+      await Promise.all([
+        page.waitForResponse((res) => res.url().includes("/api/tasks") && res.request().method() === "POST"),
+        addBtn.click(),
+      ]);
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: path.join(targetDir, "01c-today-lists-task-added.png") });
+    }
+  }
+
   // 2. Canvas - Scratch
   await page.goto("/canvas");
   await page.waitForLoadState("networkidle");

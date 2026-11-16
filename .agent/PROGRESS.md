@@ -23,7 +23,7 @@
 | **Next task** | — |
 | **Blocked on** | — |
 | **Production URL** | https://life-rony.vercel.app (and https://life.rhrony05.me once Cloudflare CNAME added) |
-| **Last updated** | 2026-11-14 by Antigravity (Settings 357px mobile blowout fixed: viewport overflow-x containment, audit row title/time truncation, quick links URL overflow clipping, key table chips wrapping) |
+| **Last updated** | 2026-11-16 by Antigravity (Mobile task input overhaul: form wrapper, enterKeyHint="done", interactive left plus button, and explicit inline [+ Add] button when typing) |
 
 ## Human steps
 Things only the human can do. Agents add to this list; the human ticks them.

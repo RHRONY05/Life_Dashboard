@@ -188,7 +188,13 @@ export function ListsSection({
 
           {/* Inline creation card */}
           {isCreating && (
-            <div className="lcard p-4 border border-[var(--accent)] rounded-[var(--radius-lg)] bg-[var(--surface)] shadow-[var(--card-shadow)]">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCreateSubmit();
+              }}
+              className="lcard p-4 border border-[var(--accent)] rounded-[var(--radius-lg)] bg-[var(--surface)] shadow-[var(--card-shadow)]"
+            >
               <div className="col-title uppercase font-sans font-bold text-[var(--text-sm)] mb-2">
                 New List
               </div>
@@ -197,6 +203,7 @@ export function ListsSection({
                 value={newListName}
                 onChange={(e) => setNewListName(e.target.value)}
                 onKeyDown={handleKeyDown}
+                enterKeyHint="done"
                 placeholder="List name (e.g. To do later)…"
                 autoFocus
                 disabled={busy}
@@ -209,6 +216,7 @@ export function ListsSection({
               )}
               <div className="flex justify-end gap-2 mt-3">
                 <Button
+                  type="button"
                   size="sm"
                   variant="ghost"
                   onClick={() => {
@@ -221,15 +229,15 @@ export function ListsSection({
                   Cancel
                 </Button>
                 <Button
+                  type="submit"
                   size="sm"
                   variant="primary"
-                  onClick={() => handleCreateSubmit()}
                   busy={busy}
                 >
                   Create
                 </Button>
               </div>
-            </div>
+            </form>
           )}
         </div>
       )}

@@ -154,6 +154,7 @@ export function ListCard({
               onChange={(e) => setNameValue(e.target.value)}
               onBlur={handleSaveRename}
               onKeyDown={handleRenameKeyDown}
+              enterKeyHint="done"
               autoFocus
               className="col-title uppercase font-sans font-bold bg-transparent border-b border-[var(--accent)] outline-none text-[var(--ink)]"
             />
